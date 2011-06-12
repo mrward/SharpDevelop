@@ -10,6 +10,11 @@ namespace ICSharpCode.PackageManagement
 {
 	public class PackageManagementFileService : IPackageManagementFileService
 	{
+		public PackageManagementFileService()
+		{
+			FileService.DeleteToRecycleBin = false;
+		}
+		
 		public void RemoveFile(string path)
 		{
 			if (WorkbenchSingleton.InvokeRequired) {
@@ -32,12 +37,12 @@ namespace ICSharpCode.PackageManagement
 		
 		public void OpenFile(string fileName)
 		{
-			if (WorkbenchSingleton.InvokeRequired) {
-				Action<string> action = OpenFile;
-				WorkbenchSingleton.SafeThreadAsyncCall<string>(action, fileName);
-			} else {
-				FileService.OpenFile(fileName);
-			}
+//			if (WorkbenchSingleton.InvokeRequired) {
+//				Action<string> action = OpenFile;
+//				WorkbenchSingleton.SafeThreadAsyncCall<string>(action, fileName);
+//			} else {
+//				FileService.OpenFile(fileName);
+//			}
 		}
 		
 		public void CopyFile(string oldFileName, string newFileName)

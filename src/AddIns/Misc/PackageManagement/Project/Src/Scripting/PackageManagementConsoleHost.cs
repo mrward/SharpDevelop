@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.PackageManagement.EnvDTE;
 using ICSharpCode.Scripting;
@@ -249,6 +251,18 @@ namespace ICSharpCode.PackageManagement.Scripting
 		public void ExecuteCommand(string command)
 		{
 			ScriptingConsole.SendLine(command);
+		}
+		
+		public IPackageManagementSolution OpenSolution(string path)
+		{
+			Solution.Open(path);
+			SetDefaultProject();
+			return Solution;
+		}
+		
+		void SetDefaultProject()
+		{
+			DefaultProject = Solution.GetMSBuildProjects().FirstOrDefault();
 		}
 	}
 }

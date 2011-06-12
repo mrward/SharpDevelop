@@ -41,10 +41,21 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 		[Parameter]
 		public SwitchParameter RemoveDependencies { get; set; }
 		
+		[Parameter]
+		public string Solution { get; set; }
+		
 		protected override void ProcessRecord()
 		{
+			OpenSolution();
 			ThrowErrorIfProjectNotOpen();
 			UninstallPackage();
+		}
+		
+		void OpenSolution()
+		{
+			if (Solution != null) {
+				ConsoleHost.OpenSolution(Solution);
+			}
 		}
 		
 		void UninstallPackage()

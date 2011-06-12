@@ -21,8 +21,8 @@ namespace ICSharpCode.PackageManagement
 			ICompilerMessageView compilerMessageView,
 			IPackageManagementEvents packageManagementEvents)
 		{
-			CreatePackageManagementMessageCategoryIfNoneExists(compilerMessageView);
-			packageManagementEvents.PackageOperationMessageLogged += PackageOperationMessageLogged;
+			//CreatePackageManagementMessageCategoryIfNoneExists(compilerMessageView);
+			//packageManagementEvents.PackageOperationMessageLogged += PackageOperationMessageLogged;
 		}
 		
 		void CreatePackageManagementMessageCategoryIfNoneExists(ICompilerMessageView compilerMessageView)

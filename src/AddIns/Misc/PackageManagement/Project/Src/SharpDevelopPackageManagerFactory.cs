@@ -2,6 +2,7 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Project;
 using NuGet;
 
@@ -17,7 +18,7 @@ namespace ICSharpCode.PackageManagement
 			: this(
 				new SharpDevelopPackageRepositoryFactory(),
 				new SharpDevelopProjectSystemFactory(),
-				new PackageManagementOptions())
+				new PackageManagementOptions(new Properties()))
 		{
 		}
 		

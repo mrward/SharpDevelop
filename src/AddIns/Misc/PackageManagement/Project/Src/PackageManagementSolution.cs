@@ -111,5 +111,10 @@ namespace ICSharpCode.PackageManagement
 		public bool IsOpen {
 			get { return projectService.OpenSolution != null; }
 		}
+		
+		public void Open(string path)
+		{
+			projectService.LoadSolution(path);
+		}
 	}
 }

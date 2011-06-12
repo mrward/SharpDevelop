@@ -4,6 +4,7 @@
 using System;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using ICSharpCode.PackageManagement.EnvDTE;
 using ICSharpCode.PackageManagement.Scripting;
 using ICSharpCode.SharpDevelop.Project;
 using NuGet;
@@ -89,8 +90,16 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 		
 		public virtual void InvokeScript(string script)
 		{
+			SetDTEVariable();
+
 			var resultTypes = PipelineResultTypes.Error | PipelineResultTypes.Output;
 			InvokeCommand.InvokeScript(script, false, resultTypes, null, null);
+		}
+		
+		void SetDTEVariable()
+		{
+			var dte = new DTE();
+			AddVariable("DTE", dte);
 		}
 		
 		public void Run(IPackageScript script)

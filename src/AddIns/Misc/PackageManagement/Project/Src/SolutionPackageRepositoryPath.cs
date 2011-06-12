@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Project;
 using NuGet;
 
@@ -15,7 +16,7 @@ namespace ICSharpCode.PackageManagement
 		DefaultPackagePathResolver pathResolver;
 		
 		public SolutionPackageRepositoryPath(IProject project)
-			: this(project, new PackageManagementOptions())
+			: this(project, new PackageManagementOptions(new Properties()))
 		{
 		}
 		

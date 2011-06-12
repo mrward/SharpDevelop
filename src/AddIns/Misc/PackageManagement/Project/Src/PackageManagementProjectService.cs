@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+
 using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.SharpDevelop.Project.Commands;
@@ -21,12 +23,12 @@ namespace ICSharpCode.PackageManagement
 		
 		public void RefreshProjectBrowser()
 		{
-			if (WorkbenchSingleton.InvokeRequired) {
-				WorkbenchSingleton.SafeThreadAsyncCall(RefreshProjectBrowser);
-			} else {
-				var refreshCommand = new RefreshProjectBrowser();
-				refreshCommand.Run();
-			}
+//			if (WorkbenchSingleton.InvokeRequired) {
+//				WorkbenchSingleton.SafeThreadAsyncCall(RefreshProjectBrowser);
+//			} else {
+//				var refreshCommand = new RefreshProjectBrowser();
+//				refreshCommand.Run();
+//			}
 		}
 		
 		public IEnumerable<IProject> GetOpenProjects()
@@ -66,6 +68,12 @@ namespace ICSharpCode.PackageManagement
 			} else {
 				project.Save();
 			}
+		}
+		
+		public void LoadSolution(string fileName)
+		{
+			fileName = Path.GetFullPath(fileName);
+			ProjectService.LoadSolution(fileName);
 		}
 		
 		public event ProjectEventHandler ProjectAdded {

@@ -118,5 +118,10 @@ namespace PackageManagement.Tests.Helpers
 		{
 			CommandsExecuted.Add(command);
 		}
+		
+		public IPackageManagementSolution OpenSolution(string path)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

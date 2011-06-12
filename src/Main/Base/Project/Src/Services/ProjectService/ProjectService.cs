@@ -67,7 +67,7 @@ namespace ICSharpCode.SharpDevelop.Project
 		{
 			if (!initialized) {
 				initialized = true;
-				WorkbenchSingleton.Workbench.ActiveViewContentChanged += ActiveViewContentChanged;
+//				WorkbenchSingleton.Workbench.ActiveViewContentChanged += ActiveViewContentChanged;
 				FileService.FileRenamed += FileServiceFileRenamed;
 				FileService.FileRemoved += FileServiceFileRemoved;
 				ApplicationStateInfoService.RegisterStateGetter("ProjectService.OpenSolution", delegate { return OpenSolution; });
@@ -244,7 +244,7 @@ namespace ICSharpCode.SharpDevelop.Project
 		{
 			if (openSolution != null) {
 				SaveSolutionPreferences();
-				WorkbenchSingleton.Workbench.CloseAllViews();
+//				WorkbenchSingleton.Workbench.CloseAllViews();
 				CloseSolution();
 			}
 		}
@@ -293,7 +293,7 @@ namespace ICSharpCode.SharpDevelop.Project
 				MessageService.ShowException(ex);
 			}
 			// Create project contents for solution
-			ParserService.OnSolutionLoaded();
+			//ParserService.OnSolutionLoaded();
 			
 			Project.Converter.UpgradeViewContent.ShowIfRequired(openSolution);
 			
@@ -513,7 +513,7 @@ namespace ICSharpCode.SharpDevelop.Project
 				
 				openSolution.Dispose();
 				openSolution = null;
-				ParserService.OnSolutionClosed();
+//				ParserService.OnSolutionClosed();
 				
 				OnSolutionClosed(EventArgs.Empty);
 				CommandManager.InvalidateRequerySuggested();

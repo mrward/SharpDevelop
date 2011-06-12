@@ -329,11 +329,11 @@ namespace ICSharpCode.SharpDevelop
 		public static IList<FileName> GetOpenFiles()
 		{
 			List<FileName> fileNames = new List<FileName>();
-			foreach (IViewContent content in WorkbenchSingleton.Workbench.ViewContentCollection) {
-				FileName contentName = content.PrimaryFileName;
-				if (contentName != null && !fileNames.Contains(contentName))
-					fileNames.Add(contentName);
-			}
+//			foreach (IViewContent content in WorkbenchSingleton.Workbench.ViewContentCollection) {
+//				FileName contentName = content.PrimaryFileName;
+//				if (contentName != null && !fileNames.Contains(contentName))
+//					fileNames.Add(contentName);
+//			}
 			return fileNames;
 		}
 		

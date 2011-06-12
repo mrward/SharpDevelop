@@ -79,5 +79,10 @@ namespace ICSharpCode.PackageManagement.Design
 		{
 			project.Save();
 		}
+		
+		public void LoadSolution(string path)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

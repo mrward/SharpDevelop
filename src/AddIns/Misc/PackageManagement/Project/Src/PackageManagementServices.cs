@@ -2,6 +2,10 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.IO;
+using System.Resources;
+
+using ICSharpCode.Core;
 using ICSharpCode.PackageManagement.Scripting;
 
 namespace ICSharpCode.PackageManagement
@@ -23,7 +27,8 @@ namespace ICSharpCode.PackageManagement
 		
 		static PackageManagementServices()
 		{
-			options = new PackageManagementOptions();
+			InitializeCoreServices();
+			options = new PackageManagementOptions(new Properties());
 			registeredPackageRepositories = new RegisteredPackageRepositories(options);
 			outputMessagesView = new PackageManagementOutputMessagesView(packageManagementEvents);
 			solution = new PackageManagementSolution(registeredPackageRepositories, packageManagementEvents);
@@ -33,6 +38,32 @@ namespace ICSharpCode.PackageManagement
 			resetPowerShellWorkingDirectory = new ResetPowerShellWorkingDirectoryOnSolutionClosed(projectService, ConsoleHost);
 			var consolePackageActionRunner = new ConsolePackageActionRunner(ConsoleHost, packageActionsToRun);
 			packageActionRunner = new PackageActionRunner(consolePackageActionRunner, packageManagementEvents);
+		}
+		
+		static void InitializeCoreServices()
+		{
+			string applicationName = "ICSharpCode.PackageManagement";
+			string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			string configDirectory = Path.Combine(appDataFolder, applicationName);
+			string assemblyFolder = Path.GetDirectoryName(typeof(PackageManagementServices).Assembly.Location);
+			string dataDirectory = Path.Combine(assemblyFolder, @"..\data");
+			string addinDirectory = Path.Combine(assemblyFolder, @"..\AddIns");
+			
+			var startup = new CoreStartup(applicationName);
+			startup.ConfigDirectory = configDirectory;
+			startup.DataDirectory = dataDirectory;
+			startup.StartCoreServices();
+			InitializeStringResources();
+			startup.AddAddInsFromDirectory(addinDirectory);
+			startup.RunInitialization();
+			
+			ICSharpCode.SharpDevelop.Project.ProjectService.InitializeService();
+		}
+
+		static void InitializeStringResources()
+		{
+			var resourceManager = new ResourceManager("ICSharpCode.PackageManagement.Resources.StringResources", typeof(PackageManagementServices).Assembly);
+			ResourceService.RegisterNeutralStrings(resourceManager);
 		}
 		
 		public static PackageManagementOptions Options {

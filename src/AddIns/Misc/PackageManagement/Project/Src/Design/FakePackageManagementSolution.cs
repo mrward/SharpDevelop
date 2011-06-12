@@ -70,5 +70,10 @@ namespace ICSharpCode.PackageManagement.Design
 		}
 		
 		public bool IsOpen { get; set; }
+		
+		public void Open(string path)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

@@ -69,14 +69,25 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 			set { first = value; }
 		}
 		
+		[Parameter]
+		public string Solution { get; set; }
+		
 		protected override void ProcessRecord()
 		{
+			OpenSolution();
 			ValidateParameters();
 			
 			IQueryable<IPackage> packages = GetPackages();
 			packages = OrderPackages(packages);
 			packages = SelectPackageRange(packages);
 			WritePackagesToOutputPipeline(packages);
+		}
+		
+		void OpenSolution()
+		{
+			if (Solution != null) {
+				ConsoleHost.OpenSolution(Solution);
+			}
 		}
 		
 		void ValidateParameters()

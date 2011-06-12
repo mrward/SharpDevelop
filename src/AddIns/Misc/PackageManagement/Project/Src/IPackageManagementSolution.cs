@@ -17,5 +17,7 @@ namespace ICSharpCode.PackageManagement
 		IEnumerable<IProject> GetMSBuildProjects();
 		
 		bool IsOpen { get; }
+		
+		void Open(string path);
 	}
 }

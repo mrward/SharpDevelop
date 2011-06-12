@@ -34,9 +34,13 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 		
 		[Parameter(ParameterSetName = "ProjectsFilteredByName")]
 		public string[] Name { get; set; }
+
+		[Parameter]
+		public string Solution { get; set; }
 		
 		protected override void ProcessRecord()
 		{
+			OpenSolution();
 			ThrowErrorIfProjectNotOpen();
 			
 			if (All.IsPresent) {
@@ -45,6 +49,13 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 				WriteFilteredProjectsToPipeline();
 			} else {
 				WriteDefaultProjectToPipeline();
+			}
+		}
+		
+		void OpenSolution()
+		{
+			if (Solution != null) {
+				ConsoleHost.OpenSolution(Solution);
 			}
 		}
 		
