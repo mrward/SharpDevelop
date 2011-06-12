@@ -62,6 +62,7 @@
     <Compile Include="Src\ITerminatingCmdlet.cs" />
     <Compile Include="Src\OpenProjects.cs" />
     <Compile Include="Src\PackageManagementCmdlet.cs" />
+    <Compile Include="Src\SetProjectCmdlet.cs" />
     <Compile Include="Src\UninstallPackageCmdlet.cs" />
     <Compile Include="Src\UpdatePackageCmdlet.cs" />
   </ItemGroup>

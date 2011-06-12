@@ -75,5 +75,10 @@ namespace ICSharpCode.PackageManagement.Design
 		{
 			throw new NotImplementedException();
 		}
+		
+		public IProject GetMSBuildProject(string name)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

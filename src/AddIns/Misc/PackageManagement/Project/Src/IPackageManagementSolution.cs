@@ -19,5 +19,7 @@ namespace ICSharpCode.PackageManagement
 		bool IsOpen { get; }
 		
 		void Open(string path);
+		
+		IProject GetMSBuildProject(string name);
 	}
 }

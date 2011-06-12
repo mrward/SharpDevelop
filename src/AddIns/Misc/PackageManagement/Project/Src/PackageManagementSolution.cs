@@ -72,11 +72,11 @@ namespace ICSharpCode.PackageManagement
 		
 		public IPackageManagementProject GetProject(PackageSource source, string projectName)
 		{
-			MSBuildBasedProject msbuildProject = GetMSBuildProject(projectName);
+			MSBuildBasedProject msbuildProject = GetMSBuildProjectByName(projectName);
 			return CreateProject(source, msbuildProject);
 		}
 		
-		MSBuildBasedProject GetMSBuildProject(string name)
+		MSBuildBasedProject GetMSBuildProjectByName(string name)
 		{
 			foreach (IProject project in projectService.GetOpenProjects()) {
 				if (IsProjectNameMatch(project.Name, name)) {
@@ -91,6 +91,11 @@ namespace ICSharpCode.PackageManagement
 			return String.Equals(a, b, StringComparison.InvariantCultureIgnoreCase);
 		}
 		
+		public IProject GetMSBuildProject(string name)
+		{
+			return GetMSBuildProjectByName(name);
+		}
+		
 		IPackageManagementProject CreateProject(PackageSource source, MSBuildBasedProject project)
 		{
 			IPackageRepository sourceRepository = CreatePackageRepository(source);
@@ -99,7 +104,7 @@ namespace ICSharpCode.PackageManagement
 		
 		public IPackageManagementProject GetProject(IPackageRepository sourceRepository, string projectName)
 		{
-			MSBuildBasedProject msbuildProject = GetMSBuildProject(projectName);
+			MSBuildBasedProject msbuildProject = GetMSBuildProjectByName(projectName);
 			return CreateProject(sourceRepository, msbuildProject);
 		}
 		
