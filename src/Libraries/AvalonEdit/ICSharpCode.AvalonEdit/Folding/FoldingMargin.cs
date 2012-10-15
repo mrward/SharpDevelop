@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
-
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Rendering;
 using ICSharpCode.AvalonEdit.Utils;
@@ -92,10 +92,16 @@ namespace ICSharpCode.AvalonEdit.Folding
 		
 		static void OnUpdateBrushes(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
+			FoldingMargin m = null;
+			if (d is FoldingMargin)
+				m = (FoldingMargin)d;
+			else if (d is TextEditor)
+				m = ((TextEditor)d).TextArea.LeftMargins.FirstOrDefault(c => c is FoldingMargin) as FoldingMargin;
+			if (m == null) return;
 			if (e.Property.Name == FoldingMarkerBrushProperty.Name)
-				foldingControlPen = MakeFrozenPen((Brush)e.NewValue);
+				m.foldingControlPen = MakeFrozenPen((Brush)e.NewValue);
 			if (e.Property.Name == SelectedFoldingMarkerBrushProperty.Name)
-				selectedFoldingControlPen = MakeFrozenPen((Brush)e.NewValue);
+				m.selectedFoldingControlPen = MakeFrozenPen((Brush)e.NewValue);
 		}
 		#endregion
 		
@@ -116,8 +122,8 @@ namespace ICSharpCode.AvalonEdit.Folding
 			foreach (FoldingMarginMarker m in markers) {
 				int visualColumn = m.VisualLine.GetVisualColumn(m.FoldingSection.StartOffset - m.VisualLine.FirstDocumentLine.Offset);
 				TextLine textLine = m.VisualLine.GetTextLine(visualColumn);
-				double yPos = m.VisualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineTop) - TextView.VerticalOffset;
-				yPos += (textLine.Height - m.DesiredSize.Height) / 2;
+				double yPos = m.VisualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
+				yPos -= m.DesiredSize.Height / 2;
 				double xPos = (finalSize.Width - m.DesiredSize.Width) / 2;
 				m.Arrange(new Rect(PixelSnapHelpers.Round(new Point(xPos, yPos), pixelSize), m.DesiredSize));
 			}
@@ -181,8 +187,8 @@ namespace ICSharpCode.AvalonEdit.Folding
 			return markers[index];
 		}
 		
-		static Pen foldingControlPen = MakeFrozenPen((Brush)FoldingMarkerBrushProperty.DefaultMetadata.DefaultValue);
-		static Pen selectedFoldingControlPen = MakeFrozenPen((Brush)SelectedFoldingMarkerBrushProperty.DefaultMetadata.DefaultValue);
+		Pen foldingControlPen = MakeFrozenPen((Brush)FoldingMarkerBrushProperty.DefaultMetadata.DefaultValue);
+		Pen selectedFoldingControlPen = MakeFrozenPen((Brush)SelectedFoldingMarkerBrushProperty.DefaultMetadata.DefaultValue);
 		
 		static Pen MakeFrozenPen(Brush brush)
 		{
@@ -222,7 +228,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			int maxEndOffset = 0;
 			foreach (FoldingSection fs in foldings) {
 				int end = fs.EndOffset;
-				if (end < viewEndOffset && !fs.IsFolded) {
+				if (end <= viewEndOffset && !fs.IsFolded) {
 					int textLineNr = GetTextLineIndexFromOffset(allTextLines, end);
 					if (textLineNr >= 0) {
 						endMarker[textLineNr] = foldingControlPen;
@@ -310,7 +316,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		
 		double GetVisualPos(VisualLine vl, TextLine tl, double pixelHeight)
 		{
-			double pos = vl.GetTextLineVisualYPosition(tl, VisualYPosition.LineTop) + tl.Height / 2 - TextView.VerticalOffset;
+			double pos = vl.GetTextLineVisualYPosition(tl, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
 			return PixelSnapHelpers.PixelAlign(pos, pixelHeight);
 		}
 		

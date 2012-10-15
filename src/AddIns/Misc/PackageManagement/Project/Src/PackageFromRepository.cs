@@ -30,7 +30,7 @@ namespace ICSharpCode.PackageManagement
 			get { return package.Id; }
 		}
 		
-		public Version Version {
+		public SemanticVersion Version {
 			get { return package.Version; }
 		}
 		
@@ -83,7 +83,7 @@ namespace ICSharpCode.PackageManagement
 		}
 		
 		public IEnumerable<PackageDependency> Dependencies {
-			get { return package.Dependencies; }
+			get { return package.GetCompatiblePackageDependencies(null); }
 		}
 		
 		public Uri ReportAbuseUrl {
@@ -94,12 +94,26 @@ namespace ICSharpCode.PackageManagement
 			get { return package.DownloadCount; }
 		}
 		
-		public int RatingsCount {
-			get { return package.RatingsCount; }
+		public DateTime? LastUpdated {
+			get { return GetLastUpdated(); }
 		}
 		
-		public double Rating {
-			get { return package.Rating; }
+		DateTime? GetLastUpdated()
+		{
+			DateTimeOffset? lastUpdated = GetDataServicePackageLastUpdated();
+			if (lastUpdated.HasValue) {
+				return lastUpdated.Value.DateTime;
+			}
+			return null;
+		}
+		
+		protected virtual DateTimeOffset? GetDataServicePackageLastUpdated()
+		{
+			var dataServicePackage = package as DataServicePackage;
+			if (dataServicePackage != null) {
+				return dataServicePackage.LastUpdated;
+			}
+			return null;
 		}
 		
 		public IEnumerable<IPackageFile> GetFiles()
@@ -120,6 +134,34 @@ namespace ICSharpCode.PackageManagement
 				}
 				return hasDependencies.Value;
 			}
+		}
+		
+		public bool IsLatestVersion {
+			get { return package.IsLatestVersion; }
+		}
+		
+		public Nullable<DateTimeOffset> Published {
+			get { return package.Published; }
+		}
+		
+		public string ReleaseNotes {
+			get { return package.ReleaseNotes; }
+		}
+		
+		public string Copyright {
+			get { return package.Copyright; }
+		}
+		
+		public bool IsAbsoluteLatestVersion {
+			get { return package.IsAbsoluteLatestVersion; }
+		}
+		
+		public bool Listed {
+			get { return package.Listed; }
+		}
+		
+		public IEnumerable<PackageDependencySet> DependencySets {
+			get { return package.DependencySets; }
 		}
 	}
 }

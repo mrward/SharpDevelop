@@ -53,6 +53,16 @@ namespace ICSharpCode.SharpDevelop.Gui
 			// so we have to load the configuration now
 			LoggingService.Info("dockingManager_Loaded");
 			LoadConfiguration();
+			EnsureFloatingWindowsLocations();
+		}
+		
+		void EnsureFloatingWindowsLocations()
+		{
+			foreach (var window in dockingManager.FloatingWindows) {
+				var newLocation = FormLocationHelper.Validate(new Rect(window.Left, window.Top, window.Width, window.Height).TransformToDevice(window).ToSystemDrawing()).ToWpf().TransformFromDevice(window);
+				window.Left = newLocation.Left;
+				window.Top = newLocation.Top;
+			}
 		}
 		
 		void dockingManager_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -117,6 +127,7 @@ namespace ICSharpCode.SharpDevelop.Gui
 				Busy = false;
 			}
 			LoadConfiguration();
+			EnsureFloatingWindowsLocations();
 		}
 		
 		public void Detach()
@@ -222,7 +233,7 @@ namespace ICSharpCode.SharpDevelop.Gui
 		{
 			AvalonPadContent p;
 			if (pads.TryGetValue(padDescriptor, out p))
-				return p.IsVisible;
+				return p.State != DockableContentState.Hidden;
 			else
 				return false;
 		}
@@ -309,8 +320,14 @@ namespace ICSharpCode.SharpDevelop.Gui
 					Directory.CreateDirectory(configPath);
 					string fileName = Path.Combine(configPath, current.FileName);
 					LoggingService.Info("Saving layout file: " + fileName);
+					// Save docking layout into memory stream first, then write the contents to file.
+					// This prevents corruption when there is an exception saving the layout.
+					var memoryStream = new MemoryStream();
+					dockingManager.SaveLayout(memoryStream);
+					memoryStream.Position = 0;
 					try {
-						dockingManager.SaveLayout(fileName);
+						using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite))
+							memoryStream.CopyTo(stream);
 					} catch (IOException ex) {
 						// ignore IO errors (maybe switching layout in two SharpDevelop instances at once?)
 						LoggingService.Warn(ex);

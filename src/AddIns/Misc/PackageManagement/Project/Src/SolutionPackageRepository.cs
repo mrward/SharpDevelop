@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using ICSharpCode.PackageManagement.Scripting;
+using System.Linq;
+
 using ICSharpCode.SharpDevelop.Project;
 using NuGet;
 
@@ -34,7 +35,7 @@ namespace ICSharpCode.PackageManagement
 			repositoryPath = new SolutionPackageRepositoryPath(solution, options);
 			CreatePackagePathResolver();
 			CreateFileSystem();
-			CreateRepository();
+			CreateRepository(ConfigSettingsFileSystem.CreateConfigSettingsFileSystem(solution));
 		}
 		
 		void CreatePackagePathResolver()
@@ -47,9 +48,21 @@ namespace ICSharpCode.PackageManagement
 			fileSystem = new PhysicalFileSystem(repositoryPath.PackageRepositoryPath);
 		}
 		
-		void CreateRepository()
+		void CreateRepository(ConfigSettingsFileSystem configSettingsFileSystem)
 		{
-			repository = repositoryFactory.CreateSharedRepository(packagePathResolver, fileSystem);			
+			repository = repositoryFactory.CreateSharedRepository(packagePathResolver, fileSystem, configSettingsFileSystem);			
+		}
+		
+		public ISharedPackageRepository Repository {
+			get { return repository; }
+		}
+		
+		public IFileSystem FileSystem {
+			get { return fileSystem; }
+		}
+		
+		public IPackagePathResolver PackagePathResolver {
+			get { return packagePathResolver; }
 		}
 		
 		public string GetInstallPath(IPackage package)
@@ -59,8 +72,23 @@ namespace ICSharpCode.PackageManagement
 		
 		public IEnumerable<IPackage> GetPackagesByDependencyOrder()
 		{
-			var packageSorter = new PackageSorter();
+			var packageSorter = new PackageSorter(null);
 			return packageSorter.GetPackagesByDependencyOrder(repository);
+		}
+		
+		public IEnumerable<IPackage> GetPackagesByReverseDependencyOrder()
+		{
+			return GetPackagesByDependencyOrder().Reverse();
+		}
+		
+		public bool IsInstalled(IPackage package)
+		{
+			return repository.Exists(package);
+		}
+		
+		public IQueryable<IPackage> GetPackages()
+		{
+			return repository.GetPackages();
 		}
 	}
 }

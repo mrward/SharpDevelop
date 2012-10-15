@@ -32,6 +32,10 @@ namespace ICSharpCode.PackageManagement
 			projectManager = packageManager.ProjectManager;
 		}
 		
+		public string Name {
+			get { return msbuildProject.Name; }
+		}
+		
 		public IPackageRepository SourceRepository { get; private set; }
 		
 		public ILogger Logger {
@@ -65,9 +69,14 @@ namespace ICSharpCode.PackageManagement
 			remove { projectManager.PackageReferenceRemoved -= value; }
 		}
 		
-		public bool IsInstalled(IPackage package)
+		public bool IsPackageInstalled(IPackage package)
 		{
 			return projectManager.IsInstalled(package);
+		}
+		
+		public bool IsPackageInstalled(string packageId)
+		{
+			return projectManager.IsInstalled(packageId);
 		}
 		
 		public IQueryable<IPackage> GetPackages()
@@ -75,24 +84,24 @@ namespace ICSharpCode.PackageManagement
 			return projectManager.LocalRepository.GetPackages();
 		}
 		
-		public IEnumerable<PackageOperation> GetInstallPackageOperations(IPackage package, bool ignoreDependencies)
+		public IEnumerable<PackageOperation> GetInstallPackageOperations(IPackage package, InstallPackageAction installAction)
 		{
-			return packageManager.GetInstallPackageOperations(package, ignoreDependencies);
+			return packageManager.GetInstallPackageOperations(package, installAction);
 		}
 		
-		public void InstallPackage(IPackage package, IEnumerable<PackageOperation> operations, bool ignoreDependencies)
+		public void InstallPackage(IPackage package, InstallPackageAction installAction)
 		{
-			packageManager.InstallPackage(package, operations, ignoreDependencies);
+			packageManager.InstallPackage(package, installAction);
 		}
 		
-		public void UninstallPackage(IPackage package, bool forceRemove, bool removeDependencies)
+		public void UninstallPackage(IPackage package, UninstallPackageAction uninstallAction)
 		{
-			packageManager.UninstallPackage(package, forceRemove, removeDependencies);
+			packageManager.UninstallPackage(package, uninstallAction);
 		}
 		
-		public void UpdatePackage(IPackage package, IEnumerable<PackageOperation> operations, bool updateDependencies)
+		public void UpdatePackage(IPackage package, UpdatePackageAction updateAction)
 		{
-			packageManager.UpdatePackage(package, operations, updateDependencies);
+			packageManager.UpdatePackage(package, updateAction);
 		}
 		
 		public InstallPackageAction CreateInstallPackageAction()
@@ -113,6 +122,14 @@ namespace ICSharpCode.PackageManagement
 		public Project ConvertToDTEProject()
 		{
 			return new Project(msbuildProject);
+		}
+		
+		public IEnumerable<IPackage> GetPackagesInReverseDependencyOrder()
+		{
+			var packageSorter = new PackageSorter(null);
+			return packageSorter
+				.GetPackagesByDependencyOrder(projectManager.LocalRepository)
+				.Reverse();
 		}
 	}
 }

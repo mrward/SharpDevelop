@@ -1,14 +1,14 @@
 ﻿<Template
 	originator="Matt Ward"
 	created="04/06/2011"
-	lastModified="04/06/2011">
+	lastModified="17/06/2011">
 
 	<!-- Template Header -->
 	<TemplateConfiguration>
-		<Name>ASP.NET MVC Application</Name>
+		<Name>MVC Application</Name>
 		<Category>VB</Category>
-		<Subcategory>ASP.NET</Subcategory>
-		<Icon>VBNet.Project.Form</Icon>
+		<Subcategory>ASP.NET MVC</Subcategory>
+		<Icon>VBNet.Project.WebProject</Icon>
 		<Description>ASP.NET MVC Application</Description>
 		<SupportedTargetFrameworks>v4.0</SupportedTargetFrameworks>
 	</TemplateConfiguration>
@@ -17,13 +17,19 @@
 	<Actions>
 		<Open filename="Views\Home\Index.aspx"/>
 		<Open filename="Controllers\HomeController.vb"/>
+		<RunCommand path="/AddIns/PackageManagement/TemplateCommands/InstallPackages"/>
 	</Actions>
 
 	<Project language="VBNet">
 		<ProjectItems>
+			<Reference Include="Microsoft.VisualBasic" />
 			<Reference Include="System" />
+			<Reference Include="System.ComponentModel.DataAnnotations" />
 			<Reference Include="System.Web" />
-			<Reference Include="System.Web.Mvc" />
+			<Reference Include="System.Web.Abstractions" />
+			<Reference Include="System.Web.Extensions" />
+			<Reference Include="System.Web.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+			<Reference Include="System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
 			<Reference Include="System.Xml" />
 		</ProjectItems>
 		
@@ -41,11 +47,8 @@
 			<OutputPath>bin\</OutputPath>
 		</PropertyGroup>
 		
-		<Imports clear="False">
-				<Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
-		</Imports>
-
 		<Files>
+			<File name="Properties\AssemblyInfo.vb" src="DefaultAssemblyInfo.vb" />
 			<File name="Content\Site.css">
 <![CDATA[
 body
@@ -225,7 +228,18 @@ Public Class MvcApplication
 End Class
 ]]>
 			</File>
-			<File name="Properties\AssemblyInfo.vb" src="DefaultAssemblyInfo.vb" />
+			<File name="Views\web.config">
+<![CDATA[<configuration>
+	<system.web>
+		<pages
+			pageBaseType="System.Web.Mvc.ViewPage"
+			pageParserFilterType="System.Web.Mvc.ViewTypeParserFilter"
+			userControlBaseType="System.Web.Mvc.ViewUserControl">
+		</pages>
+	</system.web>
+</configuration>
+]]>
+			</File>
 			<File name="Views\Home\Contact.aspx">
 <![CDATA[<%@ Page Language="VB" MasterPageFile="~/Views/Shared/Site.Master" Inherits="System.Web.Mvc.ViewPage" %>
 
@@ -270,8 +284,8 @@ End Class
 	<head runat="server">
 		<title><asp:ContentPlaceHolder id="Title" runat="server"/></title>
 		<link href="<%: Url.Content("~/Content/Site.css") %>" rel="stylesheet" type="text/css">
-		<script src="<%: Url.Content("~/Scripts/modernizer-1.7.min.js") %>" type="text/javascript"></script>
-		<script src="<%: Url.Content("~/Scripts/jquery-1.6.1.min.js") %>" type="text/javascript"></script>
+		<script src="<%: Url.Content("~/Scripts/modernizr-2.5.3.js") %>" type="text/javascript"></script>
+		<script src="<%: Url.Content("~/Scripts/jquery-1.7.2.min.js") %>" type="text/javascript"></script>
 	</head>
 	<body>
 		<div id="page">
@@ -294,6 +308,14 @@ End Class
 </html>
 ]]>
 			</File>
+			<File name="packages.config">
+<![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<packages>
+  <package id="jQuery" version="1.7.2" />
+  <package id="Modernizr" version="2.5.3" />
+</packages>
+]]>
+			</File>
 			<File name="web.config">
 <![CDATA[<configuration>
 	<system.web>
@@ -310,6 +332,10 @@ End Class
 			</namespaces>
 		</pages>
 	</system.web>
+	
+	<system.webServer>
+		<modules runAllManagedModulesForAllRequests="true"/>
+	</system.webServer>
 </configuration>
 ]]>
 			</File>

@@ -123,19 +123,24 @@ namespace ICSharpCode.SharpDevelop
 			if (view == null)
 				throw new ArgumentNullException("view");
 			
-			if (currentView != view) {
-				if (currentView == null) {
-					SwitchedToView(view);
-				} else {
-					try {
-						inLoadOperation = true;
-						using (Stream sourceStream = OpenRead()) {
-							view.Load(this, sourceStream);
+			try {
+				if (currentView != view) {
+					if (currentView == null) {
+						SwitchedToView(view);
+					} else {
+						try {
+							inLoadOperation = true;
+							using (Stream sourceStream = OpenRead()) {
+								view.Load(this, sourceStream);
+							}
+						} finally {
+							inLoadOperation = false;
 						}
-					} finally {
-						inLoadOperation = false;
 					}
 				}
+			} catch (Exception) {
+				view.Dispose();
+				throw;
 			}
 		}
 		
@@ -276,8 +281,6 @@ namespace ICSharpCode.SharpDevelop
 					currentView = newView;
 					return;
 				}
-			}
-			if (currentView != null) {
 				SaveCurrentView();
 			}
 			try {
@@ -285,16 +288,21 @@ namespace ICSharpCode.SharpDevelop
 				Properties memento = GetMemento(newView);
 				using (Stream sourceStream = OpenRead()) {
 					IViewContent oldView = currentView;
+					bool success = false;
 					try {
 						currentView = newView;
 						// don't reset fileData if the file is untitled, because OpenRead() wouldn't be able to read it otherwise
 						if (this.IsUntitled == false)
 							fileData = null;
 						newView.Load(this, sourceStream);
-					} catch {
-						// stay with old view in case of exceptions
-						currentView = oldView;
-						throw;
+						success = true;
+					} finally {
+						// Use finally instead of catch+rethrow so that the debugger
+						// breaks at the original crash location.
+						if (!success) {
+							// stay with old view in case of exceptions
+							currentView = oldView;
+						}
 					}
 				}
 				RestoreMemento(newView, memento);

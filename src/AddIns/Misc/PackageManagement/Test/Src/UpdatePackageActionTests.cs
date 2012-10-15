@@ -45,8 +45,8 @@ namespace PackageManagement.Tests
 			CreateSolution();
 			updatePackageHelper.UpdateTestPackage();
 			
-			var expectedPackage = updatePackageHelper.TestPackage;
-			var actualPackage = fakeProject.PackagePassedToUpdatePackage;
+			FakePackage expectedPackage = updatePackageHelper.TestPackage;
+			IPackage actualPackage = fakeProject.PackagePassedToUpdatePackage;
 			
 			Assert.AreEqual(expectedPackage, actualPackage);
 		}
@@ -59,13 +59,20 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
+		public void AllowPrereleaseVersions_DefaultValue_ReturnsFalse()
+		{
+			CreateSolution();
+			Assert.IsFalse(action.AllowPrereleaseVersions);
+		}
+		
+		[Test]
 		public void Execute_PackageAndRepositoryPassed_PackageOperationsUsedToUpdatePackage()
 		{
 			CreateSolution();
 			updatePackageHelper.UpdateTestPackage();
 			
-			var expectedOperations = updatePackageHelper.PackageOperations;
-			var actualOperations = fakeProject.PackageOperationsPassedToUpdatePackage;
+			IEnumerable<PackageOperation> expectedOperations = updatePackageHelper.PackageOperations;
+			IEnumerable<PackageOperation> actualOperations = fakeProject.PackageOperationsPassedToUpdatePackage;
 			
 			Assert.AreEqual(expectedOperations, actualOperations);
 		}
@@ -78,6 +85,30 @@ namespace PackageManagement.Tests
 			updatePackageHelper.UpdateTestPackage();
 			
 			bool result = fakeProject.UpdateDependenciesPassedToUpdatePackage;
+			
+			Assert.IsTrue(result);
+		}
+		
+		[Test]
+		public void Execute_PackageAndRepositoryPassed_PrereleaseVersionsNotAllowed()
+		{
+			CreateSolution();
+			updatePackageHelper.AllowPrereleaseVersions = false;
+			updatePackageHelper.UpdateTestPackage();
+			
+			bool result = fakeProject.AllowPrereleaseVersionsPassedToUpdatePackage;
+			
+			Assert.IsFalse(result);
+		}
+		
+		[Test]
+		public void Execute_PackageAndRepositoryPassedAndAllowPrereleaseVersions_PrereleaseVersionsAllowed()
+		{
+			CreateSolution();
+			updatePackageHelper.AllowPrereleaseVersions = true;
+			updatePackageHelper.UpdateTestPackage();
+			
+			bool result = fakeProject.AllowPrereleaseVersionsPassedToUpdatePackage;
 			
 			Assert.IsTrue(result);
 		}
@@ -100,8 +131,8 @@ namespace PackageManagement.Tests
 			CreateSolution();
 			updatePackageHelper.UpdateTestPackage();
 			
-			var expectedPackage = updatePackageHelper.TestPackage;
-			var actualPackage = fakePackageManagementEvents.PackagePassedToOnParentPackageInstalled;
+			FakePackage expectedPackage = updatePackageHelper.TestPackage;
+			IPackage actualPackage = fakePackageManagementEvents.PackagePassedToOnParentPackageInstalled;
 			Assert.AreEqual(expectedPackage, actualPackage);
 		}
 		
@@ -112,8 +143,8 @@ namespace PackageManagement.Tests
 			updatePackageHelper.PackageOperations = null;
 			updatePackageHelper.UpdateTestPackage();
 			
-			var actualOperations = action.Operations;
-			var expectedOperations = fakeProject.FakeInstallOperations;
+			IEnumerable<PackageOperation> actualOperations = action.Operations;
+			List<FakePackageOperation> expectedOperations = fakeProject.FakeInstallOperations;
 			
 			Assert.AreEqual(expectedOperations, actualOperations);
 		}
@@ -184,12 +215,38 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
+		public void Execute_AllowPrereleaseVersionsIsFalseAndNoPackageOperations_PrereleaseVersionsNotAllowedWhenGettingPackageOperations()
+		{
+			CreateSolution();
+			
+			updatePackageHelper.AllowPrereleaseVersions = false;
+			updatePackageHelper.UpdatePackageById("PackageId");
+			
+			bool result = fakeProject.AllowPrereleaseVersionsPassedToGetInstallPackageOperations;
+			
+			Assert.IsFalse(result);
+		}
+		
+		[Test]
+		public void Execute_AllowPrereleaseVersionsIsTrueAndNoPackageOperations_PrereleaseVersionsAllowedWhenGettingPackageOperations()
+		{
+			CreateSolution();
+			
+			updatePackageHelper.AllowPrereleaseVersions = true;
+			updatePackageHelper.UpdatePackageById("PackageId");
+			
+			bool result = fakeProject.AllowPrereleaseVersionsPassedToGetInstallPackageOperations;
+			
+			Assert.IsTrue(result);
+		}
+		
+		[Test]
 		public void Execute_PackageAndPackageOperationsSet_OperationsNotRetrievedFromPackageManager()
 		{
 			CreateSolution();
 			updatePackageHelper.UpdateTestPackage();
 			
-			var actualPackage = fakeProject.PackagePassedToGetInstallPackageOperations;
+			IPackage actualPackage = fakeProject.PackagePassedToGetInstallPackageOperations;
 			
 			Assert.IsNull(actualPackage);
 		}
@@ -198,6 +255,7 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasInitPowerShellScript_ReturnsTrue()
 		{
 			CreateSolution();
+			action.PackageId = "Test";
 			AddInstallOperationWithFile(@"tools\init.ps1");
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
@@ -209,11 +267,76 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasNoFiles_ReturnsFalse()
 		{
 			CreateSolution();
+			action.PackageId = "Test";
 			action.Operations = new List<PackageOperation>();
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
 			
 			Assert.IsFalse(hasPackageScripts);
-		}		
+		}
+		
+		[Test]
+		public void UpdateIfPackageDoesNotExistInProject_NewUpdateActionInstanceCreate_ReturnsTrue()
+		{
+			CreateSolution();
+			bool update = action.UpdateIfPackageDoesNotExistInProject;
+			
+			Assert.IsTrue(update);
+		}
+		
+		[Test]
+		public void Execute_UpdateIfPackageDoesNotExistInProjectSetToFalseAndPackageDoesNotExistInProject_PackageIsNotUpdated()
+		{
+			CreateSolution();
+			action.Package = new FakePackage("Test");
+			action.UpdateIfPackageDoesNotExistInProject = false;
+			action.Execute();
+			
+			bool updated = fakeProject.IsUpdatePackageCalled;
+			
+			Assert.IsFalse(updated);
+		}
+
+		[Test]
+		public void Execute_UpdateIfPackageDoesNotExistInProjectSetToFalseAndPackageDoesNotExistInProject_PackageInstalledEventIsNotFired()
+		{
+			CreateSolution();
+			action.UpdateIfPackageDoesNotExistInProject = false;
+			updatePackageHelper.UpdateTestPackage();
+			
+			bool updated = fakePackageManagementEvents.IsOnParentPackageInstalledCalled;
+			
+			Assert.IsFalse(updated);
+		}
+		
+		[Test]
+		public void Execute_UpdateIfPackageDoesNotExistInProjectSetToFalseAndPackageExistsInProject_PackageIsUpdated()
+		{
+			CreateSolution();
+			action.UpdateIfPackageDoesNotExistInProject = false;
+			action.PackageId = "Test";
+			FakePackage expectedPackage = fakeProject.FakeSourceRepository.AddFakePackageWithVersion("Test", "1.1");
+			fakeProject.FakePackages.Add(new FakePackage("Test", "1.0"));
+			action.Execute();
+			
+			IPackage actualPackage = fakeProject.PackagePassedToUpdatePackage;
+			
+			Assert.AreEqual(expectedPackage, actualPackage);
+		}
+		
+		[Test]
+		public void Execute_PackagePassedAndUpdateIfPackageDoesNotExistInProjectSetToFalseAndPackageExistsInProject_PackageIsUpdated()
+		{
+			CreateSolution();
+			action.UpdateIfPackageDoesNotExistInProject = false;
+			var expectedPackage = new FakePackage("Test");
+			action.Package = expectedPackage;
+			fakeProject.FakePackages.Add(new FakePackage("Test", "1.0"));
+			action.Execute();
+			
+			IPackage actualPackage = fakeProject.PackagePassedToUpdatePackage;
+			
+			Assert.AreEqual(expectedPackage, actualPackage);
+		}
 	}
 }

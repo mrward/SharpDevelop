@@ -264,7 +264,7 @@ namespace ICSharpCode.XamlBinding
 				
 				string key = string.IsNullOrEmpty(lastElement.Prefix) ? "" : lastElement.Prefix + ":";
 				
-				if (context.ParentElement.LocalName.StartsWith(lastElement.LocalName.TrimEnd('.'), StringComparison.OrdinalIgnoreCase)) {
+				if (context.ParentElement != null && context.ParentElement.LocalName.StartsWith(lastElement.LocalName.TrimEnd('.'), StringComparison.OrdinalIgnoreCase)) {
 					AddAttributes(rt, list, includeEvents);
 					AddAttachedProperties(rt.GetUnderlyingClass(), list, key, lastElement.Name.Trim('.'));
 				} else
@@ -311,7 +311,7 @@ namespace ICSharpCode.XamlBinding
 		{
 			List<XmlnsCompletionItem> list = new List<XmlnsCompletionItem>();
 			
-			foreach (IProjectContent content in projectContent.ReferencedContents) {
+			foreach (IProjectContent content in projectContent.ThreadSafeGetReferencedContents()) {
 				foreach (IAttribute att in content.GetAssemblyAttributes()) {
 					if (att.PositionalArguments.Count == 2
 					    && att.AttributeType.FullyQualifiedName == "System.Windows.Markup.XmlnsDefinitionAttribute") {
@@ -1021,7 +1021,7 @@ namespace ICSharpCode.XamlBinding
 		
 		static IEnumerable<ICompletionItem> CreateEventCompletion(XamlCompletionContext context, IClass c)
 		{
-			IMethod invoker = c.Methods.Where(method => method.Name == "Invoke").FirstOrDefault();
+			IMethod invoker = c.Methods.FirstOrDefault(method => method.Name == "Invoke");
 			if (invoker != null && context.ActiveElement != null) {
 				var item = context.ActiveElement;
 				var evt = ResolveAttribute(context.Attribute.ToQualifiedName(), context) as IEvent;
@@ -1324,14 +1324,7 @@ namespace ICSharpCode.XamlBinding
 			
 			string eventName = field.Name.Remove(field.Name.Length - "Event".Length);
 			
-			IMethod method = c.Methods
-				.Where(m =>
-				       m.IsPublic &&
-				       m.IsStatic &&
-				       m.Parameters.Count == 2 &&
-				       (m.Name == "Add" + eventName + "Handler" ||
-				        m.Name == "Remove" + eventName + "Handler"))
-				.FirstOrDefault();
+			IMethod method = c.Methods.FirstOrDefault(m => m.IsPublic && m.IsStatic && m.Parameters.Count == 2 && (m.Name == "Add" + eventName + "Handler" || m.Name == "Remove" + eventName + "Handler"));
 			
 			if (method == null)
 				return null;
@@ -1346,12 +1339,7 @@ namespace ICSharpCode.XamlBinding
 			
 			string propertyName = field.Name.Remove(field.Name.Length - "Property".Length);
 			
-			IMethod method = c.Methods
-				.Where(m =>
-				       m.IsPublic &&
-				       m.IsStatic &&
-				       m.Name == "Get" + propertyName)
-				.FirstOrDefault();
+			IMethod method = c.Methods.FirstOrDefault(m => m.IsPublic && m.IsStatic && m.Name == "Get" + propertyName);
 			
 			if (method == null)
 				return null;

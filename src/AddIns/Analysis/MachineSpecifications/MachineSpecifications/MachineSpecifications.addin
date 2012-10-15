@@ -1,0 +1,20 @@
+﻿<AddIn name        = "Machine.Specifications Addin"
+       author      = "Tomasz Tretkowski"
+       url         = ""
+       description = "Runner for Machine.Specifications unit tests for SharpDevelop"
+       addInManagerHidden = "preinstalled">
+	
+	<Manifest>
+		<Identity name="ICSharpCode.MachineSpecifications" />
+	</Manifest>
+	
+	<Runtime>
+		<Import assembly = "MachineSpecifications.dll"/>
+	</Runtime>
+
+	<Path name="/SharpDevelop/UnitTesting/TestFrameworks">
+		<TestFramework id="mspec"
+		               class="ICSharpCode.MachineSpecifications.MSpecTestFramework"
+		               supportedProjects=".csproj" />
+	</Path>	
+</AddIn>

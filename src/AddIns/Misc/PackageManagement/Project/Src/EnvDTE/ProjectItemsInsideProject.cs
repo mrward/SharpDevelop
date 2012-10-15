@@ -2,16 +2,16 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 using SD = ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.PackageManagement.EnvDTE
 {
-	public class ProjectItemsInsideProject : IEnumerable<ProjectItem>
+	public class ProjectItemsInsideProject : EnumerableProjectItems
 	{
 		Project project;
 		Dictionary<string, string> directoriesIncluded = new Dictionary<string, string>();
@@ -21,7 +21,7 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 			this.project = project;
 		}
 		
-		public IEnumerator<ProjectItem> GetEnumerator()
+		protected override IEnumerable<ProjectItem> GetProjectItems()
 		{
 			foreach (SD.ProjectItem item in project.MSBuildProject.Items) {
 				ProjectItem projectItem = ConvertToProjectItem(item);
@@ -34,7 +34,7 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		ProjectItem ConvertToProjectItem(SD.ProjectItem item)
 		{
 			var fileItem = item as FileProjectItem;
-			if (fileItem != null) {
+			if ((fileItem != null) && !fileItem.IsDependentUponAnotherFile())  {
 				return ConvertFileToProjectItem(fileItem);
 			}
 			return null;
@@ -117,18 +117,13 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		{
 			var directoryItem = new FileProjectItem(project.MSBuildProject, ItemType.Folder);
 			directoryItem.Include = directoryName;
-			return new ProjectItem(project, directoryItem);
+			return new ProjectItem(project, directoryItem) { Kind = Constants.vsProjectItemKindPhysicalFolder };
 		}
 		
 		string GetFirstSubDirectoryName(string include)
 		{
 			string[] directoryNames = include.Split('\\');
 			return directoryNames[0];
-		}
-		
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
 		}
 	}
 }

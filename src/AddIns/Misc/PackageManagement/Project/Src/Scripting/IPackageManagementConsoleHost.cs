@@ -24,9 +24,13 @@ namespace ICSharpCode.PackageManagement.Scripting
 		void ShutdownConsole();
 		void ExecuteCommand(string command);
 		
+		void SetDefaultRunspace();
+		
 		IPackageManagementProject GetProject(string packageSource, string projectName);
 		IPackageManagementProject GetProject(IPackageRepository sourceRepository, string projectName);
 		PackageSource GetActivePackageSource(string source);
+		
+		IPackageRepository GetPackageRepository(PackageSource packageSource);
 		
 		IPackageManagementSolution OpenSolution(string path);
 	}

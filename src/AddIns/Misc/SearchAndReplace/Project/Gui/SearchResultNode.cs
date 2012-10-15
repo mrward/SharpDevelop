@@ -19,53 +19,16 @@ namespace SearchAndReplace
 	/// <summary>
 	/// Represents a search result.
 	/// </summary>
-	sealed class SearchResultNode : SearchNode
+	public sealed class SearchResultNode : SearchNode
 	{
-		static readonly FontFamily resultLineFamily = new FontFamily("Consolas, Courier New");
-		
 		SearchResultMatch result;
 		PermanentAnchor anchor;
-		HighlightedInlineBuilder inlineBuilder;
 		
 		public SearchResultNode(SearchResultMatch result)
 		{
 			this.result = result;
-			
-			IDocument document = result.CreateDocument();
-			var startPosition = result.GetStartPosition(document);
-			int lineNumber = startPosition.Line;
-			int column = startPosition.Column;
-			this.anchor = new PermanentAnchor(result.FileName, lineNumber, column);
+			this.anchor = new PermanentAnchor(result.FileName, result.StartLocation.Line, result.StartLocation.Column);
 			anchor.SurviveDeletion = true;
-			
-			if (lineNumber >= 1 && lineNumber <= document.TotalNumberOfLines) {
-				IDocumentLine matchedLine = document.GetLine(lineNumber);
-				inlineBuilder = new HighlightedInlineBuilder(matchedLine.Text);
-				inlineBuilder.SetFontFamily(0, inlineBuilder.Text.Length, resultLineFamily);
-				
-				IHighlighter highlighter = document.GetService(typeof(IHighlighter)) as IHighlighter;
-				if (highlighter != null) {
-					HighlightedLine highlightedLine = highlighter.HighlightLine(lineNumber);
-					int startOffset = highlightedLine.DocumentLine.Offset;
-					// copy only the foreground color
-					foreach (HighlightedSection section in highlightedLine.Sections) {
-						if (section.Color.Foreground != null) {
-							inlineBuilder.SetForeground(section.Offset - startOffset, section.Length, section.Color.Foreground.GetBrush(null));
-						}
-					}
-				}
-				
-				// now highlight the match in bold
-				if (column >= 1) {
-					var endPosition = result.GetEndPosition(document);
-					if (endPosition.Line == startPosition.Line && endPosition.Column > startPosition.Column) {
-						// subtract one from the column to get the offset inside the line's text
-						int startOffset = column - 1;
-						int endOffset = Math.Min(inlineBuilder.Text.Length, endPosition.Column - 1);
-						inlineBuilder.SetFontWeight(startOffset, endOffset - startOffset, FontWeights.Bold);
-					}
-				}
-			}
 		}
 		
 		bool showFileName = true;
@@ -93,13 +56,27 @@ namespace SearchAndReplace
 			LoggingService.Debug("Creating text for search result (" + location.Line + ", " + location.Column + ") ");
 			
 			TextBlock textBlock = new TextBlock();
+			if (result.DefaultTextColor != null && !IsSelected) {
+				if (result.DefaultTextColor.Background != null)
+					textBlock.Background = result.DefaultTextColor.Background.GetBrush(null);
+				if (result.DefaultTextColor.Foreground != null)
+					textBlock.Foreground = result.DefaultTextColor.Foreground.GetBrush(null);
+			}
+			textBlock.FontFamily = new FontFamily(EditorControlService.GlobalOptions.FontFamily);
+
 			textBlock.Inlines.Add("(" + location.Line + ", " + location.Column + ")\t");
 			
 			string displayText = result.DisplayText;
 			if (displayText != null) {
 				textBlock.Inlines.Add(displayText);
-			} else if (inlineBuilder != null) {
-				textBlock.Inlines.AddRange(inlineBuilder.CreateRuns());
+			} else if (result.Builder != null) {
+				HighlightedInlineBuilder builder = result.Builder;
+				if (IsSelected) {
+					builder = builder.Clone();
+					builder.SetForeground(0, builder.Text.Length, null);
+					builder.SetBackground(0, builder.Text.Length, null);
+				}
+				textBlock.Inlines.AddRange(builder.CreateRuns());
 			}
 			
 			if (showFileName) {
@@ -111,6 +88,14 @@ namespace SearchAndReplace
 					});
 			}
 			return textBlock;
+		}
+		
+		protected override void OnPropertyChanged(string propertyName)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == "IsSelected") {
+				InvalidateText();
+			}
 		}
 		
 		public override void ActivateItem()

@@ -11,19 +11,19 @@ namespace PackageManagement.Tests.Helpers
 {
 	public class FakePackageRepositoryFactory : IPackageRepositoryCache
 	{
-		public List<PackageSource> PackageSourcesPassedToCreateRepository
-			= new List<PackageSource>();
+		public List<string> PackageSourcesPassedToCreateRepository
+			= new List<string>();
 		
-		public PackageSource FirstPackageSourcePassedToCreateRepository {
+		public string FirstPackageSourcePassedToCreateRepository {
 			get { return PackageSourcesPassedToCreateRepository[0]; }
 		}
 		
 		public FakePackageRepository FakePackageRepository = new FakePackageRepository();
 		
-		public Dictionary<PackageSource, FakePackageRepository> FakePackageRepositories =
-			new Dictionary<PackageSource, FakePackageRepository>();
+		public Dictionary<string, FakePackageRepository> FakePackageRepositories =
+			new Dictionary<string, FakePackageRepository>();
 	
-		public IPackageRepository CreateRepository(PackageSource packageSource)
+		public IPackageRepository CreateRepository(string packageSource)
 		{
 			PackageSourcesPassedToCreateRepository.Add(packageSource);
 			
@@ -37,12 +37,14 @@ namespace PackageManagement.Tests.Helpers
 		
 		public IPackagePathResolver PathResolverPassedToCreateSharedRepository;
 		public IFileSystem FileSystemPassedToCreateSharedRepository;
+		public IFileSystem ConfigSettingsFileSystemPassedToCreateSharedRepository;
 		public FakeSharedPackageRepository FakeSharedRepository = new FakeSharedPackageRepository();
 		
-		public ISharedPackageRepository CreateSharedRepository(IPackagePathResolver pathResolver, IFileSystem fileSystem)
+		public ISharedPackageRepository CreateSharedRepository(IPackagePathResolver pathResolver, IFileSystem fileSystem, IFileSystem configSettingsFileSystem)
 		{
 			PathResolverPassedToCreateSharedRepository = pathResolver;
 			FileSystemPassedToCreateSharedRepository = fileSystem;
+			ConfigSettingsFileSystemPassedToCreateSharedRepository = configSettingsFileSystem;
 			return FakeSharedRepository;
 		}
 		
@@ -76,9 +78,8 @@ namespace PackageManagement.Tests.Helpers
 		
 		public FakePackageRepository AddFakePackageRepositoryForPackageSource(string source)
 		{
-			var packageSource = new PackageSource(source);
 			var repository = new FakePackageRepository();			
-			FakePackageRepositories.Add(packageSource, repository);
+			FakePackageRepositories.Add(source, repository);
 			return repository;
 		}
 		

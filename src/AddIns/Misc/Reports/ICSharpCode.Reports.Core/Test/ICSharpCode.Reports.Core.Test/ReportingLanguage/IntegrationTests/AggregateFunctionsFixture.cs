@@ -15,7 +15,7 @@ namespace ICSharpCode.Reports.Core.Test.ReportingLanguage.IntegrationTests
 {
 	[TestFixture]
 
-//	[SetCulture("de-DE")]
+	[SetCulture("en-US")]
 	public class AggregateFunctionsFromTableFixture
 	{
 		
@@ -71,19 +71,12 @@ namespace ICSharpCode.Reports.Core.Test.ReportingLanguage.IntegrationTests
         {
            
            const string expression = "=count(intvalue,current > 2)";
-           Assert.That(this.evaluator.Evaluate(expression),
-                       Is.EqualTo("2"));
+           Assert.That(this.evaluator.Evaluate(expression), Is.EqualTo("2"));           
         }
 		
-//		[Test]
-//		[ExpectedException(typeof(FieldNotFoundException))]
-//		public void Throw_On_Unknown_Field ()
-//		{
-//			const string expression = "=count(unknown)";
-//			Assert.That(this.evaluator.Evaluate(expression), Is.EqualTo(expression));
-//		}
 		
 		#endregion
+		
 		
 		#region sum()
 		
@@ -100,7 +93,6 @@ namespace ICSharpCode.Reports.Core.Test.ReportingLanguage.IntegrationTests
 		public void Can_Sum_Double ()
 		{
 			const string expression = "=sum(amount)";
-			//var s = this.evaluator.Evaluate(expression);
 			Assert.That(this.evaluator.Evaluate(expression),
 			            Is.EqualTo(this.doubleResult.ToString()));
 		}
@@ -115,7 +107,7 @@ namespace ICSharpCode.Reports.Core.Test.ReportingLanguage.IntegrationTests
 			const string expression = "=max(amount)";
 			//var s = this.evaluator.Evaluate(expression);
 			Assert.That(this.evaluator.Evaluate(expression),
-			            Is.EqualTo("400,5"));
+			            Is.EqualTo("400.5"));
 		}
 		
 		
@@ -138,16 +130,6 @@ namespace ICSharpCode.Reports.Core.Test.ReportingLanguage.IntegrationTests
 		
 		#endregion
 
-		
-		
-		#region test
-		private void settest ()
-		{
-			
-		}
-		
-		#endregion
-		
 		
 		[TestFixtureSetUp]
 		public void Init()

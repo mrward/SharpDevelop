@@ -82,7 +82,7 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
-		public void Execute_PackageIsSetAndIgnoreDependencies_IsTrueInstallsPackageIgnoringDependencies()
+		public void Execute_PackageIsSetAndIgnoreDependenciesIsTrue_InstallsPackageIgnoringDependencies()
 		{
 			CreateAction();
 			installPackageHelper.IgnoreDependencies = true;
@@ -94,10 +94,41 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
+		public void Execute_PackageIsSetAndAllowPrereleaseVersionsIsTrue_InstallsPackageAllowingPrereleaseVersions()
+		{
+			CreateAction();
+			installPackageHelper.AllowPrereleaseVersions = true;
+			installPackageHelper.InstallTestPackage();
+			
+			bool allowed = fakeProject.AllowPrereleaseVersionsPassedToInstallPackage;
+			
+			Assert.IsTrue(allowed);
+		}
+		
+		[Test]
+		public void Execute_PackageIsSetAndAllowPrereleaseVersionsIsFalse_InstallsPackageWithoutAllowingPrereleaseVersions()
+		{
+			CreateAction();
+			installPackageHelper.AllowPrereleaseVersions = false;
+			installPackageHelper.InstallTestPackage();
+			
+			bool allowed = fakeProject.AllowPrereleaseVersionsPassedToInstallPackage;
+			
+			Assert.IsFalse(allowed);
+		}
+		
+		[Test]
 		public void IgnoreDependencies_DefaultValue_IsFalse()
 		{
 			CreateAction();
 			Assert.IsFalse(action.IgnoreDependencies);
+		}
+		
+		[Test]
+		public void AllowPrereleaseVersion_DefaultValue_IsFalse()
+		{
+			CreateAction();
+			Assert.IsFalse(action.AllowPrereleaseVersions);
 		}
 		
 		[Test]
@@ -152,6 +183,18 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
+		public void Execute_PackageIdAndSourceAndProjectPassedAndAllowPrereleaseVersionsIsTrue_PrereleaseVersionsAllowedWhenGettingPackageOperations()
+		{
+			CreateAction();
+			installPackageHelper.AllowPrereleaseVersions = true;
+			installPackageHelper.InstallPackageById("PackageId");
+			
+			bool result = fakeProject.AllowPrereleaseVersionsPassedToGetInstallPackageOperations;
+			
+			Assert.IsTrue(result);
+		}
+		
+		[Test]
 		public void InstallPackage_PackageIdAndSourceAndProjectPassedAndIgnoreDependenciesIsFalse_DependenciesNotIgnoredWhenGettingPackageOperations()
 		{
 			CreateAction();
@@ -162,6 +205,18 @@ namespace PackageManagement.Tests
 			
 			Assert.IsFalse(result);
 		}
+		
+		[Test]
+		public void Execute_PackageIdAndSourceAndProjectPassedAndAllowPrereleaseVersionsIsFalse_PrereleaseVersionsNotAllowedWhenGettingPackageOperations()
+		{
+			CreateAction();
+			installPackageHelper.AllowPrereleaseVersions = false;
+			installPackageHelper.InstallPackageById("PackageId");
+			
+			bool result = fakeProject.AllowPrereleaseVersionsPassedToGetInstallPackageOperations;
+			
+			Assert.IsFalse(result);
+		}
 
 		[Test]
 		public void Execute_VersionSpecified_VersionUsedWhenSearchingForPackage()
@@ -169,13 +224,13 @@ namespace PackageManagement.Tests
 			CreateAction();
 			
 			var recentPackage = AddOnePackageToProjectSourceRepository("PackageId");
-			recentPackage.Version = new Version("1.2.0");
+			recentPackage.Version = new SemanticVersion("1.2.0");
 			
 			var oldPackage = AddOnePackageToProjectSourceRepository("PackageId");
-			oldPackage.Version = new Version("1.0.0");
+			oldPackage.Version = new SemanticVersion("1.0.0");
 			
 			var package = AddOnePackageToProjectSourceRepository("PackageId");
-			var version = new Version("1.1.0");
+			var version = new SemanticVersion("1.1.0");
 			package.Version = version;
 			
 			installPackageHelper.Version = version;
@@ -190,6 +245,7 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasInitPowerShellScript_ReturnsTrue()
 		{
 			CreateAction();
+			action.PackageId = "Test";
 			AddInstallOperationWithFile(@"tools\init.ps1");
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
@@ -201,6 +257,7 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasNoFiles_ReturnsFalse()
 		{
 			CreateAction();
+			action.PackageId = "Test";
 			action.Operations = new List<PackageOperation>();
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
@@ -212,6 +269,7 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasInitPowerShellScriptInUpperCase_ReturnsTrue()
 		{
 			CreateAction();
+			action.PackageId = "Test";
 			AddInstallOperationWithFile(@"tools\INIT.PS1");
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
@@ -223,6 +281,7 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasInstallPowerShellScriptInUpperCase_ReturnsTrue()
 		{
 			CreateAction();
+			action.PackageId = "Test";
 			AddInstallOperationWithFile(@"tools\INSTALL.PS1");
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
@@ -234,11 +293,43 @@ namespace PackageManagement.Tests
 		public void HasPackageScriptsToRun_OnePackageInOperationsHasUninstallPowerShellScriptInUpperCase_ReturnsTrue()
 		{
 			CreateAction();
+			action.PackageId = "Test";
 			AddInstallOperationWithFile(@"tools\UNINSTALL.PS1");
 			
 			bool hasPackageScripts = action.HasPackageScriptsToRun();
 			
 			Assert.IsTrue(hasPackageScripts);
+		}
+		
+		[Test]
+		public void HasPackageScriptsToRun_ProjectHasOnePackageOperation_DoesNotThrowNullReferenceException()
+		{
+			CreateAction();
+			FakePackage package = fakeProject.FakeSourceRepository.AddFakePackageWithVersion("Test", "1.0");
+			var operation = new FakePackageOperation(package, PackageAction.Install);
+			action.PackageId = package.Id;
+			action.PackageVersion = package.Version;
+			fakeProject.FakeInstallOperations.Add(operation);
+			
+			bool hasPackageScripts = false;
+			Assert.DoesNotThrow(() => hasPackageScripts = action.HasPackageScriptsToRun());
+		}
+		
+		[Test]
+		public void HasPackageScriptsToRun_ProjectHasOnePackageOperation_PackageLocated()
+		{
+			CreateAction();
+			FakePackage expectedPackage = fakeProject.FakeSourceRepository.AddFakePackageWithVersion("Test", "1.0");
+			var operation = new FakePackageOperation(expectedPackage, PackageAction.Install);
+			action.PackageId = expectedPackage.Id;
+			action.PackageVersion = expectedPackage.Version;
+			fakeProject.FakeInstallOperations.Add(operation);
+			
+			bool hasPackageScripts = action.HasPackageScriptsToRun();
+			
+			IPackage actualPackage = action.Package;
+			
+			Assert.AreEqual(expectedPackage, actualPackage);
 		}
 	}
 }

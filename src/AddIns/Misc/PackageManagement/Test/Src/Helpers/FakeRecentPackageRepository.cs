@@ -34,5 +34,8 @@ namespace PackageManagement.Tests.Helpers
 		{
 			IsClearCalled = true;
 		}
+		
+		public bool HasRecentPackages { get; set; }
+		public bool SupportsPrereleasePackages { get; set; }
 	}
 }

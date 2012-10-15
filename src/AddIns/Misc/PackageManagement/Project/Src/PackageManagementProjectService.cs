@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
+using ICSharpCode.SharpDevelop;
+using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.SharpDevelop.Project.Commands;
@@ -76,6 +79,21 @@ namespace ICSharpCode.PackageManagement
 			ProjectService.LoadSolution(fileName);
 		}
 		
+		public void Save(Solution solution)
+		{
+			if (WorkbenchSingleton.InvokeRequired) {
+				Action<Solution> action = Save;
+				WorkbenchSingleton.SafeThreadCall<Solution>(action, solution);
+			} else {
+				solution.Save();
+			}
+		}
+		
+		public IProjectContent GetProjectContent(IProject project)
+		{
+			return ParserService.GetProjectContent(project);
+		}
+		
 		public event ProjectEventHandler ProjectAdded {
 			add { ProjectService.ProjectAdded += value; }
 			remove { ProjectService.ProjectAdded -= value; }
@@ -94,6 +112,16 @@ namespace ICSharpCode.PackageManagement
 		public event SolutionFolderEventHandler SolutionFolderRemoved {
 			add { ProjectService.SolutionFolderRemoved += value; }
 			remove { ProjectService.SolutionFolderRemoved -= value; }
+		}
+		
+		public IProjectBrowserUpdater CreateProjectBrowserUpdater()
+		{
+			return new ThreadSafeProjectBrowserUpdater();
+		}
+		
+		public string GetDefaultCustomToolForFileName(FileProjectItem projectItem)
+		{
+			return CustomToolsService.GetCompatibleCustomToolNames(projectItem).FirstOrDefault();
 		}
 	}
 }

@@ -46,8 +46,7 @@ namespace PackageManagement.Tests.Scripting
 		
 		PackageOperationEventArgs CreatePackageOperationEventArgs(FakePackage package, string installPath)
 		{
-			string targetPath = @"d:\projects\myproject\packages\target";
-			return new PackageOperationEventArgs(package, targetPath, installPath);
+			return new PackageOperationEventArgs(package, null, installPath);
 		}
 		
 		[Test]

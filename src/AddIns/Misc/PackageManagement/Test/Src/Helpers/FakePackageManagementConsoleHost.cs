@@ -123,5 +123,23 @@ namespace PackageManagement.Tests.Helpers
 		{
 			throw new NotImplementedException();
 		}
+		
+		public FakePackageRepository FakePackageRepository = 
+			new FakePackageRepository();
+		
+		public PackageSource PackageSourcePassedToGetRepository;
+		
+		public IPackageRepository GetPackageRepository(PackageSource packageSource)
+		{
+			PackageSourcePassedToGetRepository = packageSource;
+			return FakePackageRepository;
+		}
+		
+		public bool IsSetDefaultRunspaceCalled;
+		
+		public void SetDefaultRunspace()
+		{
+			IsSetDefaultRunspaceCalled = true;
+		}
 	}
 }

@@ -197,7 +197,7 @@ namespace PackageManagement.Tests
 		{
 			var package1 = CreateRepositoryWithOneRecentPackageSavedInOptions();
 			var package2 = new FakePackage(package1.Id);
-			package2.Version = new Version(2, 0);
+			package2.Version = new SemanticVersion(2, 0, 0, 0);
 			aggregateRepository.FakePackages.Add(package2);
 			
 			var recentPackages = repository.GetPackages();
@@ -248,6 +248,26 @@ namespace PackageManagement.Tests
 			int count = recentPackages.Count;
 			
 			Assert.AreEqual(0, count);
+		}
+		
+		[Test]
+		public void HasRecentPackages_NoSavedRecentPackages_ReturnsFalse()
+		{
+			CreateRepository();
+			
+			bool hasRecentPackages = repository.HasRecentPackages;
+			
+			Assert.IsFalse(hasRecentPackages);
+		}
+		
+		[Test]
+		public void HasRecentPackages_OneSavedRecentPackages_ReturnsTrue()
+		{
+			CreateRepositoryWithOneRecentPackageSavedInOptions();
+			
+			bool hasRecentPackages = repository.HasRecentPackages;
+			
+			Assert.IsTrue(hasRecentPackages);
 		}
 	}
 }

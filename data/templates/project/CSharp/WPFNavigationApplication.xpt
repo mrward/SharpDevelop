@@ -6,7 +6,7 @@
 		<Name>${res:Templates.Project.WinFXNavigationApplication.Name}</Name>
 		<Category>C#</Category>
 		<Subcategory>WPF</Subcategory>
-		<Icon>C#.Project.Form</Icon>
+		<Icon>C#.Project.WPFNavigationProject</Icon>
 		<Description>${res:Templates.Project.WinFXNavigationApplication.Description}</Description>
 		<SupportedTargetFrameworks>v3.0;v3.5Client</SupportedTargetFrameworks>
 	</TemplateConfiguration>
@@ -16,7 +16,7 @@
 		<Open filename = "Page1.xaml"/>
 	</Actions>
 	
-	<Project language = "C#">
+	<Project language = "C#" defaultPlatform="x86">
 		<ProjectItems>
 			<Reference Include="System" />
 			<Reference Include="System.Data" />

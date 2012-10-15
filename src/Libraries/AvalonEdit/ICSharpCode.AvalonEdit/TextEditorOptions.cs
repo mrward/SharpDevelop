@@ -342,7 +342,7 @@ namespace ICSharpCode.AvalonEdit
 			set {
 				if (enableRectangularSelection != value) {
 					enableRectangularSelection = value;
-					OnPropertyChanged("AllowRectangularSelection");
+					OnPropertyChanged("EnableRectangularSelection");
 				}
 			}
 		}
@@ -358,7 +358,75 @@ namespace ICSharpCode.AvalonEdit
 			set {
 				if (enableTextDragDrop != value) {
 					enableTextDragDrop = value;
-					OnPropertyChanged("EnableTextDrag");
+					OnPropertyChanged("EnableTextDragDrop");
+				}
+			}
+		}
+		
+		bool enableVirtualSpace;
+		
+		/// <summary>
+		/// Gets/Sets whether the user can set the caret behind the line ending
+		/// (into "virtual space").
+		/// Note that virtual space is always used (independent from this setting)
+		/// when doing rectangle selections.
+		/// </summary>
+		[DefaultValue(false)]
+		public virtual bool EnableVirtualSpace {
+			get { return enableVirtualSpace; }
+			set {
+				if (enableVirtualSpace != value) {
+					enableVirtualSpace = value;
+					OnPropertyChanged("EnableVirtualSpace");
+				}
+			}
+		}
+		
+		bool enableImeSupport = true;
+		
+		/// <summary>
+		/// Gets/Sets whether the support for Input Method Editors (IME)
+		/// for non-alphanumeric scripts (Chinese, Japanese, Korean, ...) is enabled.
+		/// </summary>
+		[DefaultValue(true)]
+		public virtual bool EnableImeSupport {
+			get { return enableImeSupport; }
+			set {
+				if (enableImeSupport != value) {
+					enableImeSupport = value;
+					OnPropertyChanged("EnableImeSupport");
+				}
+			}
+		}
+		
+		bool showColumnRuler = false;
+		
+		/// <summary>
+		/// Gets/Sets whether the column ruler should be shown.
+		/// </summary>
+		[DefaultValue(false)]
+		public virtual bool ShowColumnRuler {
+			get { return showColumnRuler; }
+			set {
+				if (showColumnRuler != value) {
+					showColumnRuler = value;
+					OnPropertyChanged("ShowColumnRuler");
+				}
+			}
+		}
+		
+		int columnRulerPosition = 80;
+		
+		/// <summary>
+		/// Gets/Sets where the column ruler should be shown.
+		/// </summary>
+		[DefaultValue(80)]
+		public virtual int ColumnRulerPosition {
+			get { return columnRulerPosition; }
+			set {
+				if (columnRulerPosition != value) {
+					columnRulerPosition = value;
+					OnPropertyChanged("ColumnRulerPosition");
 				}
 			}
 		}

@@ -76,5 +76,14 @@ namespace ICSharpCode.PackageManagement.Scripting
 		{
 			return Solution;
 		}
+		
+		public IPackageRepository GetPackageRepository(PackageSource packageSource)
+		{
+			return null;
+		}
+		
+		public void SetDefaultRunspace()
+		{
+		}
 	}
 }

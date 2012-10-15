@@ -14,9 +14,9 @@ namespace ICSharpCode.PackageManagement
 	{
 		DelegateCommand addPackageCommand;
 		DelegateCommand removePackageCommand;
+		DelegateCommand managePackageCommand;
 		
-		IPackageManagementSolution solution;
-		IPackageManagementProject activeProject;
+		PackageManagementSelectedProjects selectedProjects;
 		IPackageManagementEvents packageManagementEvents;
 		IPackageFromRepository package;
 		IEnumerable<PackageOperation> packageOperations = new PackageOperation[0];
@@ -25,13 +25,13 @@ namespace ICSharpCode.PackageManagement
 		
 		public PackageViewModel(
 			IPackageFromRepository package,
-			IPackageManagementSolution solution,
+			PackageManagementSelectedProjects selectedProjects,
 			IPackageManagementEvents packageManagementEvents,
 			IPackageActionRunner actionRunner,
 			ILogger logger)
 		{
 			this.package = package;
-			this.solution = solution;
+			this.selectedProjects = selectedProjects;
 			this.packageManagementEvents = packageManagementEvents;
 			this.actionRunner = actionRunner;
 			this.logger = CreateLogger(logger);
@@ -48,6 +48,7 @@ namespace ICSharpCode.PackageManagement
 		{
 			addPackageCommand = new DelegateCommand(param => AddPackage());
 			removePackageCommand = new DelegateCommand(param => RemovePackage());
+			managePackageCommand = new DelegateCommand(param => ManagePackage());
 		}
 	
 		public ICommand AddPackageCommand {
@@ -56,6 +57,10 @@ namespace ICSharpCode.PackageManagement
 		
 		public ICommand RemovePackageCommand {
 			get { return removePackageCommand; }
+		}
+		
+		public ICommand ManagePackageCommand {
+			get { return managePackageCommand; }
 		}
 		
 		public IPackage GetPackage()
@@ -93,25 +98,11 @@ namespace ICSharpCode.PackageManagement
 		
 		bool IsPackageInstalled()
 		{
-			return IsPackageInstalled(package);
+			return selectedProjects.IsPackageInstalled(package);
 		}
 		
-		bool IsPackageInstalled(IPackage package)
-		{
-			return ActiveProject.IsInstalled(package);
-		}
-		
-		IPackageManagementProject ActiveProject {
-			get {
-				if (activeProject == null) {
-					activeProject = solution.GetActiveProject();
-				}
-				return activeProject;
-			}
-		}
-		
-		public IEnumerable<PackageDependency> Dependencies {
-			get { return package.Dependencies; }
+		public IEnumerable<PackageDependencySet> Dependencies {
+			get { return package.DependencySets; }
 		}
 		
 		public bool HasDependencies {
@@ -142,7 +133,7 @@ namespace ICSharpCode.PackageManagement
 			get { return package.Summary; }
 		}
 		
-		public Version Version {
+		public SemanticVersion Version {
 			get { return package.Version; }
 		}
 		
@@ -150,12 +141,16 @@ namespace ICSharpCode.PackageManagement
 			get { return package.DownloadCount; }
 		}
 		
-		public double Rating {
-			get { return package.Rating; }
-		}
-		
 		public string Description {
 			get { return package.Description; }
+		}
+		
+		public DateTime? LastUpdated {
+			get { return package.LastUpdated; }
+		}
+		
+		public bool HasLastUpdated {
+			get { return package.LastUpdated.HasValue; }
 		}
 		
 		public void AddPackage()
@@ -173,9 +168,15 @@ namespace ICSharpCode.PackageManagement
 		
 		void GetPackageOperations()
 		{
-			IPackageManagementProject project = solution.GetActiveProject();
+			IPackageManagementProject project = GetSingleProjectSelected();
 			project.Logger = logger;
-			packageOperations = project.GetInstallPackageOperations(package, false);
+			var installAction = project.CreateInstallPackageAction();
+			packageOperations = project.GetInstallPackageOperations(package, installAction);
+		}
+		
+		IPackageManagementProject GetSingleProjectSelected()
+		{
+			return selectedProjects.GetSingleProjectSelected(package.Repository);
 		}
 		
 		bool CanInstallPackage()
@@ -211,7 +212,12 @@ namespace ICSharpCode.PackageManagement
 
 		bool PackageRequiresLicenseAcceptance(IPackage package)
 		{
-			return package.RequireLicenseAcceptance && !IsPackageInstalled(package);
+			return package.RequireLicenseAcceptance && !IsPackageInstalledInSolution(package);
+		}
+		
+		bool IsPackageInstalledInSolution(IPackage package)
+		{
+			return selectedProjects.IsPackageInstalledInSolution(package);
 		}
 		
 		void TryInstallingPackage()
@@ -229,15 +235,13 @@ namespace ICSharpCode.PackageManagement
 		
 		void InstallPackage()
 		{
-			InstallPackage(package, packageOperations);
+			InstallPackage(packageOperations);
 			OnPropertyChanged(model => model.IsAdded);
 		}
 		
-		void InstallPackage(
-			IPackageFromRepository package,
-			IEnumerable<PackageOperation> packageOperations)
+		void InstallPackage(IEnumerable<PackageOperation> packageOperations)
 		{
-			IPackageManagementProject project = solution.GetActiveProject(package.Repository);
+			IPackageManagementProject project = GetSingleProjectSelected();
 			ProcessPackageOperationsAction action = CreateInstallPackageAction(project);
 			action.Package = package;
 			action.Operations = packageOperations;
@@ -273,7 +277,7 @@ namespace ICSharpCode.PackageManagement
 		void TryUninstallingPackage()
 		{
 			try {
-				IPackageManagementProject project = solution.GetActiveProject(package.Repository);
+				IPackageManagementProject project = GetSingleProjectSelected();
 				UninstallPackageAction action = project.CreateUninstallPackageAction();
 				action.Package = package;
 				actionRunner.Run(action);
@@ -281,6 +285,150 @@ namespace ICSharpCode.PackageManagement
 				ReportError(ex);
 				logger.LogError(ex);
 			}
+		}
+		
+		public bool IsManaged {
+			get {
+				if (selectedProjects.HasMultipleProjects()) {
+					return true;
+				}
+				return !selectedProjects.HasSingleProjectSelected();
+			}
+		}
+		
+		public void ManagePackage()
+		{
+			List<IPackageManagementSelectedProject> projects = GetSelectedProjectsForPackage();
+			if (packageManagementEvents.OnSelectProjects(projects)) {
+				ManagePackagesForSelectedProjects(projects);
+			}
+		}
+		
+		List<IPackageManagementSelectedProject> GetSelectedProjectsForPackage()
+		{
+			return selectedProjects.GetProjects(package).ToList();
+		}
+		
+		public void ManagePackagesForSelectedProjects(IEnumerable<IPackageManagementSelectedProject> projects)
+		{
+			ManagePackagesForSelectedProjects(projects.ToList());
+		}
+		
+		void ManagePackagesForSelectedProjects(IList<IPackageManagementSelectedProject> projects)
+		{
+			ClearReportedMessages();
+			logger.LogManagingPackage();
+			TryInstallingPackagesForSelectedProjects(projects);
+			logger.LogAfterPackageOperationCompletes();
+			OnPropertyChanged(model => model.IsAdded);
+		}
+		
+		void TryInstallingPackagesForSelectedProjects(IList<IPackageManagementSelectedProject> projects)
+		{
+			try {
+				if (AnyProjectsSelected(projects)) {
+					InstallPackagesForSelectedProjects(projects);
+				}
+			} catch (Exception ex) {
+				ReportError(ex);
+				logger.LogError(ex);
+			}
+		}
+		
+		protected virtual bool AnyProjectsSelected(IList<IPackageManagementSelectedProject> projects)
+		{
+			return projects.Any(project => project.IsSelected);
+		}
+		
+		void InstallPackagesForSelectedProjects(IList<IPackageManagementSelectedProject> projects)
+		{
+			if (CanInstallPackage(projects)) {
+				IList<ProcessPackageAction> actions = GetProcessPackageActionsForSelectedProjects(projects);
+				RunActionsIfAnyExist(actions);
+			}
+		}
+		
+		public virtual IList<ProcessPackageAction> GetProcessPackageActionsForSelectedProjects(
+			IList<IPackageManagementSelectedProject> selectedProjects)
+		{
+			var actions = new List<ProcessPackageAction>();
+			foreach (IPackageManagementSelectedProject selectedProject in selectedProjects) {
+				if (selectedProject.IsSelected) {
+					ProcessPackageAction action = CreateInstallPackageAction(selectedProject);
+					actions.Add(action);
+				}
+			}
+			return actions;
+		}
+		
+		bool CanInstallPackage(IList<IPackageManagementSelectedProject> projects)
+		{
+			IPackageManagementSelectedProject project = projects.FirstOrDefault();
+			if (project != null) {
+				return CanInstallPackage(project);
+			}
+			return false;
+		}
+		
+		bool CanInstallPackage(IPackageManagementSelectedProject selectedProject)
+		{
+			IEnumerable<IPackage> licensedPackages = GetPackagesRequiringLicenseAcceptance(selectedProject);
+			if (licensedPackages.Any()) {
+				return packageManagementEvents.OnAcceptLicenses(licensedPackages);
+			}
+			return true;
+		}
+		
+		protected ProcessPackageAction CreateInstallPackageAction(IPackageManagementSelectedProject selectedProject)
+		{
+			IPackageManagementProject project = selectedProject.Project;
+			project.Logger = logger;
+			
+			ProcessPackageOperationsAction action = CreateInstallPackageAction(project);
+			action.Package = package;
+			return action;
+		}
+		
+		protected ProcessPackageAction CreateUninstallPackageAction(IPackageManagementSelectedProject selectedProject)
+		{
+			IPackageManagementProject project = selectedProject.Project;
+			project.Logger = logger;
+			
+			ProcessPackageAction action = project.CreateUninstallPackageAction();
+			action.Package = package;
+			return action;
+		}
+		
+		void RunActionsIfAnyExist(IList<ProcessPackageAction> actions)
+		{
+			if (actions.Any()) {
+				actionRunner.Run(actions);			
+			}
+		}
+		
+		IEnumerable<IPackage> GetPackagesRequiringLicenseAcceptance(IPackageManagementSelectedProject selectedProject)
+		{
+			IPackageManagementProject project = selectedProject.Project;
+			project.Logger = logger;
+			IEnumerable<PackageOperation> operations = project.GetInstallPackageOperations(package, project.CreateInstallPackageAction());
+			return GetPackagesRequiringLicenseAcceptance(operations);
+		}
+		
+		IEnumerable<IPackage> GetPackagesRequiringLicenseAcceptance(IEnumerable<PackageOperation> operations)
+		{
+			foreach (PackageOperation operation in operations) {
+				if (PackageOperationRequiresLicenseAcceptance(operation)) {
+					yield return operation.Package;
+				}
+			}
+		}
+		
+		bool PackageOperationRequiresLicenseAcceptance(PackageOperation operation)
+		{
+			return
+				(operation.Action == PackageAction.Install) &&
+				operation.Package.RequireLicenseAcceptance &&
+				!IsPackageInstalledInSolution(operation.Package);
 		}
 	}
 }

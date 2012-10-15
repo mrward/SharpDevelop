@@ -68,7 +68,7 @@ namespace Debugger.MetaData
 					sb.Append(this.ReturnType.Name);
 					sb.Append(" ");
 				} else {
-					sb.Append("void ");
+					sb.Append("System.Void ");
 				}
 				
 				sb.Append(this.DeclaringType.FullName);
@@ -80,9 +80,40 @@ namespace Debugger.MetaData
 					if (!first)
 						sb.Append(", ");
 					first = false;
-					sb.Append(p.ParameterType.Name);
+					sb.Append(p.ParameterType.FullName);
 					sb.Append(" ");
 					sb.Append(p.Name);
+				}
+				sb.Append(")");
+				return sb.ToString();
+			}
+		}
+		
+		/// <summary> Name including the declaring type, return type without parameters names</summary>
+		public string FullNameWithoutParameterNames {
+			get {
+				StringBuilder sb = new StringBuilder();
+				
+				if (this.IsStatic) {
+					sb.Append("static ");
+				}
+				if (this.ReturnType != null) {
+					sb.Append(this.ReturnType.Name);
+					sb.Append(" ");
+				} else {
+					sb.Append("System.Void ");
+				}
+				
+				sb.Append(this.DeclaringType.FullName);
+				sb.Append(".");
+				sb.Append(this.Name);
+				sb.Append("(");
+				bool first = true;
+				foreach(DebugParameterInfo p in GetParameters()) {
+					if (!first)
+						sb.Append(", ");
+					first = false;
+					sb.Append(p.ParameterType.FullName);
 				}
 				sb.Append(")");
 				return sb.ToString();
@@ -156,12 +187,19 @@ namespace Debugger.MetaData
 		
 		/// <inheritdoc/>
 		public override bool IsGenericMethod {
-			get { throw new NotSupportedException(); }
+			get { return this.MethodDefSig.GenericParameterCount > 0; }
 		}
 		
 		/// <inheritdoc/>
 		public override bool IsGenericMethodDefinition {
-			get { throw new NotSupportedException(); }
+			get { return this.MethodDefSig.GenericParameterCount > 0; }
+		}
+		
+		/// <summary>
+		/// Gets the number of generic parameters on this method.
+		/// </summary>
+		public int GenericParameterCount {
+			get { return this.MethodDefSig.GenericParameterCount; }
 		}
 		
 		/// <inheritdoc/>
@@ -263,10 +301,12 @@ namespace Debugger.MetaData
 		}
 		
 		/// <summary> Gets value indicating whether this method should be stepped over
-		/// accoring to current options </summary>
+		/// according to current options </summary>
 		public bool StepOver {
 			get {
 				Options opt = this.Process.Options;
+				if (opt.DecompileCodeWithoutSymbols)
+					return false;
 				if (opt.StepOverNoSymbols) {
 					if (this.SymMethod == null) return true;
 				}
@@ -343,12 +383,12 @@ namespace Debugger.MetaData
 			uint token = 0;
 			
 			bool success =
-				(Read(code, 0x00) || true) &&                     // nop || nothing 
+				(Read(code, 0x00) || true) &&                     // nop || nothing
 				(Read(code, 0x02, 0x7B) || Read(code, 0x7E)) &&   // ldarg.0; ldfld || ldsfld
 				ReadToken(code, ref token) &&                     //   <field token>
 				(Read(code, 0x0A, 0x2B, 0x00, 0x06) || true) &&   // stloc.0; br.s; offset+00; ldloc.0 || nothing
 				Read(code, 0x2A);                                 // ret
-		
+			
 			if (!success) return;
 			
 			if (this.Process.Options.Verbose) {
@@ -427,7 +467,7 @@ namespace Debugger.MetaData
 					// Look on the method
 					DebugType.IsDefined(
 						this,
-						false,            
+						false,
 						typeof(System.Diagnostics.DebuggerStepThroughAttribute),
 						typeof(System.Diagnostics.DebuggerNonUserCodeAttribute),
 						typeof(System.Diagnostics.DebuggerHiddenAttribute))
@@ -435,7 +475,7 @@ namespace Debugger.MetaData
 					// Look on the type
 					DebugType.IsDefined(
 						declaringType,
-						false,            
+						false,
 						typeof(System.Diagnostics.DebuggerStepThroughAttribute),
 						typeof(System.Diagnostics.DebuggerNonUserCodeAttribute),
 						typeof(System.Diagnostics.DebuggerHiddenAttribute));
@@ -462,6 +502,19 @@ namespace Debugger.MetaData
 					return null;
 				}
 			}
+		}
+		
+		public static Value GetLocalVariableValue(StackFrame context, int varIndex)
+		{
+			ICorDebugValue corVal;
+			try {
+				corVal = context.CorILFrame.GetLocalVariable((uint)varIndex);
+			} catch (COMException e) {
+				if ((uint)e.ErrorCode == 0x80131304) throw new GetValueException("Unavailable in optimized code");
+				// show the message in case of bad index
+				throw new GetValueException(e.Message);
+			}
+			return new Value(context.AppDomain, corVal);
 		}
 		
 		public DebugLocalVariableInfo GetLocalVariable(int offset, string name)
@@ -504,7 +557,7 @@ namespace Debugger.MetaData
 				return new List<DebugLocalVariableInfo>();
 			
 			localVariables = GetLocalVariablesInScope(this.SymMethod.GetRootScope());
-			if (declaringType.IsDisplayClass || declaringType.IsYieldEnumerator) {
+			if (declaringType.IsDisplayClass || declaringType.IsYieldEnumerator || declaringType.IsAsyncStateMachine) {
 				// Get display class from self
 				AddCapturedLocalVariables(
 					localVariables,
@@ -549,7 +602,7 @@ namespace Debugger.MetaData
 		
 		static void AddCapturedLocalVariables(List<DebugLocalVariableInfo> vars, int scopeStartOffset, int scopeEndOffset, ValueGetter getCaptureClass, DebugType captureClassType)
 		{
-			if (captureClassType.IsDisplayClass || captureClassType.IsYieldEnumerator) {
+			if (captureClassType.IsDisplayClass || captureClassType.IsYieldEnumerator || captureClassType.IsAsyncStateMachine) {
 				foreach(DebugFieldInfo fieldInfo in captureClassType.GetFields()) {
 					DebugFieldInfo fieldInfoCopy = fieldInfo;
 					if (fieldInfo.Name.StartsWith("CS$")) continue; // Ignore

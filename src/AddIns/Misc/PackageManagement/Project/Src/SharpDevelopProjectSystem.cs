@@ -40,6 +40,8 @@ namespace ICSharpCode.PackageManagement
 			return directory + @"\";
 		}
 		
+		public bool IsBindingRedirectSupported { get; set; }
+		
 		public FrameworkName TargetFramework {
 			get { return GetTargetFramework(); }
 		}
@@ -210,8 +212,9 @@ namespace ICSharpCode.PackageManagement
 		FileProjectItem CreateFileProjectItem(string path)
 		{
 			ItemType itemType = project.GetDefaultItemType(path);
-			FileProjectItem fileItem = new FileProjectItem(project, itemType);
+			var fileItem = new FileProjectItem(project, itemType);
 			fileItem.FileName = path;
+			fileItem.CustomTool = projectService.GetDefaultCustomToolForFileName(fileItem);
 			return fileItem;
 		}
 		

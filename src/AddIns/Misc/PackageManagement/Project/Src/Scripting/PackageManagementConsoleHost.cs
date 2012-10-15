@@ -264,5 +264,15 @@ namespace ICSharpCode.PackageManagement.Scripting
 		{
 			DefaultProject = Solution.GetMSBuildProjects().FirstOrDefault();
 		}
+		
+		public IPackageRepository GetPackageRepository(PackageSource packageSource)
+		{
+			return registeredRepositories.CreateRepository(packageSource);
+		}
+		
+		public void SetDefaultRunspace()
+		{
+			powerShellHost.SetDefaultRunspace();
+		}
 	}
 }

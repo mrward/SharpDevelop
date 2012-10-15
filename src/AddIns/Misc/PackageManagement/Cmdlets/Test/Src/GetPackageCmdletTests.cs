@@ -2,6 +2,7 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 using ICSharpCode.PackageManagement.Design;
 using NuGet;
@@ -26,7 +27,8 @@ namespace PackageManagement.Cmdlets.Tests
 			fakeSolution = new FakePackageManagementSolution();
 			fakeRegisteredPackageRepositories = cmdlet.FakeRegisteredPackageRepositories;
 			fakeConsoleHost = cmdlet.FakePackageManagementConsoleHost;
-			fakeConsoleHost.FakeProject = fakeSolution.FakeProject;
+			fakeConsoleHost.FakeSolution = fakeSolution;
+			fakeConsoleHost.FakeProject = new FakePackageManagementProject();
 			fakeCommandRuntime = cmdlet.FakeCommandRuntime;
 			fakeTerminatingError = cmdlet.FakeCmdletTerminatingError;
 			
@@ -48,15 +50,10 @@ namespace PackageManagement.Cmdlets.Tests
 			cmdlet.Updates = new SwitchParameter(true);
 		}
 		
-		FakePackage AddPackageToProjectManagerLocalRepository(string version)
+		FakePackage AddPackageToSpecifiedProjectManagerLocalRepository(string id, string version)
 		{
-			return AddPackageToProjectManagerLocalRepository("Test", version);
-		}
-		
-		FakePackage AddPackageToProjectManagerLocalRepository(string id, string version)
-		{
-			var package = FakePackage.CreatePackageWithVersion(id, version);
-			fakeSolution.AddPackageToActiveProjectLocalRepository(package);
+			FakePackage package = FakePackage.CreatePackageWithVersion(id, version);
+			fakeConsoleHost.FakeProject.FakePackages.Add(package);
 			return package;
 		}
 		
@@ -94,19 +91,24 @@ namespace PackageManagement.Cmdlets.Tests
 		{
 			cmdlet.First = first;
 		}
+		
+		void AddPackageWithVersionToSolution(string version)
+		{
+			fakeSolution.AddPackageToSharedLocalRepository("Test", version);
+		}
 
 		[Test]
 		public void ProcessRecord_ListAvailablePackagesWhenDefaultPackageSourceHasOnePackage_OutputIsPackagesFromPackageSourceRepository()
 		{
 			CreateCmdlet();
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
 			repository.AddFakePackage("Test");
 			
 			EnableListAvailableParameter();
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
-			var expectedPackages = repository.FakePackages;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<FakePackage> expectedPackages = repository.FakePackages;
 			
 			CollectionAssert.AreEqual(expectedPackages, actualPackages);
 		}
@@ -116,14 +118,14 @@ namespace PackageManagement.Cmdlets.Tests
 		{
 			CreateCmdlet();
 			fakeConsoleHost.DefaultProject = null;
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
 			repository.AddFakePackage("Test");
 			
 			EnableListAvailableParameter();
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
-			var expectedPackages = repository.FakePackages;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<FakePackage> expectedPackages = repository.FakePackages;
 			
 			CollectionAssert.AreEqual(expectedPackages, actualPackages);
 		}
@@ -132,7 +134,7 @@ namespace PackageManagement.Cmdlets.Tests
 		public void ProcessRecord_ListAvailablePackagesWhenDefaultPackageSourceHasThreePackages_OutputIsPackagesFromPackageSourceRepository()
 		{
 			CreateCmdlet();
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
 			repository.AddFakePackage("A");
 			repository.AddFakePackage("B");
 			repository.AddFakePackage("C");
@@ -140,8 +142,8 @@ namespace PackageManagement.Cmdlets.Tests
 			EnableListAvailableParameter();
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
-			var expectedPackages = repository.FakePackages;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<FakePackage> expectedPackages = repository.FakePackages;
 			
 			CollectionAssert.AreEqual(expectedPackages, actualPackages);
 		}
@@ -150,14 +152,14 @@ namespace PackageManagement.Cmdlets.Tests
 		public void ProcessRecord_ListAvailablePackagesWhenDefaultPackageSourceHasTwoPackages_PackagesAreSortedById()
 		{
 			CreateCmdlet();
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
-			var packageB = repository.AddFakePackage("B");
-			var packageA = repository.AddFakePackage("A");
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackage packageB = repository.AddFakePackage("B");
+			FakePackage packageA = repository.AddFakePackage("A");
 			
 			EnableListAvailableParameter();
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				packageA,
 				packageB
@@ -170,69 +172,68 @@ namespace PackageManagement.Cmdlets.Tests
 		public void ProcessRecord_ListAvailablePackagesWhenNoPackageSourceSpecified_PackageSourceTakenFromConsoleHost()
 		{
 			CreateCmdlet();
-			var source = AddPackageSourceToConsoleHost();
+			PackageSource source = AddPackageSourceToConsoleHost();
 			fakeConsoleHost.PackageSourceToReturnFromGetActivePackageSource = source;
 			
 			EnableListAvailableParameter();
 			RunCmdlet();
 			
-			var actualSource = fakeRegisteredPackageRepositories.PackageSourcePassedToCreateRepository;
+			PackageSource actualSource = fakeRegisteredPackageRepositories.PackageSourcePassedToCreateRepository;
 			
 			Assert.AreEqual(source, actualSource);
 		}
 		
 		[Test]
-		public void ProcessRecord_NoParametersPassed_ReturnsPackagesInstalledForProjectSelectedInConsole()
+		public void ProcessRecord_NoParametersPassed_ReturnsPackagesInstalledForSolution()
 		{
 			CreateCmdlet();
-			fakeSolution.AddPackageToActiveProjectLocalRepository("One");
-			fakeSolution.AddPackageToActiveProjectLocalRepository("Two");
+			fakeSolution.AddPackageToSharedLocalRepository("One");
+			fakeSolution.AddPackageToSharedLocalRepository("Two");
 			
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
-			var expectedPackages = fakeConsoleHost.FakeProject.FakePackages;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<FakePackage> expectedPackages = fakeSolution.FakeInstalledPackages;
 			
 			Assert.AreEqual(expectedPackages, actualPackages);
 		}
 		
 		[Test]
-		public void ProcessRecord_NoParametersPassed_NullPackageSourceUsedWhenCreatingProject()
+		public void ProcessRecord_ProjectNameSpecified_NullPackageSourceUsedWhenCreatingProject()
 		{
 			CreateCmdlet();
-			
+			cmdlet.ProjectName = "Test";
 			RunCmdlet();
 			
-			var actualSource = fakeConsoleHost.PackageSourcePassedToGetProject;
+			string actualSource = fakeConsoleHost.PackageSourcePassedToGetProject;
 			
 			Assert.IsNull(actualSource);
 		}
 		
 		[Test]
-		public void ProcessRecord_NoParametersPassed_DefaultProjectInConsoleHostUsedToCreateProject()
+		public void ProcessRecord_ProjectNameSpecified_ProjectNameUsedToCreateProject()
 		{
 			CreateCmdlet();
-			var project = AddDefaultProjectToConsoleHost();
-			project.Name = "MyProject";
+			cmdlet.ProjectName = "MyProject";
 			
 			RunCmdlet();
 			
-			var actualProjectName = fakeConsoleHost.ProjectNamePassedToGetProject;
+			string actualProjectName = fakeConsoleHost.ProjectNamePassedToGetProject;
 			
 			Assert.AreEqual("MyProject", actualProjectName);
 		}
 		
 		[Test]
-		public void ProcessRecord_UpdatedPackagesRequested_ReturnsUpdatedPackagesForActiveProject()
+		public void ProcessRecord_UpdatedPackagesRequestedAndNoProjectName_ReturnsUpdatedPackagesForSolution()
 		{
 			CreateCmdlet();
-			AddPackageToProjectManagerLocalRepository("1.0.0.0");
-			var updatedPackage = AddPackageToAggregateRepository("1.1.0.0");
+			AddPackageWithVersionToSolution("1.0.0.0");
+			FakePackage updatedPackage = AddPackageToAggregateRepository("1.1.0.0");
 			
 			EnableUpdatesParameter();
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				updatedPackage
 			};
@@ -241,28 +242,15 @@ namespace PackageManagement.Cmdlets.Tests
 		}
 		
 		[Test]
-		public void ProcessRecord_UpdatedPackagesRequested_ActiveProjectNameUsedWhenCreatingProject()
-		{
-			CreateCmdlet();
-			var project = AddDefaultProjectToConsoleHost();
-			project.Name = "Test";
-			EnableUpdatesParameter();
-			RunCmdlet();
-			
-			var actualProjectName = fakeConsoleHost.ProjectNamePassedToGetProject;
-			
-			Assert.AreEqual("Test", actualProjectName);
-		}
-		
-		[Test]
-		public void ProcessRecord_UpdatedPackagesRequested_AggregateRepositoryUsedWhenCreatingProject()
+		public void ProcessRecord_UpdatedPackagesRequestedAndProjectNameSpecified_AggregateRepositoryUsedWhenCreatingProject()
 		{
 			CreateCmdlet();
 			EnableUpdatesParameter();
+			cmdlet.ProjectName = "MyProject";
 			RunCmdlet();
 			
-			var actualRepository = fakeConsoleHost.PackageRepositoryPassedToGetProject;
-			var expectedRepository = fakeRegisteredPackageRepositories.FakeAggregateRepository;
+			IPackageRepository actualRepository = fakeConsoleHost.PackageRepositoryPassedToGetProject;
+			FakePackageRepository expectedRepository = fakeRegisteredPackageRepositories.FakeAggregateRepository;
 			
 			Assert.AreEqual(expectedRepository, actualRepository);
 		}
@@ -271,16 +259,16 @@ namespace PackageManagement.Cmdlets.Tests
 		public void ProcessRecord_ListAvailablePackagesAndFilterResults_PackagesReturnedMatchFilter()
 		{
 			CreateCmdlet();
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
 			repository.AddFakePackage("A");
-			var package = repository.AddFakePackage("B");
+			FakePackage package = repository.AddFakePackage("B");
 			repository.AddFakePackage("C");
 			
 			EnableListAvailableParameter();
 			SetFilterParameter("B");
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				 package
 			};
@@ -289,18 +277,18 @@ namespace PackageManagement.Cmdlets.Tests
 		}
 		
 		[Test]
-		public void ProcessRecord_FilterParameterPassed_InstalledPackagesAreFiltered()
+		public void ProcessRecord_FilterParameterPassed_InstalledPackagesInSolutionAreFiltered()
 		{
 			CreateCmdlet();
 			AddPackageSourceToConsoleHost();
 			
-			fakeSolution.AddPackageToActiveProjectLocalRepository("A");
-			var package = fakeSolution.AddPackageToActiveProjectLocalRepository("B");
+			fakeSolution.AddPackageToSharedLocalRepository("A");
+			FakePackage package = fakeSolution.AddPackageToSharedLocalRepository("B");
 			
 			SetFilterParameter("B");
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				package
 			};
@@ -309,19 +297,19 @@ namespace PackageManagement.Cmdlets.Tests
 		}
 		
 		[Test]
-		public void ProcessRecord_UpdatedPackagesRequestedWithFilter_ReturnsFilteredUpdatedPackages()
+		public void ProcessRecord_UpdatedPackagesRequestedWithFilter_ReturnsFilteredUpdatedPackagesFromSolution()
 		{
 			CreateCmdlet();
-			AddPackageToProjectManagerLocalRepository("A", "1.0.0.0");
+			fakeSolution.AddPackageToSharedLocalRepository("A", "1.0.0.0");
 			AddPackageToAggregateRepository("A", "1.1.0.0");
-			AddPackageToProjectManagerLocalRepository("B", "2.0.0.0");
-			var updatedPackage = AddPackageToAggregateRepository("B", "2.1.0.0");
+			fakeSolution.AddPackageToSharedLocalRepository("B", "2.0.0.0");
+			FakePackage updatedPackage = AddPackageToAggregateRepository("B", "2.1.0.0");
 			
 			EnableUpdatesParameter();
 			SetFilterParameter("B");
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				updatedPackage
 			};
@@ -330,47 +318,70 @@ namespace PackageManagement.Cmdlets.Tests
 		}
 		
 		[Test]
+		public void ProcessRecord_UpdatedPackagesRequestedWithFilterAndProjectName_ReturnsFilteredUpdatedPackagesFromProject()
+		{
+			CreateCmdlet();
+			AddPackageToSpecifiedProjectManagerLocalRepository("A", "1.0.0.0");
+			AddPackageToAggregateRepository("A", "1.1.0.0");
+			AddPackageToSpecifiedProjectManagerLocalRepository("B", "2.0.0.0");
+			FakePackage updatedPackage = AddPackageToAggregateRepository("B", "2.1.0.0");
+			
+			EnableUpdatesParameter();
+			SetFilterParameter("B");
+			cmdlet.ProjectName = "MyProject";
+			RunCmdlet();
+			
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			var expectedPackages = new FakePackage[] {
+				updatedPackage
+			};
+			
+			CollectionAssert.AreEqual(expectedPackages, actualPackages);
+			Assert.AreEqual("MyProject", fakeConsoleHost.ProjectNamePassedToGetProject);
+		}
+		
+		[Test]
 		public void ProcessRecord_ListAvailablePackagesWhenPackageSourceParameterSpecified_PackageRepositoryCreatedForPackageSourceSpecifiedByParameter()
 		{
 			CreateCmdlet();
 			var expectedPackageSource = new PackageSource("http://sharpdevelop.com/packages");
 			fakeConsoleHost.PackageSourceToReturnFromGetActivePackageSource = expectedPackageSource;
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
 			
 			SetSourceParameter("http://sharpdevelop.com/packages");
 			EnableListAvailableParameter();
 			RunCmdlet();
 			
-			var actualPackageSource = fakeRegisteredPackageRepositories.PackageSourcePassedToCreateRepository;
+			PackageSource actualPackageSource = fakeRegisteredPackageRepositories.PackageSourcePassedToCreateRepository;
 			
 			Assert.AreEqual(expectedPackageSource, actualPackageSource);
 		}
 		
 		[Test]
-		public void ProcessRecord_JustSourceParameterPassed_ProjectCreatedForPackageSourceSpecifiedByParameter()
+		public void ProcessRecord_SourceParameterAndProjectNamePassed_ProjectCreatedForPackageSourceSpecifiedByParameter()
 		{
 			CreateCmdlet();
 			
 			SetSourceParameter("http://test");
-			
+			cmdlet.ProjectName = "MyProject";
 			RunCmdlet();
 			
-			var actualPackageSource = fakeConsoleHost.PackageSourcePassedToGetProject;
-			var expectedPackageSource = "http://test";
+			string actualPackageSource = fakeConsoleHost.PackageSourcePassedToGetProject;
+			string expectedPackageSource = "http://test";
 			
 			Assert.AreEqual(expectedPackageSource, actualPackageSource);
 		}
 		
 		[Test]
-		public void ProcessRecord_JustSourceParameterPassed_ProjectCreatedForPackageSource()
+		public void ProcessRecord_SourceParameterAndProjectNamePassed_ProjectCreatedForPackageSource()
 		{
 			CreateCmdlet();
-			fakeConsoleHost.DefaultProject.Name = "MyProject";
+			cmdlet.ProjectName = "MyProject";
 			SetSourceParameter("http://test");
 			
 			RunCmdlet();
 			
-			var actualProjectName = fakeConsoleHost.ProjectNamePassedToGetProject;
+			string actualProjectName = fakeConsoleHost.ProjectNamePassedToGetProject;
 			
 			Assert.AreEqual("MyProject", actualProjectName);
 		}
@@ -380,14 +391,14 @@ namespace PackageManagement.Cmdlets.Tests
 		{
 			CreateCmdlet();
 			
-			var recentPackageRepository = fakeRegisteredPackageRepositories.FakeRecentPackageRepository;
+			FakePackageRepository recentPackageRepository = fakeRegisteredPackageRepositories.FakeRecentPackageRepository;
 			recentPackageRepository.AddFakePackage("A");
 			
 			EnableRecentParameter();
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
-			var expectedPackages = recentPackageRepository.FakePackages;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<FakePackage> expectedPackages = recentPackageRepository.FakePackages;
 			
 			Assert.AreEqual(expectedPackages, actualPackages);
 		}
@@ -397,15 +408,15 @@ namespace PackageManagement.Cmdlets.Tests
 		{
 			CreateCmdlet();
 			
-			var recentPackageRepository = fakeRegisteredPackageRepositories.FakeRecentPackageRepository;
+			FakePackageRepository recentPackageRepository = fakeRegisteredPackageRepositories.FakeRecentPackageRepository;
 			recentPackageRepository.AddFakePackage("A");
-			var packageB = recentPackageRepository.AddFakePackage("B");
+			FakePackage packageB = recentPackageRepository.AddFakePackage("B");
 			
 			EnableRecentParameter();
 			SetFilterParameter("B");
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				packageB
 			};
@@ -418,14 +429,14 @@ namespace PackageManagement.Cmdlets.Tests
 		{
 			CreateCmdlet();
 			AddPackageSourceToConsoleHost();
-			var packageA = fakeSolution.AddPackageToActiveProjectLocalRepository("A");
-			var packageB = fakeSolution.AddPackageToActiveProjectLocalRepository("B");
-			var packageC = fakeSolution.AddPackageToActiveProjectLocalRepository("C");
+			FakePackage packageA = fakeSolution.AddPackageToSharedLocalRepository("A");
+			FakePackage packageB = fakeSolution.AddPackageToSharedLocalRepository("B");
+			FakePackage packageC = fakeSolution.AddPackageToSharedLocalRepository("C");
 			
 			SetFilterParameter("B C");
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				packageB,
 				packageC
@@ -457,16 +468,16 @@ namespace PackageManagement.Cmdlets.Tests
 		public void ProcessRecord_ListAvailableAndSkipFirstTwoPackages_ReturnsAllPackagesExceptionFirstTwo()
 		{
 			CreateCmdlet();
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
 			repository.AddFakePackage("A");
 			repository.AddFakePackage("B");
-			var packageC = repository.AddFakePackage("C");			
+			FakePackage packageC = repository.AddFakePackage("C");			
 			
 			EnableListAvailableParameter();
 			SetSkipParameter(2);
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				packageC
 			};
@@ -487,16 +498,16 @@ namespace PackageManagement.Cmdlets.Tests
 		public void ProcessRecord_ListAvailableAndFirstTwo_ReturnsFirstTwoPackages()
 		{
 			CreateCmdlet();
-			var repository = fakeRegisteredPackageRepositories.FakePackageRepository;
-			var packageA = repository.AddFakePackage("A");
-			var packageB = repository.AddFakePackage("B");
+			FakePackageRepository repository = fakeRegisteredPackageRepositories.FakePackageRepository;
+			FakePackage packageA = repository.AddFakePackage("A");
+			FakePackage packageB = repository.AddFakePackage("B");
 			repository.AddFakePackage("C");			
 			
 			EnableListAvailableParameter();
 			SetFirstParameter(2);
 			RunCmdlet();
 			
-			var actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
 			var expectedPackages = new FakePackage[] {
 				packageA,
 				packageB
@@ -512,6 +523,48 @@ namespace PackageManagement.Cmdlets.Tests
 			int first = cmdlet.First;
 			
 			Assert.AreEqual(0, first);
+		}
+		
+		[Test]
+		public void ProcessRecord_GetInstalledPackagesWhenProjectNameSpecified_ProjectNameParameterUsedToGetProject()
+		{
+			CreateCmdlet();
+			cmdlet.ProjectName = "Test";
+			RunCmdlet();
+			
+			string projectName = fakeConsoleHost.ProjectNamePassedToGetProject;
+			
+			Assert.AreEqual("Test", projectName);
+		}
+		
+		[Test]
+		public void ProcessRecord_GetInstalledPackagesWhenProjectNameSpecified_ReturnsPackagesInstalledForProject()
+		{
+			CreateCmdlet();
+			var project = new FakePackageManagementProject();
+			fakeConsoleHost.FakeProject = project;
+			project.AddFakePackage("One");
+			project.AddFakePackage("Two");
+			cmdlet.ProjectName = "Test";
+			RunCmdlet();
+			
+			List<object> actualPackages = fakeCommandRuntime.ObjectsPassedToWriteObject;
+			List<FakePackage> expectedPackages = project.FakePackages;
+			
+			Assert.AreEqual(expectedPackages, actualPackages);
+		}
+		
+		[Test]
+		public void ProcessRecord_GetUpdatedPackagesWhenProjectNameSpecified_ProjectNameParameterUsedToGetProject()
+		{
+			CreateCmdlet();
+			cmdlet.ProjectName = "Test";
+			EnableUpdatesParameter();
+			RunCmdlet();
+			
+			string projectName = fakeConsoleHost.ProjectNamePassedToGetProject;
+			
+			Assert.AreEqual("Test", projectName);
 		}
 	}
 }

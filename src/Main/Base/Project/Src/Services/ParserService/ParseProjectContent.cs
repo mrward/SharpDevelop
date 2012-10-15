@@ -57,16 +57,24 @@ namespace ICSharpCode.SharpDevelop
 			UpdateDefaultImports(items);
 			// TODO: Translate me
 //			progressMonitor.TaskName = "Resolving references for " + project.Name + "...";
-			project.ResolveAssemblyReferences();
-			foreach (ProjectItem item in items) {
-				if (!initializing) return; // abort initialization
-				progressMonitor.CancellationToken.ThrowIfCancellationRequested();
-				if (ItemType.ReferenceItemTypes.Contains(item.ItemType)) {
-					ReferenceProjectItem reference = item as ReferenceProjectItem;
-					if (reference != null) {
-						// TODO: Translate me
-//						progressMonitor.TaskName = "Loading " + reference.ShortName + "...";
-						AddReference(reference, false);
+			AbstractProject abstractProject = project as AbstractProject;
+			ReferencedContents.Clear();
+			if (abstractProject != null) {
+				foreach (var reference in abstractProject.ResolveAssemblyReferences(progressMonitor.CancellationToken)) {
+					if (!initializing) return; // abort initialization
+					AddReference(reference, false, progressMonitor.CancellationToken);
+				}
+			} else {
+				project.ResolveAssemblyReferences();
+				AddReferencedContent(AssemblyParserService.DefaultProjectContentRegistry.Mscorlib);
+				foreach (ProjectItem item in items) {
+					if (!initializing) return; // abort initialization
+					progressMonitor.CancellationToken.ThrowIfCancellationRequested();
+					if (ItemType.ReferenceItemTypes.Contains(item.ItemType)) {
+						ReferenceProjectItem reference = item as ReferenceProjectItem;
+						if (reference != null) {
+							AddReference(reference, false, progressMonitor.CancellationToken);
+						}
 					}
 				}
 			}
@@ -76,13 +84,6 @@ namespace ICSharpCode.SharpDevelop
 		
 		internal void ReInitialize1(IProgressMonitor progressMonitor)
 		{
-			var mscorlib = AssemblyParserService.GetRegistryForReference(new ReferenceProjectItem(project, "mscorlib")).Mscorlib;
-			// don't fetch mscorlib within lock - finding the correct registry might access the project, causing
-			// a deadlock between IProject.SyncRoot and the ReferencedContents lock
-			lock (ReferencedContents) {
-				ReferencedContents.Clear();
-				AddReferencedContent(mscorlib);
-			}
 			// prevent adding event handler twice
 			ProjectService.ProjectItemAdded   -= OnProjectItemAdded;
 			ProjectService.ProjectItemRemoved -= OnProjectItemRemoved;
@@ -104,14 +105,15 @@ namespace ICSharpCode.SharpDevelop
 			}
 			foreach (IProjectContent referencedContent in referencedContents) {
 				if (referencedContent is ReflectionProjectContent) {
-					((ReflectionProjectContent)referencedContent).InitializeReferences();
+					((ReflectionProjectContent)referencedContent).InitializeReferences(referencedContents);
 				}
 			}
 		}
 		
-		void AddReference(ReferenceProjectItem reference, bool updateInterDependencies)
+		void AddReference(ReferenceProjectItem reference, bool updateInterDependencies, CancellationToken cancellationToken)
 		{
 			try {
+				cancellationToken.ThrowIfCancellationRequested();
 				AddReferencedContent(AssemblyParserService.GetProjectContentForReference(reference));
 				if (updateInterDependencies) {
 					UpdateReferenceInterDependencies();
@@ -122,6 +124,13 @@ namespace ICSharpCode.SharpDevelop
 				// If the user removes the reference and then re-adds it, there might be other references
 				// in the project depending on it, so we do the refresh after the old reference was added.
 				AssemblyParserService.RefreshProjectContentForReference(reference);
+			} catch (OperationCanceledException) {
+				throw;
+			} catch (ObjectDisposedException e) {
+				// ObjectDisposedException can happen if project gets disposed while LoadSolutionProjectsThread is running.
+				// We will ignore the ObjectDisposedException and throw OperationCanceledException instead.
+				cancellationToken.ThrowIfCancellationRequested();
+				MessageService.ShowException(e);
 			} catch (Exception e) {
 				MessageService.ShowException(e);
 			}
@@ -141,7 +150,8 @@ namespace ICSharpCode.SharpDevelop
 					System.Windows.Forms.MethodInvoker action = delegate {
 						// Compile project to ensure interop library is generated
 						project.Save(); // project is not yet saved when ItemAdded fires, so save it here
-						TaskService.BuildMessageViewCategory.AppendText("\n${res:MainWindow.CompilerMessages.CreatingCOMInteropAssembly}\n");
+						string message = StringParser.Parse("\n${res:MainWindow.CompilerMessages.CreatingCOMInteropAssembly}\n");
+						TaskService.BuildMessageViewCategory.AppendText(message);
 						BuildCallback afterBuildCallback = delegate {
 							lock (callAfterAddComReference) {
 								if (callAfterAddComReference.Count > 0) {
@@ -253,7 +263,7 @@ namespace ICSharpCode.SharpDevelop
 				
 				foreach (IProjectContent referencedContent in referencedContents) {
 					if (referencedContent is ReflectionProjectContent) {
-						((ReflectionProjectContent)referencedContent).InitializeReferences();
+						((ReflectionProjectContent)referencedContent).InitializeReferences(referencedContents);
 					}
 				}
 				
@@ -268,7 +278,7 @@ namespace ICSharpCode.SharpDevelop
 				double fileCountInverse = 1.0 / fileContents.Count;
 				Parallel.ForEach(
 					fileContents,
-					new ParallelOptions { 
+					new ParallelOptions {
 						MaxDegreeOfParallelism = Environment.ProcessorCount * 2,
 						CancellationToken = progressMonitor.CancellationToken
 					},

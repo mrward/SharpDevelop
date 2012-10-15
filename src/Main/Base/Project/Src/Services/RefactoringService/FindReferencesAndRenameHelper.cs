@@ -4,11 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
-
+using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.Core;
+using ICSharpCode.NRefactory;
 using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Editor;
+using ICSharpCode.SharpDevelop.Editor.AvalonEdit;
 using ICSharpCode.SharpDevelop.Editor.Search;
 using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Project;
@@ -370,8 +374,23 @@ namespace ICSharpCode.SharpDevelop.Refactoring
 		{
 			if (list == null) return;
 			List<SearchResultMatch> results = new List<SearchResultMatch>(list.Count);
+			TextDocument document = null;
+			ITextBuffer buffer = null;
+			FileName fileName = null;
+			ISyntaxHighlighter highlighter = null;
 			foreach (Reference r in list) {
-				SearchResultMatch res = new SearchResultMatch(GetDocumentInformation(r.FileName), r.Offset, r.Length);
+				var f = new FileName(r.FileName);
+				if (document == null || !f.Equals(fileName)) {
+					buffer = ParserService.GetParseableFileContent(r.FileName);
+					document = new TextDocument(DocumentUtilitites.GetTextSource(buffer));
+					fileName = new FileName(r.FileName);
+					highlighter = EditorControlService.Instance.CreateHighlighter(new AvalonEditDocumentAdapter(document, null), fileName);
+				}
+				var start = document.GetLocation(r.Offset).ToLocation();
+				var end = document.GetLocation(r.Offset + r.Length).ToLocation();
+				var builder = SearchResultsPad.CreateInlineBuilder(start, end, document, highlighter);
+				var defaultTextColor = highlighter != null ? highlighter.DefaultTextColor : null;
+				SearchResultMatch res = new SearchResultMatch(fileName, start, end, r.Offset, r.Length, builder, defaultTextColor);
 				results.Add(res);
 			}
 			SearchResultsPad.Instance.ShowSearchResults(title, results);
@@ -524,21 +543,20 @@ namespace ICSharpCode.SharpDevelop.Refactoring
 		public static void RunFindReferences(IMember member)
 		{
 			string memberName = member.DeclaringType.Name + "." + member.Name;
-			using (AsynchronousWaitDialog monitor = AsynchronousWaitDialog.ShowWaitDialog("${res:SharpDevelop.Refactoring.FindReferences}", true))
-			{
-				FindReferencesAndRenameHelper.ShowAsSearchResults(StringParser.Parse("${res:SharpDevelop.Refactoring.ReferencesTo}",
-				                                                                     new string[,] {{ "Name", memberName }}),
-				                                                  RefactoringService.FindReferences(member, monitor));
+			using (AsynchronousWaitDialog monitor = AsynchronousWaitDialog.ShowWaitDialog("${res:SharpDevelop.Refactoring.FindReferences}", true)) {
+				FindReferencesAndRenameHelper.ShowAsSearchResults(
+					StringParser.Parse("${res:SharpDevelop.Refactoring.ReferencesTo}",
+					                   new StringTagPair("Name", memberName)),
+					RefactoringService.FindReferences(member, monitor));
 			}
 		}
 		
 		public static void RunFindReferences(IClass c)
 		{
-			using (AsynchronousWaitDialog monitor = AsynchronousWaitDialog.ShowWaitDialog("${res:SharpDevelop.Refactoring.FindReferences}", true))
-			{
+			using (AsynchronousWaitDialog monitor = AsynchronousWaitDialog.ShowWaitDialog("${res:SharpDevelop.Refactoring.FindReferences}", true)) {
 				FindReferencesAndRenameHelper.ShowAsSearchResults(
 					StringParser.Parse("${res:SharpDevelop.Refactoring.ReferencesTo}",
-					                   new string[,] {{ "Name", c.Name }}),
+					                   new StringTagPair("Name", c.Name)),
 					RefactoringService.FindReferences(c, monitor)
 				);
 			}
@@ -548,7 +566,7 @@ namespace ICSharpCode.SharpDevelop.Refactoring
 		{
 			FindReferencesAndRenameHelper.ShowAsSearchResults(
 				StringParser.Parse("${res:SharpDevelop.Refactoring.ReferencesTo}",
-				                   new string[,] {{ "Name", local.VariableName }}),
+				                   new StringTagPair("Name", local.VariableName)),
 				RefactoringService.FindReferences(local, null)
 			);
 		}

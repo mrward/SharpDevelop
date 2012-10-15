@@ -38,18 +38,27 @@ namespace ICSharpCode.PackageManagement
 			if (repository == null) {
 				throw new ApplicationException(errorMessage);
 			}
-			return repository.GetPackages();
+			return repository.GetPackages().Where(package => package.IsLatestVersion);
+		}
+		
+		public IQueryable<IPackage> CallGetPackagesFromPackageSource()
+		{
+			return GetPackagesFromPackageSource();
+		}
+		
+		/// <summary>
+		/// Order packages by most downloaded first.
+		/// </summary>
+		protected override IQueryable<IPackage> OrderPackages(IQueryable<IPackage> packages)
+		{
+			return packages.OrderByDescending(package => package.DownloadCount);
 		}
 		
 		protected override IEnumerable<IPackage> GetFilteredPackagesBeforePagingResults(IQueryable<IPackage> allPackages)
 		{
-			IEnumerable<IPackage> filteredPackages = base.GetFilteredPackagesBeforePagingResults(allPackages);
-			return GetDistinctPackagesById(filteredPackages);
-		}
-		
-		IEnumerable<IPackage> GetDistinctPackagesById(IEnumerable<IPackage> allPackages)
-		{
-			return allPackages.DistinctLast<IPackage>(PackageEqualityComparer.Id);
+			return base.GetFilteredPackagesBeforePagingResults(allPackages)
+				.Where(package => package.IsReleaseVersion())
+				.DistinctLast(PackageEqualityComparer.Id);
 		}
 	}
 }

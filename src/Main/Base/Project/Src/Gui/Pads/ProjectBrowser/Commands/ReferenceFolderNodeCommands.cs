@@ -2,12 +2,18 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Web.Services.Discovery;
 using System.Windows.Forms;
+using System.Xml;
 
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Gui;
+using ICSharpCode.SharpDevelop.Gui.Dialogs.ReferenceDialog;
+using ICSharpCode.SharpDevelop.Gui.Dialogs.ReferenceDialog.ServiceReference;
+using ICSharpCode.SharpDevelop.Gui.OptionPanels;
 
 namespace ICSharpCode.SharpDevelop.Project.Commands
 {
@@ -173,15 +179,97 @@ namespace ICSharpCode.SharpDevelop.Project.Commands
 			}
 			return webReferencesNode;
 		}
+	}	
+	
+	public class ShowServiceInBrowser : AbstractMenuCommand
+	{
+		static string NodePath = "//system.serviceModel//client//endpoint";
+		
+		public override void Run()
+		{
+			XmlDocument appConfig = LoadAppConfig();
+			if (appConfig != null) {
+				string endpointAddress = FindEndPointAddress(appConfig);
+				if (endpointAddress != null) {
+					StartInternetExplorer(endpointAddress);
+				} else {
+					MessageService.ShowError("No service found.");
+				}
+			} else {
+				MessageService.ShowError("No app.config file found.");
+			}
+		}
+		
+		XmlDocument LoadAppConfig()
+		{
+			AbstractProjectBrowserTreeNode node = ProjectBrowserPad.Instance.SelectedNode;
+			FileName appConfigFileName = CompilableProject.GetAppConfigFile(node.Project, false);
+			if (!String.IsNullOrEmpty(appConfigFileName)) {				
+				return LoadAppConfig(appConfigFileName);
+			}
+			return null;
+		}
+		
+		static XmlDocument LoadAppConfig(string fileName)
+		{
+			try {
+				var doc = new XmlDocument();
+				doc.Load(fileName);
+				return doc;
+			} catch (FileNotFoundException ex) {
+				LoggingService.Debug("LoadConfigDocument: " + fileName + ": " + ex.Message);
+			}
+			return null;
+		}
+		
+		string FindEndPointAddress(XmlDocument appConfig)
+		{
+			XmlNode endPoint = appConfig.SelectSingleNode(NodePath);
+			if (endPoint != null) {
+				XmlAttribute addressAttribute = endPoint.Attributes["address"];
+				if (addressAttribute != null) {
+					return addressAttribute.Value;
+				}
+			}
+			return null;
+		}
+		
+		void StartInternetExplorer(string arguments)
+		{
+			var startInfo = new ProcessStartInfo("IExplore.exe") {
+				WindowStyle = ProcessWindowStyle.Normal,
+				Arguments = arguments
+			};
+			Process.Start(startInfo);
+		}
+	}
+	
+	public class AddServiceReferenceToProject : AbstractMenuCommand
+	{
+		public override void Run()
+		{
+			var node = Owner as AbstractProjectBrowserTreeNode;
+			IProject project = (node != null) ? node.Project : ProjectService.CurrentProject;
+			if (project == null) {
+				return;
+			}
+			
+			var vm = new AddServiceReferenceViewModel(project);
+			var dialog = new AddServiceReferenceDialog();
+			dialog.DataContext = vm;
+			dialog.Owner = WorkbenchSingleton.MainWindow;
+			if (dialog.ShowDialog() ?? true) {
+				vm.AddServiceReference();
+			}
+		}
 	}
 	
 	public class RefreshReference : AbstractMenuCommand
 	{
 		public override void Run()
 		{
-			ReferenceNode node = Owner as ReferenceNode;
-			if (node != null)
-			{
+			var node = Owner as ReferenceNode;
+			if (node != null) {
 				ReferenceProjectItem item = node.ReferenceProjectItem;
 				if (item != null) {
 					AssemblyParserService.RefreshProjectContentForReference(item);

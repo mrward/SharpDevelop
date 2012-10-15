@@ -8,10 +8,11 @@ using System.Drawing.Printing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
-
-using ICSharpCode.Reports.Core.BaseClasses.Printing;
-using ICSharpCode.Reports.Core.Interfaces;
+using ICSharpCode.Reports.Core.BaseClasses;
 using ICSharpCode.Reports.Core.Exporter;
+using ICSharpCode.Reports.Core.Factories;
+using ICSharpCode.Reports.Core.Globals;
+using ICSharpCode.Reports.Core.Interfaces;
 
 /// <summary>
 /// This Class contains the basic Functions to handle reports
@@ -35,14 +36,14 @@ namespace ICSharpCode.Reports.Core {
 		
 		#region Constructor
 		
-		public ReportEngine() 
+		public ReportEngine()
 		{
 		}
 		
 		#endregion
 		
 		#region create Connection handle Sql Parameter's
-		
+		/*
 		public static ConnectionObject PrepareConnectionFromParameters (ReportSettings settings,
 		                                                                ReportParameters reportParameters)
 		{
@@ -57,11 +58,11 @@ namespace ICSharpCode.Reports.Core {
 			}
 			
 			if (!String.IsNullOrEmpty(settings.ConnectionString)) {
-				conObj = ConnectionObjectFactory.BuildConnectionObject(settings.ConnectionString);
+				conObj = ConnectionObjectFactory.BuildConnectionObject(settings);
 			}
 			return conObj;
 		}
-	
+		 */
 		#endregion
 		
 		
@@ -101,19 +102,38 @@ namespace ICSharpCode.Reports.Core {
 					model.ReportSettings.SortColumnsCollection.AddRange(reportParameters.SortColumnCollection);
 				}
 				
-				if (reportParameters.SqlParameters.Count > 0) {
-					foreach (BasicParameter bp in reportParameters.SqlParameters) {
-						BasicParameter p = model.ReportSettings.ParameterCollection.Find(bp.ParameterName);
-						if (p != null) {
-							p.ParameterValue = bp.ParameterValue;
-						}
-					}
+				if (reportParameters.Parameters.Count > 0)
+				{
+					reportParameters.Parameters.ForEach(item => SetReportParam(model,item));
 				}
 				
+				if (reportParameters.SqlParameters.Count > 0)
+				{
+					reportParameters.SqlParameters.ForEach(item => SetSqlParam(model,item));
+				}
 			}
 		}
 		
 		
+		private static void SetReportParam (IReportModel model,BasicParameter param)
+		{
+			var p = model.ReportSettings.ParameterCollection.Find(param.ParameterName);
+			if (p != null) {
+				p.ParameterValue = param.ParameterValue;
+			}
+		}
+		
+		
+		private static void SetSqlParam (IReportModel model,SqlParameter param)
+		{
+			var p = model.ReportSettings.SqlParameters.Find(param.ParameterName);
+			if (p != null) {
+				p.ParameterValue = param.ParameterValue;
+			}
+		}
+		
+
+		/*
 		protected static ColumnCollection CollectFieldsFromModel(ReportModel model){
 			if (model == null) {
 				throw new ArgumentNullException("model");
@@ -131,7 +151,7 @@ namespace ICSharpCode.Reports.Core {
 			}
 			return col;
 		}
-		
+		 */
 		
 		/// <summary>
 		/// Creates an <see cref="AbstractRenderer"></see>
@@ -204,11 +224,11 @@ namespace ICSharpCode.Reports.Core {
 			}
 			if (model.ReportSettings.DataModel != GlobalEnums.PushPullModel.PushData) {
 				throw new ArgumentException("SetupPushDataRenderer <No valid ReportType>");
-			}			
-			AbstractRenderer abstr = null;			
+			}
+			AbstractRenderer abstr = null;
 			IDataManager dataMan  = DataManager.CreateInstance(dataTable,model.ReportSettings);
-			if (dataMan != null) {				
-				abstr = RendererFactory.Create (model,dataMan);			
+			if (dataMan != null) {
+				abstr = RendererFactory.Create (model,dataMan);
 				abstr.Rendering += new EventHandler<SectionRenderEventArgs>(OnSectionPrinting);
 				abstr.SectionRendered +=new EventHandler<SectionRenderEventArgs>(OnSectionPrinted);
 				
@@ -218,57 +238,6 @@ namespace ICSharpCode.Reports.Core {
 		}
 		
 		
-		#endregion
-		
-		
-		#region Public Datahandling
-		/*
-		public static IDataManager CreateDataManager (ReportSettings reportSettings,ConnectionObject connectionObject)
-		{
-			if (reportSettings == null) {
-				throw new ArgumentNullException("reportSettings");
-			}
-			
-			if (connectionObject == null) {
-				throw new ArgumentNullException("connectionObject");
-			}
-			IDataManager dataMan = null;
-			
-			if (!String.IsNullOrEmpty(connectionObject.Connection.ConnectionString)) {
-				SqlDataAccessStrategy sda = new SqlDataAccessStrategy(reportSettings,connectionObject);
-				dataMan = DataManager.CreateInstance(reportSettings,sda);
-			}
-			if (dataMan == null) {
-				throw new MissingDataManagerException();
-			}
-			return dataMan;
-		}
-		
-		
-		
-		/// <summary>
-		/// Return a valid <see cref="Datamanager"></see>
-		/// </summary>
-		/// <param name="model"></param>
-		/// <returns></returns>
-		public static IDataManager CreateDataManager (ReportSettings reportSettings) 
-		{
-			if (reportSettings == null) {
-				throw new ArgumentNullException("reportSettings");
-			}
-			IDataManager dataMan = null;
-
-			if (!String.IsNullOrEmpty(reportSettings.CommandText)) {
-				SqlDataAccessStrategy sda = new SqlDataAccessStrategy(reportSettings,null);
-				dataMan = DataManager.CreateInstance(reportSettings,sda);
-			}
-			
-			if (dataMan == null) {
-				throw new MissingDataManagerException();
-			}
-			return dataMan;
-		}
-		*/
 		#endregion
 		
 		
@@ -287,15 +256,17 @@ namespace ICSharpCode.Reports.Core {
 			try {
 				model = LoadReportModel (fileName);
 				ReportParameters pars = new ReportParameters();
-				pars.ConnectionObject = null;
-				
-				pars.SqlParameters.AddRange (model.ReportSettings.ParameterCollection);
+				pars.Parameters.AddRange (model.ReportSettings.ParameterCollection);
+				pars.SqlParameters.AddRange(model.ReportSettings.SqlParameters);
 				return pars;
 			} catch (Exception) {
 				throw;
 			}
 		}
 		
+		#endregion
+		
+		#region LoadModule
 		
 		/// <summary>
 		/// Load's a <see cref="ReportModel"></see> from File using the
@@ -306,52 +277,42 @@ namespace ICSharpCode.Reports.Core {
 			if (String.IsNullOrEmpty(fileName)) {
 				throw new ArgumentNullException("fileName");
 			}
-			XmlDocument doc = new XmlDocument();
-			try {
-				doc.Load(fileName);
-			} catch (XmlException) {
-				// TODO: display user-friendly message
-				throw;
-			} catch (IOException) {
-				// TODO: display user-friendly message
-				throw;
-			}
+			var doc = new XmlDocument();
+			doc.Load(fileName);
+			ReportModel model = LoadModel(doc);
 			
+			model.ReportSettings.FileName = fileName;
+			FilePathConverter.AdjustReportName(model);
+			return model;
+		}
+
+		
+		public static ReportModel LoadReportModel (Stream stream) {
+			if (stream == null) {
+				throw new ArgumentNullException("stream");
+			}
+			var doc = new XmlDocument();
+			doc.Load(stream);
+			return LoadModel(doc);
+		}
+		
+		
+		static ReportModel LoadModel(XmlDocument doc)
+		{
 			BaseItemLoader loader = new BaseItemLoader();
 			object root = loader.Load(doc.DocumentElement);
-			
-			ReportModel model = root as ReportModel;
-			if (model != null) {
-				model.ReportSettings.FileName = fileName;
-				FilePathConverter.AdjustReportName(model);
-			} else {
-					IllegalFileFormatException e = new IllegalFileFormatException();
-				throw e;
+
+			var model = root as ReportModel;
+			if (model == null) {
+				throw new IllegalFileFormatException("ReportModel");
 			}
 			return model;
 		}
 		
+		
 		#endregion
 		
 		#region Preview to Windows PreviewDialog
-		///<summary>
-		/// Opens the PreviewDialog as standalone, so, no need for Designer
-		/// </summary>
-		///<param name="fileName">Report's Filenema</param>
-		/// <param name="/// <summary>
-		/// send report to printer
-		/// </summary>
-		/// <param name="fileName">Path to ReportFile</param>
-		
-		[Obsolete ("use public void PreviewStandardReport (string fileName,null)")]
-		public void PreviewStandardReport (string fileName) 
-		{
-			if (String.IsNullOrEmpty(fileName)) {
-				throw new ArgumentNullException("fileName");
-			}
-			PreviewStandardReport (fileName,null);
-		}
-		
 		
 		public void PreviewStandardReport (string fileName,ReportParameters reportParameters)
 		{
@@ -370,25 +331,6 @@ namespace ICSharpCode.Reports.Core {
 			} catch (Exception) {
 				throw;
 			}
-		}
-		
-		
-		/// <summary>
-		/// Preview a "PushModel - Report"
-		/// </summary>
-		/// <param name="fileName">Filename to the location of the ReportFile</param>
-		/// <param name="dataTable">a Datatable, containing the data</param>
-		
-		[Obsolete("use public void PreviewPushDataReport (string fileName,DataTable dataTable,null)")]
-		public void PreviewPushDataReport (string fileName,DataTable dataTable)
-		{
-			if (String.IsNullOrEmpty(fileName)) {
-				throw new ArgumentNullException("fileName");
-			}
-			if (dataTable == null) {
-				throw new ArgumentNullException("dataTable");
-			}
-			this.PreviewPushDataReport(fileName,dataTable,null);
 		}
 		
 
@@ -414,19 +356,6 @@ namespace ICSharpCode.Reports.Core {
 		}
 		
 		
-		[Obsolete ("use public void PreviewPushDataReport (string fileName,IList list,null)")]
-		public void PreviewPushDataReport (string fileName,IList list)
-		{
-			if (String.IsNullOrEmpty(fileName)) {
-				throw new ArgumentNullException("fileName");
-			}
-			if (list == null) {
-				throw new ArgumentNullException("list");
-			}
-			this.PreviewPushDataReport(fileName,list,null);
-		}
-		
-	
 		public void PreviewPushDataReport (string fileName,IList list,ReportParameters reportParameters)
 		{
 			if (String.IsNullOrEmpty(fileName)) {
@@ -485,8 +414,8 @@ namespace ICSharpCode.Reports.Core {
 		/// </summary>
 		/// <param name="reportModel"></param>
 		/// <returns></returns>
-		
-		public static IReportCreator CreatePageBuilder (IReportModel reportModel) 
+		/*
+		internal static IReportCreator CreatePageBuilder (IReportModel reportModel)
 		{
 			if (reportModel == null) {
 				throw new ArgumentNullException("reportModel");
@@ -495,7 +424,7 @@ namespace ICSharpCode.Reports.Core {
 			IReportCreator builder = DataPageBuilder.CreateInstance(reportModel, dataMan);
 			return builder;
 		}
-		
+		 */
 
 		/// <summary>
 		/// 
@@ -505,8 +434,8 @@ namespace ICSharpCode.Reports.Core {
 		/// <param name="reportParameter"></param>
 		/// <returns></returns>
 		public static IReportCreator CreatePageBuilder (IReportModel reportModel,
-		                                         DataSet dataSet,
-		                                         ReportParameters reportParameter)
+		                                                DataSet dataSet,
+		                                                ReportParameters reportParameter)
 		{
 			if (reportModel == null) {
 				throw new ArgumentNullException("reportModel");
@@ -517,7 +446,7 @@ namespace ICSharpCode.Reports.Core {
 			return CreatePageBuilder (reportModel,dataSet.Tables[0],reportParameter);
 		}
 		
-	
+		
 		
 		/// <summary>
 		/// 
@@ -527,9 +456,9 @@ namespace ICSharpCode.Reports.Core {
 		/// <param name="reportParameters"></param>
 		/// <returns></returns>
 		
-		public static  IReportCreator CreatePageBuilder (IReportModel reportModel,
-		                                         DataTable dataTable,
-		                                         ReportParameters reportParameters)
+		public static IReportCreator CreatePageBuilder (IReportModel reportModel,
+		                                                DataTable dataTable,
+		                                                ReportParameters reportParameters)
 		{
 			if (reportModel == null) {
 				throw new ArgumentNullException("reportModel");
@@ -556,8 +485,8 @@ namespace ICSharpCode.Reports.Core {
 		/// <param name="reportParameters"></param>
 		/// <returns></returns>
 		public static  IReportCreator CreatePageBuilder (IReportModel reportModel,
-		                                         IList list,
-		                                         ReportParameters reportParameters)
+		                                                 IList list,
+		                                                 ReportParameters reportParameters)
 		{
 			if (reportModel == null) {
 				throw new ArgumentNullException("reportModel");
@@ -610,15 +539,15 @@ namespace ICSharpCode.Reports.Core {
 		/// </summary>
 		/// <param name="fileName">Path to ReportFile</param>
 		/// <param name="renderTo">Type of renderer currently only "ToText" is implemented</param>
-		[Obsolete("use PrintStandardReport (fileName,null)")]
-		public void PrintStandardReport (string fileName) {
-			if (String.IsNullOrEmpty(fileName)) {
-				throw new ArgumentNullException("fileName");
-			}
-			PrintStandardReport (fileName,null);
-			
-		}
-		
+//		[Obsolete("use PrintStandardReport (fileName,null)")]
+//		public void PrintStandardReport (string fileName) {
+//			if (String.IsNullOrEmpty(fileName)) {
+//				throw new ArgumentNullException("fileName");
+//			}
+//			PrintStandardReport (fileName,null);
+//
+//		}
+//
 		
 		public void PrintStandardReport (string fileName,ReportParameters reportParameters) {
 			if (String.IsNullOrEmpty(fileName)) {
@@ -631,7 +560,7 @@ namespace ICSharpCode.Reports.Core {
 //				if (this.connectionObject == null) {
 //					this.connectionObject = ReportEngine.PrepareConnectionFromParameters (model.ReportSettings,reportParameters);
 //				}
-//				
+//
 				ReportEngine.CheckForParameters(model,reportParameters);
 				renderer = SetupStandardRenderer (model,reportParameters);
 				ReportEngine.ReportToPrinter (renderer,model);
@@ -648,7 +577,7 @@ namespace ICSharpCode.Reports.Core {
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <param name="dataTable"></param>
-	
+		
 		public void PrintPushDataReport (string fileName,DataTable dataTable) {
 			if (String.IsNullOrEmpty(fileName)) {
 				throw new ArgumentNullException("fileName");
@@ -703,16 +632,6 @@ namespace ICSharpCode.Reports.Core {
 				return this.previewControl;
 			}
 		}
-		
-		
-//		public ConnectionObject ConnectionObject {
-//			get {
-//				return connectionObject;
-//			}
-//			set {
-//				connectionObject = value;
-//			}
-//		}
 		
 		#endregion
 		

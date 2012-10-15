@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -18,39 +19,26 @@ namespace ICSharpCode.AvalonEdit.AddIn
 	/// <summary>
 	/// Handles the text markers for a code editor.
 	/// </summary>
-	sealed class TextMarkerService : DocumentColorizingTransformer, IBackgroundRenderer, ITextMarkerService
+	public sealed class TextMarkerService : DocumentColorizingTransformer, IBackgroundRenderer, ITextMarkerService, ITextViewConnect
 	{
-		readonly CodeEditor codeEditor;
 		TextSegmentCollection<TextMarker> markers;
+		TextDocument document;
 		
-		public TextMarkerService(CodeEditor codeEditor)
+		public TextMarkerService(TextDocument document)
 		{
-			if (codeEditor == null)
-				throw new ArgumentNullException("codeEditor");
-			this.codeEditor = codeEditor;
-			codeEditor.DocumentChanged += codeEditor_DocumentChanged;
-			codeEditor_DocumentChanged(null, null);
+			if (document == null)
+				throw new ArgumentNullException("document");
+			this.document = document;
+			this.markers = new TextSegmentCollection<TextMarker>(document);
 		}
-		
-		#region Document Changed - recreate marker collection
-		void codeEditor_DocumentChanged(object sender, EventArgs e)
-		{
-			if (markers != null) {
-				foreach (TextMarker m in markers.ToArray()) {
-					m.Delete();
-				}
-			}
-			if (codeEditor.Document == null)
-				markers = null;
-			else
-				markers = new TextSegmentCollection<TextMarker>(codeEditor.Document);
-		}
-		#endregion
 		
 		#region ITextMarkerService
 		public ITextMarker Create(int startOffset, int length)
 		{
-			int textLength = codeEditor.Document.TextLength;
+			if (markers == null)
+				throw new InvalidOperationException("Cannot create a marker when not attached to a document");
+			
+			int textLength = document.TextLength;
 			if (startOffset < 0 || startOffset > textLength)
 				throw new ArgumentOutOfRangeException("startOffset", startOffset, "Value must be between 0 and " + textLength);
 			if (length < 0 || startOffset + length > textLength)
@@ -64,20 +52,25 @@ namespace ICSharpCode.AvalonEdit.AddIn
 		
 		public IEnumerable<ITextMarker> GetMarkersAtOffset(int offset)
 		{
-			return markers.FindSegmentsContaining(offset);
+			if (markers == null)
+				return Enumerable.Empty<ITextMarker>();
+			else
+				return markers.FindSegmentsContaining(offset);
 		}
 		
 		public IEnumerable<ITextMarker> TextMarkers {
-			get { return markers; }
+			get { return markers ?? Enumerable.Empty<ITextMarker>(); }
 		}
 		
 		public void RemoveAll(Predicate<ITextMarker> predicate)
 		{
 			if (predicate == null)
 				throw new ArgumentNullException("predicate");
-			foreach (TextMarker m in markers.ToArray()) {
-				if (predicate(m))
-					Remove(m);
+			if (markers != null) {
+				foreach (TextMarker m in markers.ToArray()) {
+					if (predicate(m))
+						Remove(m);
+				}
 			}
 		}
 		
@@ -86,7 +79,7 @@ namespace ICSharpCode.AvalonEdit.AddIn
 			if (marker == null)
 				throw new ArgumentNullException("marker");
 			TextMarker m = marker as TextMarker;
-			if (markers.Remove(m)) {
+			if (markers != null && markers.Remove(m)) {
 				Redraw(m);
 				m.OnDeleted();
 			}
@@ -97,7 +90,9 @@ namespace ICSharpCode.AvalonEdit.AddIn
 		/// </summary>
 		internal void Redraw(ISegment segment)
 		{
-			codeEditor.Redraw(segment, DispatcherPriority.Normal);
+			foreach (var view in textViews) {
+				view.Redraw(segment, DispatcherPriority.Normal);
+			}
 		}
 		#endregion
 		
@@ -147,7 +142,7 @@ namespace ICSharpCode.AvalonEdit.AddIn
 			if (visualLines.Count == 0)
 				return;
 			int viewStart = visualLines.First().FirstDocumentLine.Offset;
-			int viewEnd = visualLines.Last().LastDocumentLine.Offset + visualLines.Last().LastDocumentLine.Length;
+			int viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
 			foreach (TextMarker marker in markers.FindOverlappingSegments(viewStart, viewEnd - viewStart)) {
 				if (marker.BackgroundColor != null) {
 					BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder();
@@ -198,9 +193,29 @@ namespace ICSharpCode.AvalonEdit.AddIn
 				yield return new Point(start.X + i * offset, start.Y - ((i + 1) % 2 == 0 ? offset : 0));
 		}
 		#endregion
+		
+		#region ITextViewConnect
+		readonly List<TextView> textViews = new List<TextView>();
+		
+		void ITextViewConnect.AddToTextView(TextView textView)
+		{
+			if (textView != null && !textViews.Contains(textView)) {
+				Debug.Assert(textView.Document == document);
+				textViews.Add(textView);
+			}
+		}
+		
+		void ITextViewConnect.RemoveFromTextView(TextView textView)
+		{
+			if (textView != null) {
+				Debug.Assert(textView.Document == document);
+				textViews.Remove(textView);
+			}
+		}
+		#endregion
 	}
 	
-	sealed class TextMarker : TextSegment, ITextMarker
+	public sealed class TextMarker : TextSegment, ITextMarker
 	{
 		readonly TextMarkerService service;
 		

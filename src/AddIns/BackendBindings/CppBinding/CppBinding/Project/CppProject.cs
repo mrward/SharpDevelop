@@ -27,6 +27,7 @@ namespace ICSharpCode.CppBinding.Project
 				AddProjectConfigurationsItemGroup();
 				base.ReevaluateIfNecessary(); // provoke exception if import is invalid
 			} catch (InvalidProjectFileException ex) {
+				Dispose();
 				throw new ProjectLoadException("Please ensure that the Windows SDK is installed on your computer.\n\n" + ex.Message, ex);
 			}
 		}
@@ -34,13 +35,6 @@ namespace ICSharpCode.CppBinding.Project
 		public CppProject(ProjectLoadInformation info)
 			: base(info)
 		{
-		}
-
-		public override ProjectItem CreateProjectItem(IProjectItemBackendStore item)
-		{
-			if ("ProjectConfiguration" == item.ItemType.ItemName)
-				return new ProjectConfigurationProjectItem(this, item);
-			return base.CreateProjectItem(item);
 		}
 
 		public override IAmbience GetAmbience()
@@ -68,16 +62,16 @@ namespace ICSharpCode.CppBinding.Project
 			{
 				string outputPath = GetEvaluatedProperty("OutDir") ?? "";
 				if (!Path.IsPathRooted(outputPath))
-					return FileUtility.NormalizePath(Path.Combine(Path.Combine(Path.Combine(Directory, ".."), outputPath),
+					return FileUtility.NormalizePath(Path.Combine(ParentSolution.Directory, outputPath,
 					                                              AssemblyName + GetExtension(OutputType)));
 				else
 				{
 					// this will be valid if there is an explicit OutDir property in vcxproj file.
-					if (GetUnevalatedProperty("OutDir").StartsWith("$(SolutionDir)"))
+					if ((GetUnevalatedProperty("OutDir") ?? "").StartsWith("$(SolutionDir)"))
 					{
 						// in #D every project is compiled by msbuild separately, this mean that SolutionDir will
 						// be equal to ProjectDir, so it has to be replaced with actual solution directory
-						string evaluatedSolutionDir = GetEvaluatedProperty("SolutionDir");
+						string evaluatedSolutionDir = GetEvaluatedProperty("SolutionDir") ?? "";
 						outputPath = Path.Combine(ParentSolution.Directory, outputPath.Substring(evaluatedSolutionDir.Length));
 					}
 					return FileUtility.NormalizePath(Path.Combine(outputPath, AssemblyName + GetExtension(OutputType)));
@@ -85,21 +79,6 @@ namespace ICSharpCode.CppBinding.Project
 			}
 		}
 
-		public override ItemType GetDefaultItemType(string fileName)
-		{
-			const string RESOURCE_COMPILE = "ResourceCompile";
-
-			string extension = Path.GetExtension(fileName).ToLower();
-			switch (extension)
-			{
-					case ".cpp": return ItemType.ClCompile;
-					case ".c": return ItemType.ClCompile;
-					case ".hpp": return ItemType.ClInclude;
-					case ".h": return ItemType.ClInclude;
-					case ".rc": return new ItemType(RESOURCE_COMPILE);
-			}
-			return base.GetDefaultItemType(fileName);
-		}
 
 		public const string DefaultTargetsFile = @"$(VCTargetsPath)\Microsoft.Cpp.Targets";
 		public const string DefaultPropsFile = @"$(VCTargetsPath)\Microsoft.Cpp.Default.props";
@@ -200,6 +179,42 @@ namespace ICSharpCode.CppBinding.Project
 				prjConfiguration.AddMetadata("Configuration", GetConfigurationNameFromKey(target));
 				prjConfiguration.AddMetadata("Platform", GetPlatformNameFromKey(target));
 			}
+		}
+		
+		protected override ProjectBehavior CreateDefaultBehavior()
+		{
+			return new CppProjectBehavior(this, base.CreateDefaultBehavior());
+		}
+	}
+	
+	public class CppProjectBehavior : ProjectBehavior
+	{
+		public CppProjectBehavior(CppProject project, ProjectBehavior next = null)
+			: base(project, next)
+		{
+		}
+		
+		public override ProjectItem CreateProjectItem(IProjectItemBackendStore item)
+		{
+			if ("ProjectConfiguration" == item.ItemType.ItemName)
+				return new ProjectConfigurationProjectItem(Project, item);
+			return base.CreateProjectItem(item);
+		}
+		
+		public override ItemType GetDefaultItemType(string fileName)
+		{
+			const string RESOURCE_COMPILE = "ResourceCompile";
+
+			string extension = Path.GetExtension(fileName).ToLower();
+			switch (extension)
+			{
+					case ".cpp": return ItemType.ClCompile;
+					case ".c": return ItemType.ClCompile;
+					case ".hpp": return ItemType.ClInclude;
+					case ".h": return ItemType.ClInclude;
+					case ".rc": return new ItemType(RESOURCE_COMPILE);
+			}
+			return base.GetDefaultItemType(fileName);
 		}
 	}
 }

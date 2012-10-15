@@ -3,15 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
 using Debugger;
 using Debugger.AddIn.TreeModel;
 using ICSharpCode.Core;
+using ICSharpCode.SharpDevelop.Gui.Pads;
 using ICSharpCode.SharpDevelop.Services;
 
 namespace ICSharpCode.SharpDevelop.Gui.Pads
@@ -21,10 +22,12 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 	/// </summary>
 	public partial class CallStackPadContent : UserControl
 	{
+		CallStackPad callStackPad;
 		Process debuggedProcess;
 		
-		public CallStackPadContent()
+		public CallStackPadContent(CallStackPad pad)
 		{
+			this.callStackPad = pad;
 			InitializeComponent();
 			
 			view.ContextMenu = CreateMenu();
@@ -40,7 +43,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			extMethodsItem.IsChecked = DebuggingOptions.Instance.ShowExternalMethods;
 			extMethodsItem.Click += delegate {
 				extMethodsItem.IsChecked = DebuggingOptions.Instance.ShowExternalMethods = !DebuggingOptions.Instance.ShowExternalMethods;
-				RefreshPad();
+				callStackPad.InvalidatePad();
 			};
 			
 			MenuItem moduleItem = new MenuItem();
@@ -49,7 +52,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			moduleItem.Click += delegate {
 				moduleItem.IsChecked = DebuggingOptions.Instance.ShowModuleNames = !DebuggingOptions.Instance.ShowModuleNames;
 				((GridView)view.View).Columns[0].Width = DebuggingOptions.Instance.ShowModuleNames ? 100d : 0d;
-				RefreshPad();
+				callStackPad.InvalidatePad();
 			};
 			
 			MenuItem argNamesItem = new MenuItem();
@@ -57,7 +60,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			argNamesItem.IsChecked = DebuggingOptions.Instance.ShowArgumentNames;
 			argNamesItem.Click += delegate {
 				argNamesItem.IsChecked = DebuggingOptions.Instance.ShowArgumentNames = !DebuggingOptions.Instance.ShowArgumentNames;
-				RefreshPad();
+				callStackPad.InvalidatePad();
 			};
 			
 			MenuItem argValuesItem = new MenuItem();
@@ -65,7 +68,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			argValuesItem.IsChecked = DebuggingOptions.Instance.ShowArgumentValues;
 			argValuesItem.Click += delegate {
 				argValuesItem.IsChecked = DebuggingOptions.Instance.ShowArgumentValues = !DebuggingOptions.Instance.ShowArgumentValues;
-				RefreshPad();
+				callStackPad.InvalidatePad();
 			};
 			
 			MenuItem lineItem = new MenuItem();
@@ -74,7 +77,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			lineItem.Click += delegate {
 				lineItem.IsChecked = DebuggingOptions.Instance.ShowLineNumbers = !DebuggingOptions.Instance.ShowLineNumbers;
 				((GridView)view.View).Columns[2].Width = DebuggingOptions.Instance.ShowLineNumbers ? 50d : 0d;
-				RefreshPad();
+				callStackPad.InvalidatePad();
 			};
 			
 			return new ContextMenu() {
@@ -98,12 +101,12 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			if (debuggedProcess != null) {
 				debuggedProcess.Paused += debuggedProcess_Paused;
 			}
-			RefreshPad();
+			callStackPad.InvalidatePad();
 		}
 
 		void debuggedProcess_Paused(object sender, ProcessEventArgs e)
 		{
-			RefreshPad();
+			callStackPad.InvalidatePad();
 		}
 		
 		void View_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -115,14 +118,17 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 				
 				if (item == null)
 					return;
-				
-				if (item.Frame.HasSymbols) {
-					if (debuggedProcess.SelectedThread != null) {
-						debuggedProcess.SelectedThread.SelectedStackFrame = item.Frame;
-						debuggedProcess.OnPaused(); // Force refresh of pads
+
+				if (item.Frame != null && debuggedProcess.SelectedThread != null) {
+					// check for options - if these options are enabled, selecting the frame should not continue
+					if (!item.Frame.HasSymbols && !debuggedProcess.Options.DecompileCodeWithoutSymbols) {
+						MessageService.ShowMessage("${res:MainWindow.Windows.Debug.CallStack.CannotSwitchWithoutSymbolsOrDecompiledCodeOptions}",
+						                           "${res:MainWindow.Windows.Debug.CallStack.FunctionSwitch}");
+						return;
 					}
-				} else {
-					MessageService.ShowMessage("${res:MainWindow.Windows.Debug.CallStack.CannotSwitchWithoutSymbols}", "${res:MainWindow.Windows.Debug.CallStack.FunctionSwitch}");
+					debuggedProcess.SelectedThread.SelectedStackFrame = item.Frame;
+					debuggedProcess.PauseSession.PausedReason = PausedReason.CurrentFunctionChanged;
+					debuggedProcess.OnPaused(); // Force refresh of pads - artificial pause
 				}
 			} else {
 				MessageService.ShowMessage("${res:MainWindow.Windows.Debug.CallStack.CannotSwitchWhileRunning}", "${res:MainWindow.Windows.Debug.CallStack.FunctionSwitch}");
@@ -137,75 +143,63 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			}
 		}
 		
-		public void RefreshPad()
+		internal void RefreshPad()
 		{
 			if (debuggedProcess == null || debuggedProcess.IsRunning || debuggedProcess.SelectedThread == null) {
 				view.ItemsSource = null;
 				return;
 			}
 			
-			List<CallStackItem> items = null;
-			StackFrame activeFrame = null;
+			var items = new ObservableCollection<CallStackItem>();
 			using(new PrintTimes("Callstack refresh")) {
-				try {
-					Utils.DoEvents(debuggedProcess);
-					items = CreateItems().ToList();
-					activeFrame = debuggedProcess.SelectedThread.SelectedStackFrame;
-				} catch(AbortedBecauseDebuggeeResumedException) {
-				} catch(System.Exception) {
-					if (debuggedProcess == null || debuggedProcess.HasExited) {
-						// Process unexpectedly exited
-					} else {
-						throw;
-					}
-				}
+				bool showExternalMethods = DebuggingOptions.Instance.ShowExternalMethods;
+				bool previousItemIsExternalMethod = false;
+				
+				debuggedProcess.EnqueueForEach(
+					Dispatcher,
+					debuggedProcess.SelectedThread.GetCallstack(100),
+					f => items.AddIfNotNull(CreateItem(f, showExternalMethods, ref previousItemIsExternalMethod))
+				);
 			}
 			view.ItemsSource = items;
-			view.SelectedItem = items != null ? items.FirstOrDefault(item => object.Equals(activeFrame, item.Frame)) : null;
 		}
 		
-		IEnumerable<CallStackItem> CreateItems()
+		CallStackItem CreateItem(StackFrame frame, bool showExternalMethods, ref bool previousItemIsExternalMethod)
 		{
-			bool showExternalMethods = DebuggingOptions.Instance.ShowExternalMethods;
-			bool lastItemIsExternalMethod = false;
+			CallStackItem item;
 			
-			foreach (StackFrame frame in debuggedProcess.SelectedThread.GetCallstack(100)) {
-				CallStackItem item;
-				
-				// line number
-				string lineNumber = string.Empty;
-				if (DebuggingOptions.Instance.ShowLineNumbers) {
-					if (frame.NextStatement != null)
-						lineNumber = frame.NextStatement.StartLine.ToString();
-				}
-				
-				// show modules names
-				string moduleName = string.Empty;
-				if (DebuggingOptions.Instance.ShowModuleNames) {
-					moduleName = frame.MethodInfo.DebugModule.ToString();
-				}
-				
-				if (frame.HasSymbols || showExternalMethods) {
-					// Show the method in the list
-					
-					item = new CallStackItem() {
-						Name = GetFullName(frame), Language = "", Line = lineNumber, ModuleName = moduleName
-					};
-					lastItemIsExternalMethod = false;
-				} else {
-					// Show [External methods] in the list
-					if (lastItemIsExternalMethod) continue;
-					item = new CallStackItem() {
-						Name = ResourceService.GetString("MainWindow.Windows.Debug.CallStack.ExternalMethods"),
-						Language = ""
-					};
-					lastItemIsExternalMethod = true;
-				}
-				item.Frame = frame;
-				yield return item;
-				
-				Utils.DoEvents(debuggedProcess);
+			// line number
+			string lineNumber = string.Empty;
+			if (DebuggingOptions.Instance.ShowLineNumbers) {
+				if (frame.NextStatement != null)
+					lineNumber = frame.NextStatement.StartLine.ToString();
 			}
+			
+			// show modules names
+			string moduleName = string.Empty;
+			if (DebuggingOptions.Instance.ShowModuleNames) {
+				moduleName = frame.MethodInfo.DebugModule.ToString();
+			}
+			
+			if (frame.HasSymbols || showExternalMethods) {
+				// Show the method in the list
+				
+				item = new CallStackItem() {
+					Name = GetFullName(frame), Language = "", Line = lineNumber, ModuleName = moduleName
+				};
+				previousItemIsExternalMethod = false;
+				item.Frame = frame;
+			} else {
+				// Show [External methods] in the list
+				if (previousItemIsExternalMethod) return null;
+				item = new CallStackItem() {
+					Name = ResourceService.GetString("MainWindow.Windows.Debug.CallStack.ExternalMethods"),
+					Language = ""
+				};
+				previousItemIsExternalMethod = true;
+			}
+			
+			return item;
 		}
 		
 		internal static string GetFullName(StackFrame frame)
@@ -277,6 +271,17 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 	{
 		CallStackPadContent callStackList;
 		
+		static CallStackPad instance;
+		
+		public static CallStackPad Instance {
+			get { return instance; }
+		}
+		
+		public CallStackPad()
+		{
+			instance = this;
+		}
+		
 		public override object Control {
 			get {
 				return callStackList;
@@ -285,7 +290,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 		
 		protected override void InitializeComponents()
 		{
-			callStackList = new CallStackPadContent();
+			callStackList = new CallStackPadContent(this);
 		}
 		
 		protected override void SelectProcess(Process process)
@@ -293,7 +298,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			callStackList.SelectProcess(process);
 		}
 		
-		public override void RefreshPad()
+		protected override void RefreshPad()
 		{
 			callStackList.RefreshPad();
 		}

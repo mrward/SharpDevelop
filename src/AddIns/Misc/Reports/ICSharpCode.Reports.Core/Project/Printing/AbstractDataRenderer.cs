@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Printing;
 
 using ICSharpCode.Reports.Core.BaseClasses.Printing;
+using ICSharpCode.Reports.Core.Globals;
 using ICSharpCode.Reports.Core.Interfaces;
 using ICSharpCode.Reports.Expressions.ReportingLanguage;
 
@@ -76,12 +77,12 @@ namespace ICSharpCode.Reports.Core
 				if (row != null)
 				{
 					rs = row.Size;
-					PrintHelper.AdjustParent(tableContainer as BaseReportItem,tableContainer.Items);
+					PrintHelper.AdjustParent(tableContainer,tableContainer.Items);
 					
 					if (PrintHelper.IsTextOnlyRow(row) )
 					{
 						
-						PrintHelper.SetLayoutForRow(rpea.PrintPageEventArgs.Graphics,base.Layout,row);
+						LayoutHelper.SetLayoutForRow(rpea.PrintPageEventArgs.Graphics,base.Layout,row);
 						
 						Rectangle r =  StandardPrinter.RenderContainer(row,Evaluator,currentPosition,rpea);
 						
@@ -89,7 +90,6 @@ namespace ICSharpCode.Reports.Core
 						currentPosition = PrintHelper.ConvertRectangleToCurentPosition (r);
 					
 						tableContainer.Location = saveLocation;
-						Console.WriteLine("----");
 					}
 					else {
 						int adjust = row.Location.Y - saveLocation.Y;
@@ -105,7 +105,7 @@ namespace ICSharpCode.Reports.Core
 							
 							this.dataNavigator.Fill(row.Items);
 							
-							PrintHelper.SetLayoutForRow(rpea.PrintPageEventArgs.Graphics,base.Layout,row);
+							LayoutHelper.SetLayoutForRow(rpea.PrintPageEventArgs.Graphics,base.Layout,row);
 							
 							Rectangle r =  StandardPrinter.RenderContainer(row,Evaluator,currentPosition,rpea);
 							
@@ -153,55 +153,56 @@ namespace ICSharpCode.Reports.Core
 			
 			Point currentPosition	= new Point(section.Location.X + container.Location.X,offset.Y);
 			
-			if (section.Visible){
-				
-				//Always set section.size to it's original value
-				
-				section.Size = this.SectionBounds.DetailSectionRectangle.Size;
-				
-				Size containerSize = new Size (section.Items[0].Size.Width,section.Items[0].Size.Height);
-				
-				PrintHelper.SetLayoutForRow(rpea.PrintPageEventArgs.Graphics,base.Layout,container);
-				
-				section.Render (rpea);
-				
-				PrintHelper.AdjustParent(section,section.Items);
-				
-				foreach (BaseReportItem item in section.Items) {
+//			if (section.VisibleInReport)
+//			{
+			
+			//Always set section.size to it's original value
+			
+			section.Size = this.SectionBounds.DetailSectionRectangle.Size;
+			
+			Size containerSize = new Size (section.Items[0].Size.Width,section.Items[0].Size.Height);
+			
+			LayoutHelper.SetLayoutForRow(rpea.PrintPageEventArgs.Graphics,base.Layout,container);
+			
+			section.Render (rpea);
+			
+			PrintHelper.AdjustParent(section,section.Items);
+			
+			foreach (BaseReportItem item in section.Items) {
 
-					ISimpleContainer con = item as ISimpleContainer;
-					if (con != null) {
-						Rectangle r = StandardPrinter.RenderContainer(container,Evaluator,offset,rpea);
-						currentPosition = PrintHelper.ConvertRectangleToCurentPosition(r);
-					}
-					
-					else
-					{
-						
-						item.SectionOffset = section.SectionOffset;
-						Point saveLocation = item.Location;
-						item.Render(rpea);
-						
-						item.Location = saveLocation;
-						
-						ISimpleContainer cont = item as ISimpleContainer;
-
-						Rectangle r =  StandardPrinter.RenderContainer(cont,Evaluator,currentPosition,rpea);
-						currentPosition = PrintHelper.ConvertRectangleToCurentPosition (r);
-						
-						item.Location = saveLocation;
-						
-						rpea.LocationAfterDraw = new Point (rpea.LocationAfterDraw.X,section.SectionOffset + section.Size.Height);
-						
-					}
-				
-					section.Items[0].Size = containerSize;
-					return currentPosition;
+				ISimpleContainer con = item as ISimpleContainer;
+				if (con != null) {
+					Rectangle r = StandardPrinter.RenderContainer(container,Evaluator,offset,rpea);
+					currentPosition = PrintHelper.ConvertRectangleToCurentPosition(r);
 				}
 				
+				else
+				{
+					
+					item.SectionOffset = section.SectionOffset;
+					Point saveLocation = item.Location;
+					item.Render(rpea);
+					
+					item.Location = saveLocation;
+					
+					ISimpleContainer cont = item as ISimpleContainer;
+
+					Rectangle r =  StandardPrinter.RenderContainer(cont,Evaluator,currentPosition,rpea);
+					currentPosition = PrintHelper.ConvertRectangleToCurentPosition (r);
+					
+					item.Location = saveLocation;
+					
+					rpea.LocationAfterDraw = new Point (rpea.LocationAfterDraw.X,section.SectionOffset + section.Size.Height);
+					
+				}
+				
+				section.Items[0].Size = containerSize;
 				return currentPosition;
 			}
+			
 			return currentPosition;
+//			}
+//			return currentPosition;
 		}
 		
 		

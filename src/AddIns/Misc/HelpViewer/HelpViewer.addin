@@ -4,6 +4,10 @@
        description        = "Help Integration for SharpDevelop"
        addInManagerHidden = "preinstalled">
 	
+	<Manifest>
+		<Identity name = "ICSharpCode.HelpViewer"/>
+	</Manifest>
+	
 	<Runtime>
 		<Import assembly = "HelpViewer.dll"/>
 	</Runtime>
@@ -49,6 +53,11 @@
 		          class        = "MSHelpSystem.Commands.DisplaySearch"
 		          label        = "${res:AddIns.HelpViewer.DisplaySearchCommand}"
 		          shortcut     = ""
-		          insertbefore = "Separator1" />	
+		          insertbefore = "Separator1" />
+		<MenuItem id           = "LaunchHelpLibraryManager"
+		          class        = "MSHelpSystem.Commands.LaunchHelpLibraryManager"
+		          label        = "${res:AddIns.HelpViewer.LaunchHelpLibraryManagerCommand}"
+		          shortcut     = ""
+		          insertbefore = "Separator1" />
 	</Path>
 </AddIn>

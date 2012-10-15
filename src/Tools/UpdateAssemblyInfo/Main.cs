@@ -19,8 +19,8 @@ namespace UpdateAssemblyInfo
 	// Updates the version numbers in the assembly information.
 	class MainClass
 	{
-		const string BaseCommit = "6eceaaafce5ed9b45d19a1645b1b012675aac996";
-		const int BaseCommitRev = 6450;
+		const string BaseCommit = "4b2d4a664466e1e784e6c5be367966c426d14ef8";
+		const int BaseCommitRev = 7999;
 		
 		const string globalAssemblyInfoTemplateFile = "src/Main/GlobalAssemblyInfo.template";
 		static readonly TemplateFile[] templateFiles = {
@@ -39,10 +39,6 @@ namespace UpdateAssemblyInfo
 			new TemplateFile {
 				Input = "src/Setup/SharpDevelop.Setup.wixproj.user.template",
 				Output = "src/Setup/SharpDevelop.Setup.wixproj.user"
-			},
-			new TemplateFile {
-				Input = "doc/ChangeLog.template.html",
-				Output = "doc/ChangeLog.html"
 			},
 			new TemplateFile {
 				Input = "src/AddIns/Misc/UsageDataCollector/UsageDataCollector.AddIn/AnalyticsMonitor.AppProperties.template",
@@ -207,8 +203,12 @@ namespace UpdateAssemblyInfo
 		{
 			if (revisionNumber == null) {
 				if (Directory.Exists(".git")) {
-					ReadRevisionNumberFromGit();
-					ReadBranchNameFromGit();
+					try {
+						ReadRevisionNumberFromGit();
+						ReadBranchNameFromGit();
+					} catch (Exception ex) {
+						Console.WriteLine(ex.ToString());
+					}
 				} else {
 					Console.WriteLine("There's no git working copy in " + Path.GetFullPath("."));
 				}
@@ -238,10 +238,12 @@ namespace UpdateAssemblyInfo
 					}
 					revNum++;
 				}
-				revisionNumber = revNum.ToString();
 				p.WaitForExit();
 				if (p.ExitCode != 0)
 					throw new Exception("git-rev-list exit code was " + p.ExitCode);
+				// Only set revisionNuber once we ensured the operation was successful,
+				// so that we retrieve the number from the REVISION file in case of errors
+				revisionNumber = revNum.ToString();
 			}
 		}
 		
@@ -281,11 +283,11 @@ namespace UpdateAssemblyInfo
 				Console.WriteLine();
 				Console.WriteLine("Build continues with revision number '0'...");
 				
-				revisionNumber = "0";
-				gitCommitHash = "0000000000000000000000000000000000000000";
+				revisionNumber = null;
 			}
 			if (revisionNumber == null || revisionNumber.Length == 0) {
 				revisionNumber = "0";
+				gitCommitHash = "0000000000000000000000000000000000000000";
 				//throw new ApplicationException("Error reading revision number");
 			}
 		}

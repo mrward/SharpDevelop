@@ -10,11 +10,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Editor;
+using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.SharpDevelop.Refactoring;
 using ReflectionLayer = ICSharpCode.SharpDevelop.Dom.ReflectionLayer;
 
@@ -206,14 +206,27 @@ namespace ICSharpCode.FormsDesigner
 		{
 		}
 		
-		public virtual void NotifyFormRenamed(string newName)
+		public virtual void NotifyComponentRenamed(object component, string newName, string oldName)
 		{
 			Reparse();
-			LoggingService.Info("Renaming form to " + newName);
+			LoggingService.Info(string.Format("Renaming form '{0}' to '{1}'.", oldName, newName));
 			if (this.formClass == null) {
 				LoggingService.Warn("Cannot rename, formClass not found");
 			} else {
-				ICSharpCode.SharpDevelop.Refactoring.FindReferencesAndRenameHelper.RenameClass(this.formClass, newName);
+				if (viewContent.Host == null || viewContent.Host.Container == null ||
+				    viewContent.Host.Container.Components == null || viewContent.Host.Container.Components.Count == 0)
+					return;
+				
+				// verify if we should rename the class
+				if (viewContent.Host.Container.Components[0] == component) {
+					ICSharpCode.SharpDevelop.Refactoring.FindReferencesAndRenameHelper.RenameClass(this.formClass, newName);
+				} else {
+					// rename a member - if exists
+					IField field = GetField(this.formClass, oldName);
+					if (field != null) {
+						ICSharpCode.SharpDevelop.Refactoring.FindReferencesAndRenameHelper.RenameMember(field, newName);
+					}
+				}
 				Reparse();
 			}
 		}
@@ -245,11 +258,14 @@ namespace ICSharpCode.FormsDesigner
 				return;
 			}
 			
+			RemoveUnsupportedCode(formClass, initializeComponent);
+			
 			FixGeneratedCode(this.formClass, initializeComponent);
 			
 			// generate file and get initialize components string
 			StringWriter writer = new StringWriter();
-			CodeDOMGenerator domGenerator = new CodeDOMGenerator(this.CodeDomProvider, tabs + '\t');
+			string indentation = tabs + EditorControlService.GlobalOptions.IndentationString;
+			CodeDOMGenerator domGenerator = new CodeDOMGenerator(this.CodeDomProvider, indentation);
 			domGenerator.ConvertContentDefinition(initializeComponent, writer);
 			
 			string statements = writer.ToString();
@@ -294,6 +310,73 @@ namespace ICSharpCode.FormsDesigner
 			removedFields.ForEach(RemoveField);
 			
 			ParserService.BeginParse(this.ViewContent.DesignerCodeFile.FileName, this.ViewContent.DesignerCodeFileDocument);
+		}
+		
+		/// <summary>
+		/// This method solves all problems that are caused if the designer generates
+		/// code that is not supported in a previous version of .NET. (3.5 and below)
+		/// Currently it fixes:
+		///  - remove calls to ISupportInitialize.BeginInit/EndInit, if the interface is not implemented by the type in the target framework.
+		/// </summary>
+		/// <remarks>When adding new workarounds make sure that the code does not remove too much code!</remarks>
+		void RemoveUnsupportedCode(CodeTypeDeclaration formClass, CodeMemberMethod initializeComponent)
+		{
+			if (this.formClass.ProjectContent.Project is MSBuildBasedProject) {
+				MSBuildBasedProject p = (MSBuildBasedProject)this.formClass.ProjectContent.Project;
+				string v = (p.GetEvaluatedProperty("TargetFrameworkVersion") ?? "").Trim('v');
+				Version version;
+				if (!Version.TryParse(v, out version) || version.Major >= 4)
+					return;
+			}
+			
+			List<CodeStatement> stmtsToRemove = new List<CodeStatement>();
+			IClass iSupportInitializeInterface = this.formClass.ProjectContent.GetClass("System.ComponentModel.ISupportInitialize", 0);
+			
+			if (iSupportInitializeInterface == null)
+				return;
+			
+			foreach (var stmt in initializeComponent.Statements.OfType<CodeExpressionStatement>().Where(ces => ces.Expression is CodeMethodInvokeExpression)) {
+				CodeMethodInvokeExpression invocation = (CodeMethodInvokeExpression)stmt.Expression;
+				CodeCastExpression expr = invocation.Method.TargetObject as CodeCastExpression;
+				if (expr != null) {
+					if (expr.TargetType.BaseType != "System.ComponentModel.ISupportInitialize")
+						continue;
+					var fieldType = GetTypeOfControl(expr.Expression, initializeComponent, formClass);
+					if (fieldType == null)
+						continue;
+					if (!fieldType.IsTypeInInheritanceTree(iSupportInitializeInterface))
+						stmtsToRemove.Add(stmt);
+				}
+			}
+			
+			foreach (var stmt in stmtsToRemove) {
+				initializeComponent.Statements.Remove(stmt);
+			}
+		}
+		
+		/// <summary>
+		/// Tries to find the type of the expression.
+		/// </summary>
+		IClass GetTypeOfControl(CodeExpression expression, CodeMemberMethod initializeComponentMethod, CodeTypeDeclaration formTypeDeclaration)
+		{
+			StringComparer comparer = formClass.ProjectContent.Language.NameComparer;
+			if (expression is CodeVariableReferenceExpression) {
+				string name = ((CodeVariableReferenceExpression)expression).VariableName;
+				var decl = initializeComponentMethod.Statements.OfType<CodeVariableDeclarationStatement>().Single(v => comparer.Equals(v.Name, name));
+				return formClass.ProjectContent.GetClass(decl.Type.BaseType, 0);
+			}
+			if (expression is CodeFieldReferenceExpression && ((CodeFieldReferenceExpression)expression).TargetObject is CodeThisReferenceExpression) {
+				string name = ((CodeFieldReferenceExpression)expression).FieldName;
+				var decl = formTypeDeclaration.Members.OfType<CodeMemberField>().FirstOrDefault(f => comparer.Equals(name, f.Name));
+				if (decl != null)
+					return formClass.ProjectContent.GetClass(decl.Type.BaseType, 0);
+				var field = formClass.DefaultReturnType.GetFields()
+					.First(f => comparer.Equals(f.Name, name));
+				if (field.ReturnType == null)
+					return null;
+				return field.ReturnType.GetUnderlyingClass();
+			}
+			return null;
 		}
 		
 		/// <summary>

@@ -39,7 +39,6 @@ namespace Debugger.AddIn.Visualizers.Graph
 		{
 			base.OnClosed(e);
 			UnregisterDebuggerEvents();
-			this.objectGraphControl.ClearUIControlCache();
 			ObjectGraphWindow.Instance = null;			// allow release
 		}
 		
@@ -90,7 +89,7 @@ namespace Debugger.AddIn.Visualizers.Graph
 		{
 			// on step or breakpoint hit
 			if (!debuggerService.IsProcessRunning) {
-				this.objectGraphControl.Refresh();
+				this.objectGraphControl.RefreshView();
 			}
 		}
 		

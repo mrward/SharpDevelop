@@ -16,12 +16,13 @@ using System.Windows.Forms;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
-
+using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.Core.Presentation;
 using ICSharpCode.NRefactory;
 using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Editor;
 using ICSharpCode.SharpDevelop.Gui;
+using ICSharpCode.SharpDevelop.Util;
 using WinForms = System.Windows.Forms;
 
 namespace ICSharpCode.SharpDevelop
@@ -88,6 +89,12 @@ namespace ICSharpCode.SharpDevelop
 		{
 			foreach (T o in elements)
 				list.Add(o);
+		}
+		
+		public static void AddRange(this IList arrayList, IEnumerable elements)
+		{
+			foreach (object o in elements)
+				arrayList.Add(o);
 		}
 		
 		public static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> arr)
@@ -158,6 +165,11 @@ namespace ICSharpCode.SharpDevelop
 			T[] result = new T[length];
 			Array.Copy(array, startIndex, result, 0, length);
 			return result;
+		}
+		
+		public static IEnumerable<T> DistinctBy<T, K>(this IEnumerable<T> input, Func<T, K> keySelector)
+		{
+			return input.Distinct(KeyComparer.Create(keySelector));
 		}
 		
 		/// <summary>
@@ -311,13 +323,13 @@ namespace ICSharpCode.SharpDevelop
 		public static Point TransformToDevice(this Point point, Visual visual)
 		{
 			Matrix matrix = PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice;
-			return new Point(point.X * matrix.M11, point.Y * matrix.M22);
+			return matrix.Transform(point);
 		}
 		
 		public static Point TransformFromDevice(this Point point, Visual visual)
 		{
 			Matrix matrix = PresentationSource.FromVisual(visual).CompositionTarget.TransformFromDevice;
-			return new Point(point.X * matrix.M11, point.Y * matrix.M22);
+			return matrix.Transform(point);
 		}
 		#endregion
 		
@@ -499,6 +511,19 @@ namespace ICSharpCode.SharpDevelop
 				list.Add(itemToAdd);
 		}
 		
+		public static void RemoveWhere<T>(this IList<T> list, Predicate<T> condition)
+		{
+			if (list == null)
+				throw new ArgumentNullException("list");
+			int i = 0;
+			while (i < list.Count) {
+				if (condition(list[i]))
+					list.RemoveAt(i);
+				else
+					i++;
+			}
+		}
+		
 		public static ExpressionResult FindFullExpressionAtCaret(this ITextEditor editor)
 		{
 			if (editor == null)
@@ -594,7 +619,7 @@ namespace ICSharpCode.SharpDevelop
 			return newContent;
 		}
 		
-#region Dom, AST, Editor, Document		
+		#region Dom, AST, Editor, Document
 		public static Location GetStart(this DomRegion region)
 		{
 			return new Location(region.BeginColumn, region.BeginLine);
@@ -603,6 +628,13 @@ namespace ICSharpCode.SharpDevelop
 		public static Location GetEnd(this DomRegion region)
 		{
 			return new Location(region.EndColumn, region.EndLine);
+		}
+		
+		public static IEnumerable<IProjectContent> ThreadSafeGetReferencedContents(this IProjectContent pc)
+		{
+			lock (pc.ReferencedContents) {
+				return pc.ReferencedContents.ToList();
+			}
 		}
 		
 		public static int PositionToOffset(this IDocument document, Location location)
@@ -620,6 +652,16 @@ namespace ICSharpCode.SharpDevelop
 		{
 			editor.Select(editor.Document.PositionToOffset(editor.Caret.Position), 0);
 		}
-#endregion		
+		
+		public static Location ToLocation(this TextLocation loc)
+		{
+			return new Location(loc.Column, loc.Line);
+		}
+		
+		public static TextLocation ToTextLocation(this Location loc)
+		{
+			return new TextLocation(loc.Line, loc.Column);
+		}
+		#endregion
 	}
 }

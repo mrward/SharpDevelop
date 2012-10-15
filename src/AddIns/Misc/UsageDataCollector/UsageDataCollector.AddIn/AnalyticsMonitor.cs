@@ -50,6 +50,8 @@ namespace ICSharpCode.UsageDataCollector
 		
 		static void AsyncEnableDisable()
 		{
+			if (System.Diagnostics.Debugger.IsAttached)
+				return;
 			if (Enabled) {
 				Instance.OpenSession();
 			} else {
@@ -149,7 +151,7 @@ namespace ICSharpCode.UsageDataCollector
 				new UsageDataEnvironmentProperty { Name = "appVersion", Value = RevisionClass.Major + "." + RevisionClass.Minor + "." + RevisionClass.Build + "." + RevisionClass.Revision },
 				new UsageDataEnvironmentProperty { Name = "language", Value = ResourceService.Language },
 				new UsageDataEnvironmentProperty { Name = "culture", Value = CultureInfo.CurrentCulture.Name },
-				new UsageDataEnvironmentProperty { Name = "userAddInCount", Value = AddInTree.AddIns.Where(a => !a.IsPreinstalled).Count().ToString() },
+				new UsageDataEnvironmentProperty { Name = "userAddInCount", Value = AddInTree.AddIns.Count(a => !a.IsPreinstalled).ToString() },
 				new UsageDataEnvironmentProperty { Name = "branch", Value = BranchName },
 				new UsageDataEnvironmentProperty { Name = "commit", Value = CommitHash },
 				new UsageDataEnvironmentProperty { Name = "renderingTier", Value = (RenderCapability.Tier >> 16).ToString() }
@@ -242,6 +244,8 @@ namespace ICSharpCode.UsageDataCollector
 	{
 		public override void Run()
 		{
+			if (System.Diagnostics.Debugger.IsAttached)
+				return;
 			if (AnalyticsMonitor.Enabled)
 				AnalyticsMonitor.Instance.OpenSession();
 		}

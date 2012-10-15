@@ -62,12 +62,14 @@
     <Compile Include="..\..\GlobalAssemblyInfo.cs">
       <Link>Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="BoolToVisibilityConverter.cs" />
     <Compile Include="CollapsiblePanel.cs" />
     <Compile Include="ColorHelper.cs" />
     <Compile Include="ColorPicker.xaml.cs">
       <DependentUpon>ColorPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Configuration\AssemblyInfo.cs" />
+    <Compile Include="CustomWindowsFormsHost.cs" />
     <Compile Include="DragListener.cs" />
     <Compile Include="ListViewSorting\AbstractListViewParseableColumnComparer.cs" />
     <Compile Include="ListViewSorting\AbstractListViewSubItemComparer.cs" />
@@ -77,11 +79,17 @@
     <Compile Include="ListViewSorting\IListViewItemComparer.cs" />
     <Compile Include="ListViewSorting\ListViewItemSorter.cs" />
     <Compile Include="MouseWheelHandler.cs" />
+    <Compile Include="MyersDiff\Edit.cs" />
+    <Compile Include="MyersDiff\ISequence.cs" />
+    <Compile Include="MyersDiff\MyersDiffAlgorithm.cs" />
+    <Compile Include="MyersDiff\StringSequence.cs" />
+    <Compile Include="MyersDiff\Utils.cs" />
     <Compile Include="NumericUpDown.cs">
       <DependentUpon>NumericUpDown.xaml</DependentUpon>
     </Compile>
     <Compile Include="Picker.cs" />
     <Compile Include="RadioButtonGroup.cs" />
+    <Compile Include="RelayCommand.cs" />
     <Compile Include="Resources\BitmapResources.cs" />
     <Compile Include="SideBar\SideBar.cs">
       <SubType>UserControl</SubType>
@@ -94,6 +102,7 @@
     </Compile>
     <Compile Include="StackPanelWithSpacing.cs" />
     <Compile Include="UniformGridWithSpacing.cs" />
+    <Compile Include="ViewModelBase.cs" />
     <Compile Include="ZoomButtons.cs">
       <DependentUpon>ZoomScrollViewer.xaml</DependentUpon>
     </Compile>
@@ -114,6 +123,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Images" />
+    <Folder Include="MyersDiff" />
     <Folder Include="themes" />
   </ItemGroup>
   <ItemGroup>

@@ -5,15 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using ICSharpCode.AvalonEdit.Utils;
 
 namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 {
 	[Serializable]
-	sealed class XmlHighlightingDefinition : IHighlightingDefinition
+	sealed class XmlHighlightingDefinition : IHighlightingDefinition2
 	{
 		public string Name { get; private set; }
 		
@@ -37,6 +37,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				throw new HighlightingDefinitionInvalidException("Could not find main RuleSet.");
 			// Translate elements within the rulesets (resolving references and processing imports)
 			xshd.AcceptElements(new TranslateElementVisitor(this, rnev.ruleSets, resolver));
+			
+			foreach (var p in xshd.Elements.OfType<XshdProperty>())
+				propDict.Add(p.Name, p.Value);
 		}
 		
 		#region RegisterNamedElements
@@ -317,22 +320,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 					StartExpression = CreateRegex(span, span.BeginRegex, span.BeginRegexType),
 					EndExpression = CreateRegex(span, endRegex, span.EndRegexType),
 					RuleSet = GetRuleSet(span, span.RuleSetReference),
-					StartColor = MergeColor(wholeSpanColor, GetColor(span, span.BeginColorReference)),
+					StartColor = GetColor(span, span.BeginColorReference),
 					SpanColor = wholeSpanColor,
-					EndColor = MergeColor(wholeSpanColor, GetColor(span, span.EndColorReference)),
-				};
-			}
-			
-			static HighlightingColor MergeColor(HighlightingColor baseColor, HighlightingColor newColor)
-			{
-				if (baseColor == null)
-					return newColor;
-				if (newColor == null)
-					return baseColor;
-				return new HighlightingColor {
-					Foreground = newColor.Foreground ?? baseColor.Foreground,
-					FontWeight = newColor.FontWeight ?? baseColor.FontWeight,
-					FontStyle = newColor.FontStyle ?? baseColor.FontStyle,
+					EndColor = GetColor(span, span.EndColorReference),
+					SpanColorIncludesStart = true,
+					SpanColorIncludesEnd = true
 				};
 			}
 			
@@ -369,6 +361,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		
 		Dictionary<string, HighlightingRuleSet> ruleSetDict = new Dictionary<string, HighlightingRuleSet>();
 		Dictionary<string, HighlightingColor> colorDict = new Dictionary<string, HighlightingColor>();
+		[OptionalField]
+		Dictionary<string, string> propDict = new Dictionary<string, string>();
 		
 		public HighlightingRuleSet MainRuleSet { get; private set; }
 		
@@ -401,6 +395,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		public override string ToString()
 		{
 			return this.Name;
+		}
+		
+		public IDictionary<string, string> Properties {
+			get {
+				return propDict;
+			}
 		}
 	}
 }

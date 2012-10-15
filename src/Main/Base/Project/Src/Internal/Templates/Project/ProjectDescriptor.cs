@@ -42,6 +42,7 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 		
 		string name;
 		string relativePath;
+		string defaultPlatform;
 		
 		/// <summary>
 		/// The language of the project.
@@ -56,6 +57,7 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 		List<ProjectItem> projectItems = new List<ProjectItem>();
 		List<ProjectProperty> projectProperties = new List<ProjectProperty>();
 		List<Action<IProject>> createActions = new List<Action<IProject>>();
+		List<Action<ProjectCreateInformation>> preCreateActions = new List<Action<ProjectCreateInformation>>();
 		
 		/// <summary>
 		/// Creates a project descriptor for the project node specified by the xml element.
@@ -83,6 +85,7 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 			if (string.IsNullOrEmpty(languageName)) {
 				ProjectTemplate.WarnAttributeMissing(element, "language");
 			}
+			defaultPlatform = element.GetAttribute("defaultPlatform");
 			
 			LoadElementChildren(element, hintPath);
 		}
@@ -108,6 +111,9 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 					break;
 				case "CreateActions":
 					LoadCreateActions(node);
+					break;
+				case "PreCreateActions":
+					LoadPreCreateActions(node);
 					break;
 				case "ProjectItems":
 					LoadProjectItems(node);
@@ -151,7 +157,16 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 			}
 		}
 		
-		static Action<IProject> ReadAction(XmlElement el)
+		void LoadPreCreateActions(XmlElement preCreateActionsElement)
+		{
+			foreach (XmlElement el in preCreateActionsElement) {
+				Action<ProjectCreateInformation> action = ReadAction(el);
+				if (action != null)
+					preCreateActions.Add(action);
+			}
+		}
+		
+		static Action<object> ReadAction(XmlElement el)
 		{
 			switch (el.Name) {
 				case "RunCommand":
@@ -310,6 +325,10 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 				projectCreateInformation.OutputProjectFileName = projectLocation;
 				projectCreateInformation.RootNamespace = standardNamespace.ToString();
 				projectCreateInformation.ProjectName = newProjectName;
+				if (!string.IsNullOrEmpty(defaultPlatform))
+					projectCreateInformation.Platform = defaultPlatform;
+				
+				RunPreCreateActions(projectCreateInformation);
 				
 				StringParserPropertyContainer.FileCreation["StandardNamespace"] = projectCreateInformation.RootNamespace;
 				
@@ -329,7 +348,7 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 				StringBuilder existingFileNames = new StringBuilder();
 				foreach (FileDescriptionTemplate file in files)
 				{
-					string fileName = Path.Combine(projectCreateInformation.ProjectBasePath, StringParser.Parse(file.Name, new string[,] { { "ProjectName", projectCreateInformation.ProjectName } }));
+					string fileName = Path.Combine(projectCreateInformation.ProjectBasePath, StringParser.Parse(file.Name, new StringTagPair("ProjectName", projectCreateInformation.ProjectName)));
 					
 					if (File.Exists(fileName))
 					{
@@ -356,7 +375,7 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 				#region Copy files to target directory
 				foreach (FileDescriptionTemplate file in files)
 				{
-					string fileName = Path.Combine(projectCreateInformation.ProjectBasePath, StringParser.Parse(file.Name, new string[,] { { "ProjectName", projectCreateInformation.ProjectName } }));
+					string fileName = Path.Combine(projectCreateInformation.ProjectBasePath, StringParser.Parse(file.Name, new StringTagPair("ProjectName", projectCreateInformation.ProjectName)));
 					if (File.Exists(fileName) && !overwriteFiles)
 					{
 						continue;
@@ -369,11 +388,11 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 						}
 						if (!String.IsNullOrEmpty(file.BinaryFileName)) {
 							// Binary content
-							File.Copy(file.BinaryFileName,fileName);
+							File.Copy(file.BinaryFileName, fileName, true);
 						} else {
 							// Textual content
 							StreamWriter sr = new StreamWriter(File.Create(fileName), ParserService.DefaultFileEncoding);
-							string fileContent = StringParser.Parse(file.Content, new string[,] { { "ProjectName", projectCreateInformation.ProjectName }, { "FileName", fileName } });
+							string fileContent = StringParser.Parse(file.Content, new StringTagPair("ProjectName", projectCreateInformation.ProjectName), new StringTagPair("FileName", fileName));
 							fileContent = StringParser.Parse(fileContent);
 							if (EditorControlService.GlobalOptions.IndentationString != "\t") {
 								fileContent = fileContent.Replace("\t", EditorControlService.GlobalOptions.IndentationString);
@@ -422,6 +441,24 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 					}
 				}
 				
+				// Add properties from <PropertyGroup>
+				// This must be done before adding <Imports>, because the import path can refer to properties.
+				if (projectProperties.Count > 0) {
+					if (!(project is MSBuildBasedProject))
+						throw new Exception("<PropertyGroup> may be only used in project templates for MSBuildBasedProjects");
+					
+					foreach (ProjectProperty p in projectProperties) {
+						((MSBuildBasedProject)project).SetProperty(
+							StringParser.Parse(p.Configuration),
+							StringParser.Parse(p.Platform),
+							StringParser.Parse(p.Name),
+							StringParser.Parse(p.Value),
+							p.Location,
+							p.ValueIsLiteral
+						);
+					}
+				}
+				
 				// Add Imports
 				if (clearExistingImports || projectImports.Count > 0) {
 					MSBuildBasedProject msbuildProject = project as MSBuildBasedProject;
@@ -450,27 +487,11 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 					}
 				}
 				
-				if (projectProperties.Count > 0) {
-					if (!(project is MSBuildBasedProject))
-						throw new Exception("<PropertyGroup> may be only used in project templates for MSBuildBasedProjects");
-					
-					foreach (ProjectProperty p in projectProperties) {
-						((MSBuildBasedProject)project).SetProperty(
-							StringParser.Parse(p.Configuration),
-							StringParser.Parse(p.Platform),
-							StringParser.Parse(p.Name),
-							StringParser.Parse(p.Value),
-							p.Location,
-							p.ValueIsLiteral
-						);
-					}
-				}
-				
 				// Add Files
 				if (project is IProjectItemListProvider) {
 					
 					foreach (FileDescriptionTemplate file in files) {
-						string fileName = Path.Combine(projectCreateInformation.ProjectBasePath, StringParser.Parse(file.Name, new string[,] { { "ProjectName", projectCreateInformation.ProjectName } }));
+						string fileName = Path.Combine(projectCreateInformation.ProjectBasePath, StringParser.Parse(file.Name, new StringTagPair("ProjectName", projectCreateInformation.ProjectName)));
 						FileProjectItem projectFile = new FileProjectItem(project, project.GetDefaultItemType(fileName));
 						
 						projectFile.Include = FileUtility.GetRelativePath(project.Directory, fileName);
@@ -500,6 +521,13 @@ namespace ICSharpCode.SharpDevelop.Internal.Templates
 				// set back outerProjectBasePath
 				projectCreateInformation.ProjectBasePath = outerProjectBasePath;
 				projectCreateInformation.ProjectName = outerProjectName;
+			}
+		}
+		
+		void RunPreCreateActions(ProjectCreateInformation projectCreateInformation)
+		{
+			foreach (var action in preCreateActions) {
+				action(projectCreateInformation);
 			}
 		}
 		

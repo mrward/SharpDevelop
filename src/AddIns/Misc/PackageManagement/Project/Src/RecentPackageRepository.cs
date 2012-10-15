@@ -105,7 +105,7 @@ namespace ICSharpCode.PackageManagement
 		
 		void UpdatePackages()
 		{
-			if (!HasRecentPackagesBeenRead() && HasRecentPackages()) {
+			if (!HasRecentPackagesBeenRead() && HasRecentPackages) {
 				IEnumerable<IPackage> recentPackages = GetRecentPackages();
 				packages.AddRange(recentPackages);
 			}
@@ -116,9 +116,8 @@ namespace ICSharpCode.PackageManagement
 			return packages.Count > 0;
 		}
 		
-		bool HasRecentPackages()
-		{
-			return savedRecentPackages.Count > 0;
+		public bool HasRecentPackages {
+			get { return savedRecentPackages.Count > 0; }
 		}
 		
 		IEnumerable<IPackage> GetRecentPackages()
@@ -162,6 +161,10 @@ namespace ICSharpCode.PackageManagement
 		{
 			packages.Clear();
 			UpdateRecentPackagesInOptions();
+		}
+		
+		public bool SupportsPrereleasePackages {
+			get { return false; }
 		}
 	}
 }

@@ -4,13 +4,16 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+
 using ICSharpCode.Core;
-using SD = ICSharpCode.SharpDevelop.Project;
+using ICSharpCode.SharpDevelop.Dom;
+using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Project;
+using SD = ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.PackageManagement.EnvDTE
 {
-	public class ProjectItem
+	public class ProjectItem : MarshalByRefObject
 	{
 		SD.FileProjectItem projectItem;
 		
@@ -22,8 +25,43 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		{
 			this.projectItem = projectItem;
 			this.ContainingProject = project;
-			this.ProjectItems = new DirectoryProjectItems(this);
+			this.ProjectItems = CreateProjectItems(projectItem);
 			CreateProperties();
+			Kind = GetKindFromFileProjectItemType();
+		}
+		
+		ProjectItems CreateProjectItems(FileProjectItem projectItem)
+		{
+			if (projectItem.ItemType == ItemType.Folder) {
+				return new DirectoryProjectItems(this);
+			}
+			return new FileProjectItems(this);
+		}
+		
+		internal ProjectItem(MSBuildBasedProject project, IClass c)
+			: this(new Project(project), project.FindFile(c.CompilationUnit.FileName))
+		{
+		}
+		
+		internal ProjectItem(IProjectContent projectContent, IClass c)
+			: this((MSBuildBasedProject)projectContent.Project, c)
+		{
+		}
+		
+		string GetKindFromFileProjectItemType()
+		{
+			if (IsDirectory) {
+				return Constants.vsProjectItemKindPhysicalFolder;
+			}
+			return Constants.vsProjectItemKindPhysicalFile;
+		}
+		
+		bool IsDirectory {
+			get { return projectItem.ItemType == ItemType.Folder; }
+		}
+		
+		public ProjectItem()
+		{
 		}
 		
 		void CreateProperties()
@@ -32,15 +70,21 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 			Properties = new Properties(propertyFactory);
 		}
 		
-		public string Name {
+		public virtual string Name {
 			get { return Path.GetFileName(projectItem.Include); }
 		}
 		
-		public Properties Properties { get; private set; }
-		public Project ContainingProject  { get; private set; }
-		public ProjectItems ProjectItems { get; private set; }
+		public virtual string Kind { get; set; }
 		
-		internal object GetProperty(string name)
+		public Project SubProject {
+			get { return null; }
+		}
+		
+		public virtual Properties Properties { get; private set; }
+		public virtual Project ContainingProject  { get; private set; }
+		public virtual ProjectItems ProjectItems { get; private set; }
+		
+		internal virtual object GetProperty(string name)
 		{
 			if (name == CopyToOutputDirectoryPropertyName) {
 				return GetCopyToOutputDirectory();
@@ -57,7 +101,7 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 			return (UInt32)projectItem.CopyToOutputDirectory;
 		}
 		
-		internal void SetProperty(string name, object value)
+		internal virtual void SetProperty(string name, object value)
 		{
 			if (name == CopyToOutputDirectoryPropertyName) {
 				SetCopyToOutputDirectory(value);
@@ -78,7 +122,7 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 			return (CopyToOutputDirectory)Enum.Parse(typeof(CopyToOutputDirectory), valueAsString);
 		}
 		
-		internal bool IsMatchByName(string name)
+		internal virtual bool IsMatchByName(string name)
 		{
 			return String.Equals(this.Name, name, StringComparison.InvariantCultureIgnoreCase);
 		}
@@ -89,9 +133,73 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 			return IsMatchByName(directory);
 		}
 		
-		internal ProjectItemRelationship GetRelationship(SD.ProjectItem msbuildProjectItem)
+		internal virtual ProjectItemRelationship GetRelationship(SD.ProjectItem msbuildProjectItem)
 		{
 			return new ProjectItemRelationship(this, msbuildProjectItem);
+		}
+		
+		public void Delete()
+		{
+			ContainingProject.DeleteFile(projectItem.FileName);
+			ContainingProject.Save();
+		}
+		
+		public FileCodeModel2 FileCodeModel {
+			get {
+				if (!IsDirectory) {
+					return new FileCodeModel2(ContainingProject, projectItem);
+				}
+				return null;
+			}
+		}
+		
+		internal string GetIncludePath(string fileName)
+		{
+			string relativeDirectory = ContainingProject.GetRelativePath(projectItem.FileName);
+			return Path.Combine(relativeDirectory, fileName);
+		}
+		
+		internal string GetIncludePath()
+		{
+			return projectItem.Include;
+		}
+		
+		public virtual void Remove()
+		{
+			ContainingProject.RemoveProjectItem(this);
+			ContainingProject.Save();
+		}
+		
+		internal FileProjectItem MSBuildProjectItem {
+			get { return projectItem; }
+		}
+		
+		public virtual string FileNames(short index)
+		{
+			return FileName;
+		}
+		
+		string FileName {
+			get { return projectItem.FileName; }
+		}
+		
+		public virtual Document Document {
+			get { return GetOpenDocument(); }
+		}
+		
+		Document GetOpenDocument()
+		{
+			IViewContent view = ContainingProject.GetOpenFile(FileName);
+			if (view != null) {
+				return new Document(FileName, view);
+			}
+			return null;
+		}
+		
+		public virtual Window Open(string viewKind)
+		{
+			ContainingProject.OpenFile(FileName);
+			return null;
 		}
 	}
 }

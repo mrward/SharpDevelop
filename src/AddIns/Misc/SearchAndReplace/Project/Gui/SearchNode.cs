@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace SearchAndReplace
 {
-	abstract class SearchNode : INotifyPropertyChanged
+	public abstract class SearchNode : INotifyPropertyChanged
 	{
 		bool isExpanded;
 		
@@ -19,6 +19,18 @@ namespace SearchAndReplace
 				if (isExpanded != value) {
 					isExpanded = value;
 					OnPropertyChanged("IsExpanded");
+				}
+			}
+		}
+		
+		bool isSelected;
+		
+		public bool IsSelected {
+			get { return isSelected; }
+			set {
+				if (isSelected != value) {
+					isSelected = value;
+					OnPropertyChanged("IsSelected");
 				}
 			}
 		}
@@ -58,7 +70,7 @@ namespace SearchAndReplace
 		
 		protected abstract object CreateText();
 		
-		protected void InvalidateText()
+		protected internal void InvalidateText()
 		{
 			cachedText = null;
 			OnPropertyChanged("Text");

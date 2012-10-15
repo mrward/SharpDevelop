@@ -2,6 +2,7 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.PackageManagement.Design;
 using NuGet;
@@ -12,9 +13,15 @@ namespace PackageManagement.Tests.Helpers
 	{
 		public string PathPassedToRegisterRepository;
 		
-		public bool IsReferenced(string packageId, Version version)
+		public List<string> PackageIdsReferences = new List<string>();
+		public string PackageIdPassedToIsReferenced;
+		public SemanticVersion VersionPassedToIsReferenced;
+		
+		public bool IsReferenced(string packageId, SemanticVersion version)
 		{
-			throw new NotImplementedException();
+			PackageIdPassedToIsReferenced = packageId;
+			VersionPassedToIsReferenced = version;
+			return PackageIdsReferences.Contains(packageId);
 		}
 		
 		public void RegisterRepository(string path)
@@ -23,6 +30,11 @@ namespace PackageManagement.Tests.Helpers
 		}
 		
 		public void UnregisterRepository(string path)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public void AddPackageReferenceEntry(string packageId, SemanticVersion version)
 		{
 			throw new NotImplementedException();
 		}

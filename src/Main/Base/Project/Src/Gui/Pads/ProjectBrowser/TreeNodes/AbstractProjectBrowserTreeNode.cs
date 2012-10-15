@@ -51,8 +51,8 @@ namespace ICSharpCode.SharpDevelop.Project
 		
 		/// <summary>
 		/// Returns the project in which this node belongs to. This assumes that
-		/// any node is child of a project. THIS DON'T WORK ON COMBINE NODES!
-		/// (a combine node returns null)
+		/// any node is child of a project. Keep in mind that Solution Folders 
+		/// and Solution Items do not have a project assigned.
 		/// </summary>
 		public virtual IProject Project {
 			get {
@@ -158,7 +158,7 @@ namespace ICSharpCode.SharpDevelop.Project
 		
 		protected string GetQuestionText(string question)
 		{
-			return StringParser.Parse(question, new string[,] {{"FileName", Text}});
+			return StringParser.Parse(question, new StringTagPair("FileName", Text));
 		}
 
 		public virtual AbstractProjectBrowserTreeNode GetNodeByRelativePath(string relativePath)

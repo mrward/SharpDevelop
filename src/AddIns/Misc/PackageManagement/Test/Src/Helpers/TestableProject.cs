@@ -11,7 +11,14 @@ namespace PackageManagement.Tests.Helpers
 	public class TestableProject : MSBuildBasedProject
 	{
 		public bool IsSaved;
-		public ItemType ItemTypeToReturnFromGetDefaultItemType = ItemType.Compile;
+		string assemblyName;
+		string rootNamespace;
+		
+		public ItemType ItemTypeToReturnFromGetDefaultItemType {
+			get { return TestableProjectBehaviour.ItemTypeToReturnFromGetDefaultItemType; }
+			set { TestableProjectBehaviour.ItemTypeToReturnFromGetDefaultItemType = value; }
+		}
+		
 		public ReadOnlyCollection<ProjectItem> ItemsWhenSaved;
 		
 		public TestableProject(ProjectCreateInformation createInfo)
@@ -25,17 +32,27 @@ namespace PackageManagement.Tests.Helpers
 			ItemsWhenSaved = Items;
 		}
 		
-		public string FileNamePassedToGetDefaultItemType;
+		public string FileNamePassedToGetDefaultItemType {
+			get { return TestableProjectBehaviour.FileNamePassedToGetDefaultItemType; }
+		}
 		
-		public override ItemType GetDefaultItemType(string fileName)
+		public TestableProjectBehaviour TestableProjectBehaviour = new TestableProjectBehaviour();
+		
+		protected override ProjectBehavior GetOrCreateBehavior()
 		{
-			FileNamePassedToGetDefaultItemType = fileName;
-			return ItemTypeToReturnFromGetDefaultItemType;
+			return TestableProjectBehaviour;
 		}
 		
 		public ReferenceProjectItem AddReference(string include)
 		{
 			var referenceProjectItem = new ReferenceProjectItem(this, include);
+			ProjectService.AddProjectItem(this, referenceProjectItem);
+			return referenceProjectItem;
+		}
+		
+		public ProjectReferenceProjectItem AddProjectReference(IProject referencedProject)
+		{
+			var referenceProjectItem = new ProjectReferenceProjectItem(this, referencedProject);
 			ProjectService.AddProjectItem(this, referenceProjectItem);
 			return referenceProjectItem;
 		}
@@ -51,7 +68,24 @@ namespace PackageManagement.Tests.Helpers
 		{
 			var fileProjectItem = new FileProjectItem(this, ItemType.Folder, include);
 			ProjectService.AddProjectItem(this, fileProjectItem);
-			return fileProjectItem;			
+			return fileProjectItem;
+		}
+		
+		public override string AssemblyName {
+			get { return assemblyName; }
+			set { assemblyName = value; }
+		}
+		
+		public override string RootNamespace {
+			get { return rootNamespace; }
+			set { rootNamespace = value; }
+		}
+		
+		public FileProjectItem AddDependentFile(string include, string dependentUpon)
+		{
+			FileProjectItem dependentFile = AddFile(include);
+			dependentFile.DependentUpon = dependentUpon;
+			return dependentFile;
 		}
 	}
 }

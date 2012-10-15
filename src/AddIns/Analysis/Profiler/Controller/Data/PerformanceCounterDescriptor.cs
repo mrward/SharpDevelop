@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -97,15 +98,28 @@ namespace ICSharpCode.Profiler.Controller.Data
 		/// </summary>
 		public static string GetProcessInstanceName(int pid)
 		{
-			PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
+			try {
+				PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
 
-			string[] instances = cat.GetInstanceNames();
-			foreach (string instance in instances) {
-				using (PerformanceCounter procIdCounter = new PerformanceCounter("Process", "ID Process", instance, true)) {
-					int val = (int)procIdCounter.RawValue;
-					if (val == pid)
-						return instance;
+				string[] instances = cat.GetInstanceNames();
+				foreach (string instance in instances) {
+					using (PerformanceCounter procIdCounter = new PerformanceCounter("Process", "ID Process", instance, true)) {
+						int val = (int)procIdCounter.RawValue;
+						if (val == pid)
+							return instance;
+					}
 				}
+				// These exceptions happen when something is wrong with the system settings or the perfmon service is not started.
+				// We will ignore performance counters in those cases.
+			} catch (Win32Exception) {
+				// Win32Exception (0x80004005): The service cannot be started, either because it is disabled
+				// or because it has no enabled devices associated with it
+				// see http://community.sharpdevelop.net/forums/p/10709/29534.aspx#29534
+				return null;
+			} catch (InvalidOperationException) {
+				// InvalidOperationException: Cannot load Counter Name data because an invalid index '' was read from the registry.
+				// see http://community.sharpdevelop.net/forums/p/14180/37895.aspx#37895 and SD-1819
+				return null;
 			}
 			
 			return null;
@@ -125,14 +139,28 @@ namespace ICSharpCode.Profiler.Controller.Data
 		/// <param name="instanceName"></param>
 		public void Collect(string instanceName)
 		{
-			if (counter == null && Instance != null)
-				counter = new PerformanceCounter(Category, Name, instanceName ?? Instance, Computer);
-			
+			try {
+				if (counter == null && Instance != null)
+					counter = new PerformanceCounter(Category, Name, instanceName ?? Instance, Computer);
+				// These exceptions happen when something is wrong with the system settings or the perfmon service is not started.
+				// We will ignore performance counters in those cases.
+			} catch (Win32Exception) {
+				// Win32Exception (0x80004005): The service cannot be started, either because it is disabled
+				// or because it has no enabled devices associated with it
+				// see http://community.sharpdevelop.net/forums/p/10709/29534.aspx#29534
+				return;
+			} catch (InvalidOperationException) {
+				// InvalidOperationException: Cannot load Counter Name data because an invalid index '' was read from the registry.
+				// see http://community.sharpdevelop.net/forums/p/14180/37895.aspx#37895 and SD-1819
+				return;
+			}
 			try {
 				this.Values.Add(counter.NextValue());
-			} catch (Exception e) {
 				#if DEBUG
+			} catch (Exception e) {
 				Console.WriteLine(e.ToString());
+				#else
+			} catch (Exception) {
 				#endif
 				this.Values.Add(defaultValue);
 			}

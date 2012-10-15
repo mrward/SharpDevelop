@@ -29,6 +29,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// </summary>
 	public class TextArea : Control, IScrollInfo, IWeakEventListener, ITextEditorComponent, IServiceProvider
 	{
+		internal readonly ImeSupport ime;
+		
 		#region Constructor
 		static TextArea()
 		{
@@ -59,6 +61,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 			this.textView = textView;
 			this.Options = textView.Options;
 			
+			selection = emptySelection = new EmptySelection(this);
+			
 			textView.Services.AddService(typeof(TextArea), this);
 			
 			textView.LineTransformers.Add(new SelectionColorizer(this));
@@ -66,6 +70,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			
 			caret = new Caret(this);
 			caret.PositionChanged += (sender, e) => RequestSelectionValidation();
+			ime = new ImeSupport(this);
 			
 			leftMargins.CollectionChanged += leftMargins_CollectionChanged;
 			
@@ -204,7 +209,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			// Reset caret location and selection: this is necessary because the caret/selection might be invalid
 			// in the new document (e.g. if new document is shorter than the old document).
 			caret.Location = new TextLocation(1, 1);
-			this.Selection = Selection.Empty;
+			this.ClearSelection();
 			if (DocumentChanged != null)
 				DocumentChanged(this, EventArgs.Empty);
 			CommandManager.InvalidateRequerySuggested();
@@ -365,7 +370,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 		
 		#region Selection property
-		Selection selection = Selection.Empty;
+		internal readonly Selection emptySelection;
+		Selection selection;
 		
 		/// <summary>
 		/// Occurs when the selection has changed.
@@ -375,17 +381,20 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Gets/Sets the selection in this text area.
 		/// </summary>
+		
 		public Selection Selection {
 			get { return selection; }
 			set {
 				if (value == null)
 					throw new ArgumentNullException("value");
+				if (value.textArea != this)
+					throw new ArgumentException("Cannot use a Selection instance that belongs to another text area.");
 				if (!object.Equals(selection, value)) {
-					//Debug.WriteLine("Selection change from " + selection + " to " + value);
+//					Debug.WriteLine("Selection change from " + selection + " to " + value);
 					if (textView != null) {
 						ISegment oldSegment = selection.SurroundingSegment;
 						ISegment newSegment = value.SurroundingSegment;
-						if (selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null) {
+						if (!Selection.EnableVirtualSpace && (selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null)) {
 							// perf optimization:
 							// When a simple selection changes, don't redraw the whole selection, but only the changed parts.
 							int oldSegmentOffset = oldSegment.Offset;
@@ -414,6 +423,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 					CommandManager.InvalidateRequerySuggested();
 				}
 			}
+		}
+		
+		/// <summary>
+		/// Clears the current selection.
+		/// </summary>
+		public void ClearSelection()
+		{
+			this.Selection = emptySelection;
 		}
 		
 		/// <summary>
@@ -504,7 +521,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			if (allowCaretOutsideSelection == 0) {
 				if (!selection.IsEmpty && !selection.Contains(caret.Offset)) {
 					Debug.WriteLine("Resetting selection because caret is outside");
-					this.Selection = Selection.Empty;
+					this.ClearSelection();
 				}
 			}
 		}
@@ -740,6 +757,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
 			base.OnGotKeyboardFocus(e);
+			// First activate IME, then show caret
+			ime.OnGotFocus(e);
 			caret.Show();
 		}
 		
@@ -748,6 +767,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			base.OnLostKeyboardFocus(e);
 			caret.Hide();
+			ime.OnLostFocus(e);
 		}
 		#endregion
 		
@@ -792,10 +812,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 			//Debug.WriteLine("TextInput: Text='" + e.Text + "' SystemText='" + e.SystemText + "' ControlText='" + e.ControlText + "'");
 			base.OnTextInput(e);
 			if (!e.Handled && this.Document != null) {
-				if (string.IsNullOrEmpty(e.Text) || e.Text == "\x1b") {
+				if (string.IsNullOrEmpty(e.Text) || e.Text == "\x1b" || e.Text == "\b") {
 					// ASCII 0x1b = ESC.
 					// WPF produces a TextInput event with that old ASCII control char
 					// when Escape is pressed. We'll just ignore it.
+					
+					// A deadkey followed by backspace causes a textinput event for the BS character.
 					
 					// Similarly, some shortcuts like Alt+Space produce an empty TextInput event.
 					// We have to ignore those (not handle them) to keep the shortcut working.
@@ -832,7 +854,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				throw ThrowUtil.NoDocumentAssigned();
 			OnTextEntering(e);
 			if (!e.Handled) {
-				if (e.Text == "\n" || e.Text == "\r\n")
+				if (e.Text == "\n" || e.Text == "\r" || e.Text == "\r\n")
 					ReplaceSelectionWithNewLine();
 				else
 					ReplaceSelectionWithText(e.Text);
@@ -861,7 +883,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			if (this.Document == null)
 				throw ThrowUtil.NoDocumentAssigned();
-			selection.ReplaceSelectionWithText(this, string.Empty);
+			selection.ReplaceSelectionWithText(string.Empty);
 			#if DEBUG
 			if (!selection.IsEmpty) {
 				foreach (ISegment s in selection.Segments) {
@@ -877,7 +899,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				throw new ArgumentNullException("newText");
 			if (this.Document == null)
 				throw ThrowUtil.NoDocumentAssigned();
-			selection.ReplaceSelectionWithText(this, newText);
+			selection.ReplaceSelectionWithText(newText);
 		}
 		
 		internal ISegment[] GetDeletableSegments(ISegment segment)

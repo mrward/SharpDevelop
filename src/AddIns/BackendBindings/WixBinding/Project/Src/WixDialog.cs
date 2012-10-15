@@ -157,7 +157,7 @@ namespace ICSharpCode.WixBinding
 		public Form CreateDialog(IComponentCreator componentCreator)
 		{
 			if (componentCreator == null) {
-				throw new ArgumentException("Cannot be null.", "componentCreator");
+				throw new ArgumentNullException("componentCreator");
 			}
 			
 			Form dialog = CreateForm(componentCreator);
@@ -314,6 +314,7 @@ namespace ICSharpCode.WixBinding
 						controls.Add(CreateRadioButtonGroup(controlElement, componentCreator));
 						break;
 					case "Bitmap":
+					case "Icon":
 						controls.Add(CreatePictureBox(controlElement, componentCreator));
 						break;
 					case "ListBox":

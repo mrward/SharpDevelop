@@ -3,6 +3,7 @@
 
 using System;
 using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.SharpDevelop.Editor.AvalonEdit;
 
 namespace ICSharpCode.SharpDevelop.Editor
@@ -14,6 +15,7 @@ namespace ICSharpCode.SharpDevelop.Editor
 	{
 		ITextEditor CreateEditor(out object control);
 		ITextEditorOptions GlobalOptions { get; }
+		ISyntaxHighlighter CreateHighlighter(IDocument document, string fileName);
 	}
 	
 	/// <summary>
@@ -25,11 +27,11 @@ namespace ICSharpCode.SharpDevelop.Editor
 			delegate {
 				// fetch IEditorControlService that's normally implemented in AvalonEdit.AddIn
 				var node = Core.AddInTree.GetTreeNode("/SharpDevelop/ViewContent/TextEditor/EditorControlService", false);
+				IEditorControlService ecs = null;
 				if (node != null && node.Codons.Count > 0) {
-					return (IEditorControlService)node.Codons[0].BuildItem(null, null);
-				} else {
-					return new DummyService();
+					ecs = (IEditorControlService)node.BuildChildItem(node.Codons[0], null);
 				}
+				return ecs ?? new DummyService();
 			}
 		);
 		
@@ -84,6 +86,17 @@ namespace ICSharpCode.SharpDevelop.Editor
 			
 			public bool UnderlineErrors {
 				get { return true; }
+			}
+			
+			public string FontFamily {
+				get {
+					return "Consolas";
+				}
+			}
+			
+			public ISyntaxHighlighter CreateHighlighter(IDocument document, string fileName)
+			{
+				return null;
 			}
 		}
 	}

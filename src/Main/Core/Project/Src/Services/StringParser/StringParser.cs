@@ -39,6 +39,16 @@ namespace ICSharpCode.Core
 		}
 		
 		/// <summary>
+		/// Escapes all occurrences of '${' to '${$}{'.
+		/// </summary>
+		public static string Escape(string input)
+		{
+			if (input == null)
+				throw new ArgumentNullException("input");
+			return input.Replace("${", "${$}{");
+		}
+		
+		/// <summary>
 		/// Expands ${xyz} style property values.
 		/// </summary>
 		public static string Parse(string input)
@@ -132,6 +142,7 @@ namespace ICSharpCode.Core
 		/// <summary>
 		/// For new code, please use the overload taking StringTagPair[]!
 		/// </summary>
+		[Obsolete("Please use the overload taking StringTagPair[]!")]
 		public static string Parse(string input, string[,] customTags)
 		{
 			if (customTags == null)
@@ -152,6 +163,8 @@ namespace ICSharpCode.Core
 		{
 			if (propertyName == null)
 				throw new ArgumentNullException("propertyName");
+			if (propertyName == "$")
+				return "$";
 			
 			if (customTags != null) {
 				foreach (StringTagPair pair in customTags) {

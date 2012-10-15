@@ -2,6 +2,8 @@
 // This code is distributed under the BSD license (for details please see \src\AddIns\Debugger\Debugger.AddIn\license.txt)
 
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Threading;
 using Debugger;
 using Debugger.AddIn.Pads.Controls;
 using Debugger.AddIn.TreeModel;
@@ -33,8 +35,7 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 		
 		protected override void InitializeComponents()
 		{
-			localVarList = new WatchList();
-			localVarList.WatchType = WatchListType.LocalVar;
+			localVarList = new WatchList(WatchListType.LocalVar);
 			panel.Children.Add(localVarList);
 		}
 		
@@ -47,49 +48,39 @@ namespace ICSharpCode.SharpDevelop.Gui.Pads
 			if (debuggedProcess != null) {
 				debuggedProcess.Paused += debuggedProcess_Paused;
 			}
-			RefreshPad();
+			InvalidatePad();
 		}
 		
 		void debuggedProcess_Paused(object sender, ProcessEventArgs e)
 		{
-			RefreshPad();
+			InvalidatePad();
 		}
 		
-		public override void RefreshPad()
+		protected override void RefreshPad()
 		{
-			if (debuggedProcess == null || debuggedProcess.IsRunning || debuggedProcess.SelectedStackFrame == null) {
+			if (debuggedProcess == null || debuggedProcess.IsRunning) {
 				localVarList.WatchItems.Clear();
 				return;
 			}
-			localVarList.WatchItems.Clear();
-			using(new PrintTimes("Local Variables refresh")) {
-				try {
-					Utils.DoEvents(debuggedProcess);
-					foreach (var item in new StackFrameNode(debuggedProcess.SelectedStackFrame).ChildNodes) {
-						localVarList.WatchItems.Add(item);
-					}
-				} 
-				catch(AbortedBecauseDebuggeeResumedException) { } 
-				catch(Exception ex) {
-					if (debuggedProcess == null || debuggedProcess.HasExited) {
-						// Process unexpectedly exited
-					} else {
-						MessageService.ShowException(ex);
-					}
+			
+			LoggingService.Info("Local Variables refresh");
+			try {
+				StackFrame frame = debuggedProcess.GetCurrentExecutingFrame();
+				localVarList.WatchItems.Clear();
+				if (frame == null) return;
+				
+				debuggedProcess.EnqueueForEach(
+					Dispatcher.CurrentDispatcher,
+					new StackFrameNode(frame).ChildNodes.ToList(),
+					n => localVarList.WatchItems.Add(n.ToSharpTreeNode())
+				);
+			} catch (Exception ex) {
+				if (debuggedProcess == null || debuggedProcess.HasExited) {
+					// Process unexpectedly exited
+				} else {
+					MessageService.ShowException(ex);
 				}
 			}
-		}
-	}
-	
-	public static class ExtensionForWatchItems
-	{
-		public static bool ContainsItem(this ObservableCollection<TreeNode> collection, TreeNode node)
-		{
-			foreach (var item in collection)
-				if (item.CompareTo(node) == 0)
-					return true;
-			
-			return false;
 		}
 	}
 }

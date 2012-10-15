@@ -16,11 +16,6 @@
 		<Import assembly = "$ICSharpCode.CSharpBinding/CSharpBinding.dll"/>
 	</Runtime>
  	
-	<Path name = "/SharpDevelop/Workbench/Ambiences">
-		<Class id    = "F#"
-		       class = "FSharpBindings.FSharpAmbience"/>
-	</Path>
-
 	<Path name = "/SharpDevelop/ViewContent/AvalonEdit/SyntaxModes">
 		<SyntaxMode id         = "F# Syntax Mode"
 		            name       = "F#"
@@ -41,7 +36,8 @@
 		<FileFilter id = "F#"
 		            insertbefore="AllFiles"
 		            name = "F# (*.fs)"
-		            extensions = "*.fs"/>
+		            extensions = "*.fs"
+		            mimeType = "text/plain"/>
 	</Path>
 	
 	<Path name = "/SharpDevelop/Workbench/Combine/FileFilter">

@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.PackageManagement;
+using ICSharpCode.SharpDevelop.Dom;
+using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.PackageManagement.Design
 {
@@ -83,6 +84,40 @@ namespace ICSharpCode.PackageManagement.Design
 		public void LoadSolution(string path)
 		{
 			throw new NotImplementedException();
+		}
+		
+		public Solution SavedSolution;
+		
+		public void Save(Solution solution)
+		{
+			SavedSolution = solution;
+		}
+		
+		public IProjectContent GetProjectContent(IProject project)
+		{
+			return new DefaultProjectContent();
+		}
+		
+		public IProjectBrowserUpdater ProjectBrowserUpdater;
+		
+		public IProjectBrowserUpdater CreateProjectBrowserUpdater()
+		{
+			return ProjectBrowserUpdater;
+		}
+		
+		Dictionary<string, string> defaultCustomTools = new Dictionary<string, string>();
+		
+		public void AddDefaultCustomToolForFileName(string fileName, string customTool)
+		{
+			defaultCustomTools.Add(fileName, customTool);
+		}
+		
+		public string GetDefaultCustomToolForFileName(FileProjectItem projectItem)
+		{
+			if (defaultCustomTools.ContainsKey(projectItem.FileName)) {
+				return defaultCustomTools[projectItem.FileName];
+			}
+			return String.Empty;
 		}
 	}
 }

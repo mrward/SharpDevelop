@@ -15,6 +15,7 @@ using Debugger;
 using Debugger.AddIn.Tooltips;
 using Debugger.AddIn.TreeModel;
 using Debugger.Interop.CorPublish;
+using Debugger.MetaData;
 using ICSharpCode.Core;
 using ICSharpCode.Core.WinForms;
 using ICSharpCode.NRefactory;
@@ -25,6 +26,7 @@ using ICSharpCode.SharpDevelop.Debugging;
 using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Gui.OptionPanels;
 using ICSharpCode.SharpDevelop.Project;
+using Mono.Cecil;
 using Process = Debugger.Process;
 
 namespace ICSharpCode.SharpDevelop.Services
@@ -45,7 +47,8 @@ namespace ICSharpCode.SharpDevelop.Services
 		ICorPublish corPublish;
 		
 		Process debuggedProcess;
-		ProcessMonitor monitor;
+		
+		internal IDebuggerDecompilerService debuggerDecompilerService;
 		
 		//DynamicTreeDebuggerRow currentTooltipRow;
 		//Expression             currentTooltipExpression;
@@ -140,107 +143,55 @@ namespace ICSharpCode.SharpDevelop.Services
 				InitializeService();
 			}
 
-			if (FileUtility.IsUrl(processStartInfo.FileName)) {
-				if (!CheckWebProjectStartInfo())
-					return;
+			string version = debugger.GetProgramVersion(processStartInfo.FileName);
+			
+			if (version.StartsWith("v1.0")) {
+				MessageService.ShowMessage("${res:XML.MainMenu.DebugMenu.Error.Net10NotSupported}");
+			} else if (version.StartsWith("v1.1")) {
+				MessageService.ShowMessage(StringParser.Parse("${res:XML.MainMenu.DebugMenu.Error.Net10NotSupported}").Replace("1.0", "1.1"));
+//			} else if (string.IsNullOrEmpty(version)) {
+//				// Not a managed assembly
+//				MessageService.ShowMessage("${res:XML.MainMenu.DebugMenu.Error.BadAssembly}");
+			} else if (debugger.IsKernelDebuggerEnabled) {
+				MessageService.ShowMessage("${res:XML.MainMenu.DebugMenu.Error.KernelDebuggerEnabled}");
+			} else {
+				attached = false;
+				if (DebugStarting != null)
+					DebugStarting(this, EventArgs.Empty);
 				
-				var project = ProjectService.OpenSolution.StartupProject as CompilableProject;
-				var options = WebProjectsOptions.Instance.GetWebProjectOptions(project.Name);
-				System.Diagnostics.Process defaultAppProcess = null;
-				
-				if (options.Data.WebServer != WebServer.None) {
-					string processName = WebProjectService.WorkerProcessName;
-					
-					// try find the worker process directly or using the process monitor callback
-					var processes = System.Diagnostics.Process.GetProcesses();
-					int index = processes.FindIndex(p => p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase));
-					if (index > -1){
-						Attach(processes[index]);
+				try {
+					// set the JIT flag for evaluating optimized code
+					Process.DebugMode = DebugModeFlag.Debug;
+					Process process = debugger.Start(processStartInfo.FileName,
+					                                 processStartInfo.WorkingDirectory,
+					                                 processStartInfo.Arguments);
+					SelectProcess(process);
+				} catch (System.Exception e) {
+					// COMException: The request is not supported. (Exception from HRESULT: 0x80070032)
+					// COMException: The application has failed to start because its side-by-side configuration is incorrect. Please see the application event log for more detail. (Exception from HRESULT: 0x800736B1)
+					// COMException: The requested operation requires elevation. (Exception from HRESULT: 0x800702E4)
+					// COMException: The directory name is invalid. (Exception from HRESULT: 0x8007010B)
+					// BadImageFormatException:  is not a valid Win32 application. (Exception from HRESULT: 0x800700C1)
+					// UnauthorizedAccessException: Отказано в доступе. (Исключение из HRESULT: 0x80070005 (E_ACCESSDENIED))
+					if (e is COMException || e is BadImageFormatException || e is UnauthorizedAccessException) {
+						string msg = StringParser.Parse("${res:XML.MainMenu.DebugMenu.Error.CannotStartProcess}");
+						msg += " " + e.Message;
+						// TODO: Remove
+						if (e is COMException && ((uint)((COMException)e).ErrorCode == 0x80070032)) {
+							msg += Environment.NewLine + Environment.NewLine;
+							msg += "64-bit debugging is not supported.  Please set Project -> Project Options... -> Compiling -> Target CPU to 32bit.";
+						}
+						MessageService.ShowMessage(msg);
+						
+						if (DebugStopped != null)
+							DebugStopped(this, EventArgs.Empty);
 					} else {
-						try {
-							this.monitor = new ProcessMonitor(processName);
-							this.monitor.ProcessCreated += delegate {
-								WorkbenchSingleton.SafeThreadCall((Action)(() => OnProcessCreated(defaultAppProcess, options)));
-							};
-							this.monitor.Start();
-						}
-						catch (System.Exception ex) {
-							LoggingService.ErrorFormatted("Process Monitor exception: {0}", ex.Message);
-						}
-					}
-					
-					if (options.Data.WebServer == WebServer.IISExpress) {
-						// start IIS express and attach to it
-						if (WebProjectService.IISVersion == IISVersion.IISExpress)
-							System.Diagnostics.Process.Start(WebProjectService.IISExpressProcessLocation);
-						else {
-							MessageService.ShowError("${res:ICSharpCode.WepProjectOptionsPanel.NoProjectUrlOrProgramAction}");
-							return;
-						}
-					}
-				}
-				
-				// start default application(e.g. browser)
-				if (project.StartAction == StartAction.StartURL)
-					defaultAppProcess = System.Diagnostics.Process.Start(project.StartUrl);
-				else {
-					if (!string.IsNullOrEmpty(options.Data.ProjectUrl) && options.Data.WebServer == WebServer.IIS)
-						defaultAppProcess = System.Diagnostics.Process.Start(options.Data.ProjectUrl);
-					else {
-						if (options.Data.WebServer == WebServer.IISExpress)
-							defaultAppProcess = System.Diagnostics.Process.Start(options.Data.ProjectUrl);
-					}
-				}
-			}
-			else {
-				string version = debugger.GetProgramVersion(processStartInfo.FileName);
-				
-				if (version.StartsWith("v1.0")) {
-					MessageService.ShowMessage("${res:XML.MainMenu.DebugMenu.Error.Net10NotSupported}");
-				} else if (version.StartsWith("v1.1")) {
-					MessageService.ShowMessage(StringParser.Parse("${res:XML.MainMenu.DebugMenu.Error.Net10NotSupported}").Replace("1.0", "1.1"));
-//					} else if (string.IsNullOrEmpty(version)) {
-//					// Not a managed assembly
-//					MessageService.ShowMessage("${res:XML.MainMenu.DebugMenu.Error.BadAssembly}");
-				} else if (debugger.IsKernelDebuggerEnabled) {
-					MessageService.ShowMessage("${res:XML.MainMenu.DebugMenu.Error.KernelDebuggerEnabled}");
-				} else {
-					attached = false;
-					if (DebugStarting != null)
-						DebugStarting(this, EventArgs.Empty);
-					
-					try {
-						Process process = debugger.Start(processStartInfo.FileName,
-						                                 processStartInfo.WorkingDirectory,
-						                                 processStartInfo.Arguments);
-						SelectProcess(process);
-					} catch (System.Exception e) {
-						// COMException: The request is not supported. (Exception from HRESULT: 0x80070032)
-						// COMException: The application has failed to start because its side-by-side configuration is incorrect. Please see the application event log for more detail. (Exception from HRESULT: 0x800736B1)
-						// COMException: The requested operation requires elevation. (Exception from HRESULT: 0x800702E4)
-						// COMException: The directory name is invalid. (Exception from HRESULT: 0x8007010B)
-						// BadImageFormatException:  is not a valid Win32 application. (Exception from HRESULT: 0x800700C1)
-						// UnauthorizedAccessException: Отказано в доступе. (Исключение из HRESULT: 0x80070005 (E_ACCESSDENIED))
-						if (e is COMException || e is BadImageFormatException || e is UnauthorizedAccessException) {
-							string msg = StringParser.Parse("${res:XML.MainMenu.DebugMenu.Error.CannotStartProcess}");
-							msg += " " + e.Message;
-							// TODO: Remove
-							if (e is COMException && ((uint)((COMException)e).ErrorCode == 0x80070032)) {
-								msg += Environment.NewLine + Environment.NewLine;
-								msg += "64-bit debugging is not supported.  Please set Project -> Project Options... -> Compiling -> Target CPU to 32bit.";
-							}
-							MessageService.ShowMessage(msg);
-							
-							if (DebugStopped != null)
-								DebugStopped(this, EventArgs.Empty);
-						} else {
-							throw;
-						}
+						throw;
 					}
 				}
 			}
 		}
-
+		
 		public void ShowAttachDialog()
 		{
 			using (AttachToProcessForm attachForm = new AttachToProcessForm()) {
@@ -271,6 +222,8 @@ namespace ICSharpCode.SharpDevelop.Services
 					DebugStarting(this, EventArgs.Empty);
 				
 				try {
+					// set the JIT flag for evaluating optimized code
+					Process.DebugMode = DebugModeFlag.Debug;
 					Process process = debugger.Attach(existingProcess);
 					attached = true;
 					SelectProcess(process);
@@ -298,43 +251,7 @@ namespace ICSharpCode.SharpDevelop.Services
 		
 		public void StartWithoutDebugging(ProcessStartInfo processStartInfo)
 		{
-			if (FileUtility.IsUrl(processStartInfo.FileName)) {
-				if (!CheckWebProjectStartInfo())
-					return;
-				
-				var project = ProjectService.OpenSolution.Preferences.StartupProject as CompilableProject;
-				var options = WebProjectsOptions.Instance.GetWebProjectOptions(project.Name);
-				
-				if (options.Data.WebServer != WebServer.None) {
-					string processName = WebProjectService.WorkerProcessName;
-					
-					if (options.Data.WebServer == WebServer.IISExpress) {
-						// start IIS express
-						if (WebProjectService.IISVersion == IISVersion.IISExpress)
-							System.Diagnostics.Process.Start(WebProjectService.IISExpressProcessLocation);
-						else {
-							MessageService.ShowError("${res:ICSharpCode.WepProjectOptionsPanel.NoProjectUrlOrProgramAction}");
-							return;
-						}
-					}
-				}
-				
-				// start default application(e.g. browser)
-				if (project.StartAction == StartAction.StartURL)
-					System.Diagnostics.Process.Start(project.StartUrl);
-				else {
-					if (!string.IsNullOrEmpty(options.Data.ProjectUrl) && options.Data.WebServer == WebServer.IIS)
-						System.Diagnostics.Process.Start(options.Data.ProjectUrl);
-					else {
-						if (!string.IsNullOrEmpty(options.Data.ProjectUrl) && options.Data.WebServer == WebServer.IISExpress)
-							System.Diagnostics.Process.Start(options.Data.ProjectUrl);
-						else
-							System.Diagnostics.Process.Start(processStartInfo.FileName);
-					}
-				}
-			}
-			else
-				System.Diagnostics.Process.Start(processStartInfo);
+			System.Diagnostics.Process.Start(processStartInfo);
 		}
 		
 		public void Stop()
@@ -357,60 +274,6 @@ namespace ICSharpCode.SharpDevelop.Services
 				}
 			} else {
 				debuggedProcess.Terminate();
-			}
-			
-			if (monitor != null) {
-				monitor.Stop();
-				monitor.Dispose();
-				monitor = null;
-			}
-		}
-		
-		bool CheckWebProjectStartInfo()
-		{
-			// check if we have startup project
-			var project = ProjectService.OpenSolution.StartupProject as CompilableProject;
-			if (project == null) {
-				MessageService.ShowError("${res:ICSharpCode.NoStartupProject}");
-				return false;
-			}
-			
-			// check if we have options
-			if (WebProjectsOptions.Instance == null) {
-				MessageService.ShowError("${res:ICSharpCode.WepProjectOptionsPanel.NoProjectUrlOrProgramAction}");
-				return false;
-			}
-			
-			// check the options
-			var options = WebProjectsOptions.Instance.GetWebProjectOptions(project.Name);
-			if (options == null || options.Data == null || string.IsNullOrEmpty(options.ProjectName) ||
-			    options.Data.WebServer == WebServer.None) {
-				MessageService.ShowError("${res:ICSharpCode.WepProjectOptionsPanel.NoProjectUrlOrProgramAction}");
-				return false;
-			}
-			
-			return true;
-		}
-		
-		void OnProcessCreated(System.Diagnostics.Process defaultAppProcess, WebProjectOptions debugData)
-		{
-			if (attached)
-				return;
-			string processName = WebProjectService.WorkerProcessName;
-			var processes = System.Diagnostics.Process.GetProcesses();
-			int index = processes.FindIndex(p => p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase));
-			Attach(processes[index]);
-			
-			if (!attached) {
-				if(debugData.Data.WebServer == WebServer.IIS) {
-					string format = ResourceService.GetString("ICSharpCode.WepProjectOptionsPanel.NoIISWP");
-					MessageService.ShowMessage(string.Format(format, processName));
-				} else {
-					Attach(defaultAppProcess);
-					if (!attached) {
-						MessageService.ShowMessage(ResourceService.GetString("ICSharpCode.WepProjectOptionsPanel.UnableToAttach"));
-					}
-				}
 			}
 		}
 		
@@ -443,6 +306,27 @@ namespace ICSharpCode.SharpDevelop.Services
 		}
 		
 		// Stepping:
+		Debugger.StackFrame GetStackFrame()
+		{
+			bool isMatch = false;
+			int line = -1;
+			int[] ilRange = null;
+			
+			var frame = debuggedProcess.SelectedThread.MostRecentStackFrame;
+			int typeToken = frame.MethodInfo.DeclaringType.MetadataToken;
+			int methodToken = frame.MethodInfo.MetadataToken;
+			
+			// get the mapped instruction from the current line marker or the next one
+			if (!debuggerDecompilerService.GetILAndLineNumber(typeToken, methodToken, frame.IP, out ilRange, out line, out isMatch)){
+				frame.SourceCodeLine = 0;
+				frame.ILRanges = new [] { 0, 1 };
+			} else {
+				frame.SourceCodeLine = line;
+				frame.ILRanges = ilRange;
+			}
+			
+			return frame;
+		}
 		
 		public void StepInto()
 		{
@@ -450,10 +334,22 @@ namespace ICSharpCode.SharpDevelop.Services
 				MessageService.ShowMessage(errorNotDebugging, "${res:XML.MainMenu.DebugMenu.StepInto}");
 				return;
 			}
-			if (debuggedProcess.SelectedStackFrame == null || debuggedProcess.IsRunning) {
+			
+			if (debuggedProcess.IsRunning) {
+				MessageService.ShowMessage(errorProcessRunning, "${res:XML.MainMenu.DebugMenu.StepInto}");
+				return;
+			}
+			
+			var frame = debuggedProcess.SelectedThread.MostRecentStackFrame;
+			if (frame == null) {
 				MessageService.ShowMessage(errorCannotStepNoActiveFunction, "${res:XML.MainMenu.DebugMenu.StepInto}");
 			} else {
-				debuggedProcess.SelectedStackFrame.AsyncStepInto();
+				if (!frame.HasSymbols) {
+					// get frame info from external code mappings
+					frame = GetStackFrame();
+				}
+				
+				frame.AsyncStepInto();
 			}
 		}
 		
@@ -463,10 +359,22 @@ namespace ICSharpCode.SharpDevelop.Services
 				MessageService.ShowMessage(errorNotDebugging, "${res:XML.MainMenu.DebugMenu.StepOver}");
 				return;
 			}
-			if (debuggedProcess.SelectedStackFrame == null || debuggedProcess.IsRunning) {
+			
+			if (debuggedProcess.IsRunning) {
+				MessageService.ShowMessage(errorProcessRunning, "${res:XML.MainMenu.DebugMenu.StepOver}");
+				return;
+			}
+			
+			var frame = debuggedProcess.SelectedThread.MostRecentStackFrame;
+			if (frame == null) {
 				MessageService.ShowMessage(errorCannotStepNoActiveFunction, "${res:XML.MainMenu.DebugMenu.StepOver}");
 			} else {
-				debuggedProcess.SelectedStackFrame.AsyncStepOver();
+				if (!frame.HasSymbols) {
+					// get frame info from external code mappings
+					frame = GetStackFrame();
+				}
+				
+				frame.AsyncStepOver();
 			}
 		}
 		
@@ -476,10 +384,22 @@ namespace ICSharpCode.SharpDevelop.Services
 				MessageService.ShowMessage(errorNotDebugging, "${res:XML.MainMenu.DebugMenu.StepOut}");
 				return;
 			}
-			if (debuggedProcess.SelectedStackFrame == null || debuggedProcess.IsRunning) {
-				MessageService.ShowMessage(errorCannotStepNoActiveFunction, "${res:XML.MainMenu.DebugMenu.StepOut}");
+			
+			if (debuggedProcess.IsRunning) {
+				MessageService.ShowMessage(errorProcessRunning, "${res:XML.MainMenu.DebugMenu.StepOut}");
+				return;
+			}
+			
+			var frame = debuggedProcess.SelectedThread.MostRecentStackFrame;
+			if (frame == null) {
+				MessageService.ShowMessage(errorCannotStepNoActiveFunction, "${res:XML.MainMenu.DebugMenu.StepInto}");
 			} else {
-				debuggedProcess.SelectedStackFrame.AsyncStepOut();
+				if (!frame.HasSymbols) {
+					// get frame info from external code mappings
+					frame = GetStackFrame();
+				}
+				
+				frame.AsyncStepOut();
 			}
 		}
 		
@@ -505,9 +425,17 @@ namespace ICSharpCode.SharpDevelop.Services
 			if (!CanEvaluate) {
 				return null;
 			}
-			return ExpressionEvaluator.Evaluate(variableName, SupportedLanguage.CSharp, debuggedProcess.SelectedStackFrame);
+			
+			var frame = debuggedProcess.GetCurrentExecutingFrame();
+			if (frame == null)
+				return null;
+			object data = debuggerDecompilerService.GetLocalVariableIndex(frame.MethodInfo.DeclaringType.MetadataToken,
+			                                                              frame.MethodInfo.MetadataToken,
+			                                                              variableName);
+			// evaluate expression
+			return ExpressionEvaluator.Evaluate(variableName, SupportedLanguage.CSharp, frame, data);
 		}
-		
+
 		/// <summary>
 		/// Gets Expression for given variable. Can throw GetValueException.
 		/// <exception cref="GetValueException">Thrown when getting expression fails. Exception message explains reason.</exception>
@@ -550,7 +478,8 @@ namespace ICSharpCode.SharpDevelop.Services
 		bool CanEvaluate
 		{
 			get {
-				return debuggedProcess != null && !debuggedProcess.IsRunning && debuggedProcess.SelectedStackFrame != null;
+				return debuggedProcess != null && !debuggedProcess.IsRunning &&
+					(debuggedProcess.SelectedStackFrame != null || debuggedProcess.SelectedThread.MostRecentStackFrame != null);
 			}
 		}
 		
@@ -564,10 +493,11 @@ namespace ICSharpCode.SharpDevelop.Services
 				var tooltipExpression = GetExpression(variableName);
 				string imageName;
 				var image = ExpressionNode.GetImageForLocalVariable(out imageName);
-				ExpressionNode expressionNode = new ExpressionNode(image, variableName, tooltipExpression);
+				ExpressionNode expressionNode = new ExpressionNode(null, image, variableName, tooltipExpression);
 				expressionNode.ImageName = imageName;
-				return new DebuggerTooltipControl(logicalPosition, expressionNode);
-			} catch (GetValueException) {
+				return new DebuggerTooltipControl(logicalPosition, expressionNode) { ShowPins = debuggedProcess.GetCurrentExecutingFrame().HasSymbols };
+			} catch (System.Exception ex) {
+				LoggingService.Error("Error on GetTooltipControl: " + ex.Message);
 				return null;
 			}
 		}
@@ -585,7 +515,7 @@ namespace ICSharpCode.SharpDevelop.Services
 					image = new ResourceServiceImage(currentImageName);
 					imageName = currentImageName;
 				}
-				ExpressionNode expressionNode = new ExpressionNode(image, variable, expression);
+				ExpressionNode expressionNode = new ExpressionNode(null, image, variable, expression);
 				expressionNode.ImageName = imageName;
 				return expressionNode;
 			} catch (GetValueException) {
@@ -630,10 +560,14 @@ namespace ICSharpCode.SharpDevelop.Services
 				new RemotingConfigurationHelpper(path).Configure();
 			}
 			
+			// get decompiler service
+			var items = AddInTree.BuildItems<IDebuggerDecompilerService>("/SharpDevelop/Services/DebuggerDecompilerService", null, false);
+			if (items.Count > 0)
+				debuggerDecompilerService = items[0];
+			
+			// init NDebugger
 			debugger = new NDebugger();
-			
 			debugger.Options = DebuggingOptions.Instance;
-			
 			debugger.DebuggerTraceMessage    += debugger_TraceMessage;
 			debugger.Processes.Added         += debugger_ProcessStarted;
 			debugger.Processes.Removed       += debugger_ProcessExited;
@@ -662,7 +596,53 @@ namespace ICSharpCode.SharpDevelop.Services
 		
 		void AddBreakpoint(BreakpointBookmark bookmark)
 		{
-			Breakpoint breakpoint = debugger.Breakpoints.Add(bookmark.FileName, null, bookmark.LineNumber, 0, bookmark.IsEnabled);
+			Breakpoint breakpoint = null;
+			
+			if (bookmark is DecompiledBreakpointBookmark) {
+				try {
+					if (debuggerDecompilerService == null) {
+						LoggingService.Warn("No IDebuggerDecompilerService found!");
+						return;
+					}
+					var dbb = (DecompiledBreakpointBookmark)bookmark;
+					MemberReference memberReference = null;
+					
+					string assemblyFile, typeName;
+					if (DecompiledBreakpointBookmark.GetAssemblyAndType(dbb.FileName, out assemblyFile, out typeName)) {
+						memberReference = dbb.GetMemberReference(debuggerDecompilerService.GetAssemblyResolver(assemblyFile));
+					}
+					
+					int token = memberReference.MetadataToken.ToInt32();
+					if (!debuggerDecompilerService.CheckMappings(token))
+						debuggerDecompilerService.DecompileOnDemand(memberReference as TypeDefinition);
+					
+					int[] ilRanges;
+					int methodToken;
+					if (debuggerDecompilerService.GetILAndTokenByLineNumber(token, dbb.LineNumber, out ilRanges, out methodToken)) {
+						// create BP
+						breakpoint = new ILBreakpoint(
+							debugger,
+							memberReference.FullName,
+							dbb.LineNumber,
+							memberReference.MetadataToken.ToInt32(),
+							methodToken,
+							ilRanges[0],
+							dbb.IsEnabled);
+						
+						debugger.Breakpoints.Add(breakpoint);
+					}
+				} catch (System.Exception ex) {
+					LoggingService.Error("Error on DecompiledBreakpointBookmark: " + ex.Message);
+				}
+			} else {
+				breakpoint = debugger.Breakpoints.Add(bookmark.FileName, null, bookmark.LineNumber, 0, bookmark.IsEnabled);
+			}
+			
+			if (breakpoint == null) {
+				LoggingService.Warn(string.Format("unable to create breakpoint: {0}", bookmark.ToString()));
+				return;
+			}
+			
 			MethodInvoker setBookmarkColor = delegate {
 				if (debugger.Processes.Count == 0) {
 					bookmark.IsHealthy = true;
@@ -670,10 +650,13 @@ namespace ICSharpCode.SharpDevelop.Services
 				} else if (!breakpoint.IsSet) {
 					bookmark.IsHealthy = false;
 					bookmark.Tooltip = "Breakpoint was not found in any loaded modules";
-				} else if (breakpoint.OriginalLocation.CheckSum == null) {
+				} else if (breakpoint.OriginalLocation == null || breakpoint.OriginalLocation.CheckSum == null) {
 					bookmark.IsHealthy = true;
 					bookmark.Tooltip = null;
 				} else {
+					if (!File.Exists(bookmark.FileName))
+						return;
+					
 					byte[] fileMD5;
 					IEditable file = FileService.GetOpenFile(bookmark.FileName) as IEditable;
 					if (file != null) {
@@ -805,12 +788,14 @@ namespace ICSharpCode.SharpDevelop.Services
 				debuggedProcess.Paused          -= debuggedProcess_DebuggingPaused;
 				debuggedProcess.ExceptionThrown -= debuggedProcess_ExceptionThrown;
 				debuggedProcess.Resumed         -= debuggedProcess_DebuggingResumed;
+				debuggedProcess.ModulesAdded 	-= debuggedProcess_ModulesAdded;
 			}
 			debuggedProcess = process;
 			if (debuggedProcess != null) {
 				debuggedProcess.Paused          += debuggedProcess_DebuggingPaused;
 				debuggedProcess.ExceptionThrown += debuggedProcess_ExceptionThrown;
 				debuggedProcess.Resumed         += debuggedProcess_DebuggingResumed;
+				debuggedProcess.ModulesAdded 	+= debuggedProcess_ModulesAdded;
 				
 				debuggedProcess.BreakAtBeginning = BreakAtBeginning;
 			}
@@ -819,6 +804,23 @@ namespace ICSharpCode.SharpDevelop.Services
 			
 			JumpToCurrentLine();
 			OnProcessSelected(new ProcessEventArgs(process));
+		}
+		
+		void debuggedProcess_ModulesAdded(object sender, ModuleEventArgs e)
+		{
+			var currentModuleTypes = e.Module.GetNamesOfDefinedTypes();
+			foreach (var bookmark in DebuggerService.Breakpoints.OfType<DecompiledBreakpointBookmark>()) {
+				var breakpoint = debugger.Breakpoints.FirstOrDefault(
+					b => b is ILBreakpoint && b.Line == bookmark.LineNumber &&
+					((ILBreakpoint)b).MetadataToken == bookmark.MemberReference.MetadataToken.ToInt32());
+				if (breakpoint == null)
+					continue;
+				// set the breakpoint only if the module contains the type
+				if (!currentModuleTypes.Contains(breakpoint.TypeName))
+					continue;
+				
+				breakpoint.SetBreakpoint(e.Module);
+			}
 		}
 		
 		void debuggedProcess_DebuggingPaused(object sender, ProcessEventArgs e)
@@ -849,49 +851,126 @@ namespace ICSharpCode.SharpDevelop.Services
 		
 		void debuggedProcess_ExceptionThrown(object sender, ExceptionEventArgs e)
 		{
-			if (!e.IsUnhandled) {
-				// Ignore the exception
-				e.Process.AsyncContinue();
-				return;
-			}
-			
 			JumpToCurrentLine();
 			
 			StringBuilder stacktraceBuilder = new StringBuilder();
 			
-			// Need to intercept now so that we can evaluate properties
-			if (e.Process.SelectedThread.InterceptCurrentException()) {
-				stacktraceBuilder.AppendLine(e.Exception.ToString());
-				string stackTrace;
-				try {
-					stackTrace = e.Exception.GetStackTrace(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.EndOfInnerException}"));
-				} catch (GetValueException) {
-					stackTrace = e.Process.SelectedThread.GetStackTrace(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.Symbols}"), StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.NoSymbols}"));
+			if (e.IsUnhandled) {
+				// Need to intercept now so that we can evaluate properties
+				if (e.Process.SelectedThread.InterceptException(e.Exception)) {
+					stacktraceBuilder.AppendLine(e.Exception.ToString());
+					string stackTrace;
+					try {
+						stackTrace = e.Exception.GetStackTrace(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.EndOfInnerException}"));
+					} catch (GetValueException) {
+						stackTrace = e.Process.SelectedThread.GetStackTrace(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.Symbols}"), StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.NoSymbols}"));
+					}
+					stacktraceBuilder.Append(stackTrace);
+				} else {
+					// For example, happens on stack overflow
+					stacktraceBuilder.AppendLine(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Error.CannotInterceptException}"));
+					stacktraceBuilder.AppendLine(e.Exception.ToString());
+					stacktraceBuilder.Append(e.Process.SelectedThread.GetStackTrace(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.Symbols}"), StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.NoSymbols}")));
 				}
-				stacktraceBuilder.Append(stackTrace);
 			} else {
-				// For example, happens on stack overflow
-				stacktraceBuilder.AppendLine(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Error.CannotInterceptException}"));
 				stacktraceBuilder.AppendLine(e.Exception.ToString());
 				stacktraceBuilder.Append(e.Process.SelectedThread.GetStackTrace(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.Symbols}"), StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.LineFormat.NoSymbols}")));
 			}
 			
 			string title = e.IsUnhandled ? StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Title.Unhandled}") : StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Title.Handled}");
-			string message = string.Format(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Message}"), e.Exception.Type, e.Exception.Message);
+			string message = string.Format(StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Message}"), e.Exception.Type);
 			Bitmap icon = WinFormsResourceService.GetBitmap(e.IsUnhandled ? "Icons.32x32.Error" : "Icons.32x32.Warning");
 			
-			DebuggeeExceptionForm.Show(debuggedProcess, title, message, stacktraceBuilder.ToString(), icon);
+			DebuggeeExceptionForm.Show(debuggedProcess, title, message, stacktraceBuilder.ToString(), icon, e.IsUnhandled, e.Exception);
+		}
+		
+		public bool BreakAndInterceptHandledException(Debugger.Exception exception)
+		{
+			if (!debuggedProcess.SelectedThread.InterceptException(exception)) {
+				MessageService.ShowError("${res:MainWindow.Windows.Debug.ExceptionForm.Error.CannotInterceptHandledException}");
+				return false;
+			}
+			JumpToCurrentLine();
+			return true;
 		}
 		
 		public void JumpToCurrentLine()
 		{
+			if (debuggedProcess == null || debuggedProcess.SelectedThread == null)
+				return;
+			
 			WorkbenchSingleton.MainWindow.Activate();
-			DebuggerService.RemoveCurrentLineMarker();
-			if (debuggedProcess != null) {
-				SourcecodeSegment nextStatement = debuggedProcess.NextStatement;
-				if (nextStatement != null) {
-					DebuggerService.JumpToCurrentLine(nextStatement.Filename, nextStatement.StartLine, nextStatement.StartColumn, nextStatement.EndLine, nextStatement.EndColumn);
+			
+			if (debuggedProcess.IsSelectedFrameForced()) {
+				if (debuggedProcess.SelectedStackFrame != null && debuggedProcess.SelectedStackFrame.HasSymbols) {
+					JumpToSourceCode();
+				} else {
+					JumpToDecompiledCode(debuggedProcess.SelectedStackFrame);
 				}
+			} else {
+				var frame = debuggedProcess.SelectedThread.MostRecentStackFrame;
+				// other pause reasons
+				if (frame != null && frame.HasSymbols) {
+					JumpToSourceCode();
+				} else {
+					// use most recent stack frame because we don't have the symbols
+					JumpToDecompiledCode(debuggedProcess.SelectedThread.MostRecentStackFrame);
+				}
+			}
+		}
+
+		void JumpToSourceCode()
+		{
+			if (debuggedProcess == null || debuggedProcess.SelectedThread == null)
+				return;
+			
+			SourcecodeSegment nextStatement = debuggedProcess.NextStatement;
+			if (nextStatement != null) {
+				DebuggerService.RemoveCurrentLineMarker();
+				DebuggerService.JumpToCurrentLine(nextStatement.Filename, nextStatement.StartLine, nextStatement.StartColumn, nextStatement.EndLine, nextStatement.EndColumn);
+			}
+		}
+		
+		void JumpToDecompiledCode(Debugger.StackFrame frame)
+		{
+			if (frame == null) {
+				LoggingService.Error("No stack frame!");
+				return;
+			}
+			
+			if (debuggerDecompilerService == null) {
+				LoggingService.Warn("No IDebuggerDecompilerService found!");
+				return;
+			}
+			
+			// check for options - if these options are enabled, debugging decompiled code should not continue
+			if (!debuggedProcess.Options.DecompileCodeWithoutSymbols) {
+				LoggingService.Info("Decompiled code debugging is disabled!");
+				return;
+			}
+			DebuggerService.RemoveCurrentLineMarker();
+			// get external data
+			int typeToken = frame.MethodInfo.DeclaringType.MetadataToken;
+			int methodToken = frame.MethodInfo.MetadataToken;
+			int ilOffset = frame.IP;
+			int[] ilRanges = null;
+			int line = -1;
+			bool isMatch = false;
+			var debugType = (DebugType)frame.MethodInfo.DeclaringType;
+			debuggerDecompilerService.DebugStepInformation = Tuple.Create(methodToken, ilOffset);
+			
+			if (debuggerDecompilerService.GetILAndLineNumber(typeToken, methodToken, ilOffset, out ilRanges, out line, out isMatch)) {
+				// update marker & navigate to line
+				NavigationService.NavigateTo(debugType.DebugModule.FullPath,
+				                             debugType.FullNameWithoutGenericArguments,
+				                             IDStringProvider.GetIDString(frame.MethodInfo),
+				                             line);
+			} else {
+				// no line => do decompilation
+				NavigationService.NavigateTo(debugType.DebugModule.FullPath,
+				                             debugType.FullNameWithoutGenericArguments,
+				                             IDStringProvider.GetIDString(frame.MethodInfo));
+				
 			}
 		}
 		

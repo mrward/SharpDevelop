@@ -2,24 +2,19 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
-using ICSharpCode.AvalonEdit.AddIn.Options;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
-using ICSharpCode.SharpDevelop;
+using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Editor;
-using ICSharpCode.SharpDevelop.Editor.AvalonEdit;
-using ICSharpCode.SharpDevelop.Widgets;
+using ICSharpCode.SharpDevelop.Widgets.MyersDiff;
 
 namespace ICSharpCode.AvalonEdit.AddIn
 {
@@ -48,29 +43,64 @@ namespace ICSharpCode.AvalonEdit.AddIn
 			}
 		}
 		
+		#region Brushes
+		public static readonly DependencyProperty AddedLineBrushProperty =
+			DependencyProperty.Register("AddedLineBrush", typeof(Brush), typeof(ChangeMarkerMargin),
+			                            new FrameworkPropertyMetadata(Brushes.LightGreen));
+		
+		public Brush AddedLineBrush {
+			get { return (Brush)GetValue(AddedLineBrushProperty); }
+			set { SetValue(AddedLineBrushProperty, value); }
+		}
+		
+		public static readonly DependencyProperty ChangedLineBrushProperty =
+			DependencyProperty.Register("ChangedLineBrush", typeof(Brush), typeof(ChangeMarkerMargin),
+			                            new FrameworkPropertyMetadata(Brushes.LightBlue));
+		
+		public Brush ChangedLineBrush {
+			get { return (Brush)GetValue(ChangedLineBrushProperty); }
+			set { SetValue(ChangedLineBrushProperty, value); }
+		}
+		
+		public static readonly DependencyProperty UnsavedLineBrushProperty =
+			DependencyProperty.Register("UnsavedLineBrush", typeof(Brush), typeof(ChangeMarkerMargin),
+			                            new FrameworkPropertyMetadata(Brushes.Yellow));
+		
+		public Brush UnsavedLineBrush {
+			get { return (Brush)GetValue(UnsavedLineBrushProperty); }
+			set { SetValue(UnsavedLineBrushProperty, value); }
+		}
+		#endregion
+		
 		protected override void OnRender(DrawingContext drawingContext)
 		{
 			Size renderSize = this.RenderSize;
 			TextView textView = this.TextView;
 			
 			if (textView != null && textView.VisualLinesValid) {
+				var zeroLineInfo = changeWatcher.GetChange(0);
+				
 				foreach (VisualLine line in textView.VisualLines) {
-					Rect rect = new Rect(0, line.VisualTop - textView.ScrollOffset.Y, 5, line.Height);
+					Rect rect = new Rect(0, line.VisualTop - textView.ScrollOffset.Y - 1, 5, line.Height + 2);
 					
 					LineChangeInfo info = changeWatcher.GetChange(line.FirstDocumentLine.LineNumber);
+					
+					if (zeroLineInfo.Change == ChangeType.Deleted && line.FirstDocumentLine.LineNumber == 1 && info.Change != ChangeType.Unsaved) {
+						info.Change = ChangeType.Modified;
+					}
 					
 					switch (info.Change) {
 						case ChangeType.None:
 							break;
 						case ChangeType.Added:
-							drawingContext.DrawRectangle(Brushes.LightGreen, null, rect);
+							drawingContext.DrawRectangle(AddedLineBrush, null, rect);
 							break;
 						case ChangeType.Deleted:
 						case ChangeType.Modified:
-							drawingContext.DrawRectangle(Brushes.LightBlue, null, rect);
+							drawingContext.DrawRectangle(ChangedLineBrush, null, rect);
 							break;
 						case ChangeType.Unsaved:
-							drawingContext.DrawRectangle(Brushes.Yellow, null, rect);
+							drawingContext.DrawRectangle(UnsavedLineBrush, null, rect);
 							break;
 						default:
 							throw new Exception("Invalid value for ChangeType");
@@ -142,8 +172,30 @@ namespace ICSharpCode.AvalonEdit.AddIn
 			TextEditor editor = this.TextView.Services.GetService(typeof(TextEditor)) as TextEditor;
 			markerService = this.TextView.Services.GetService(typeof(ITextMarkerService)) as ITextMarkerService;
 			
+			LineChangeInfo zeroLineInfo = changeWatcher.GetChange(0);
+			
 			int offset, length;
 			bool hasNewVersion = changeWatcher.GetNewVersionFromLine(line, out offset, out length);
+			
+			if (line == 1 && zeroLineInfo.Change == ChangeType.Deleted) {
+				int zeroStartLine; bool zeroAdded;
+				startLine = 1;
+				string deletedText = changeWatcher.GetOldVersionFromLine(0, out zeroStartLine, out zeroAdded);
+				var docLine = editor.Document.GetLineByNumber(line);
+				string newLine = DocumentUtilitites.GetLineTerminator(changeWatcher.CurrentDocument, 1);
+				deletedText += newLine;
+				deletedText += editor.Document.GetText(docLine.Offset, docLine.Length);
+				if (oldText != null)
+					oldText = deletedText + newLine + oldText;
+				else
+					oldText = deletedText;
+				
+				if (!hasNewVersion) {
+					offset = 0;
+					length = docLine.Length;
+					hasNewVersion = true;
+				}
+			}
 			
 			if (hasNewVersion) {
 				if (marker != null)
@@ -158,55 +210,44 @@ namespace ICSharpCode.AvalonEdit.AddIn
 			}
 			
 			if (oldText != null) {
+				LineChangeInfo currLineInfo = changeWatcher.GetChange(startLine);
+				
+				if (currLineInfo.Change == ChangeType.Deleted && !(line == 1 && zeroLineInfo.Change == ChangeType.Deleted)) {
+					var docLine = editor.Document.GetLineByNumber(startLine);
+					if (docLine.DelimiterLength == 0)
+						oldText = DocumentUtilitites.GetLineTerminator(changeWatcher.CurrentDocument, startLine) + oldText;
+					oldText = editor.Document.GetText(docLine.Offset, docLine.TotalLength) + oldText;
+				}
+				
 				DiffControl differ = new DiffControl();
-				differ.editor.SyntaxHighlighting = editor.SyntaxHighlighting;
+				differ.CopyEditorSettings(editor);
 				differ.editor.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
 				differ.editor.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
 				differ.editor.Document.Text = oldText;
-				differ.Background = Brushes.White;
-				
-				// TODO : deletions on line 0 cannot be displayed.
-				
-				LineChangeInfo prevLineInfo = changeWatcher.GetChange(startLine - 1);
-				LineChangeInfo lineInfo = changeWatcher.GetChange(startLine);
-				
-				if (prevLineInfo.Change == ChangeType.Deleted) {
-					var docLine = editor.Document.GetLineByNumber(startLine - 1);
-					differ.editor.Document.Insert(0, editor.Document.GetText(docLine.Offset, docLine.TotalLength));
-				}
 				
 				if (oldText == string.Empty) {
 					differ.editor.Visibility = Visibility.Collapsed;
 					differ.copyButton.Visibility = Visibility.Collapsed;
 				} else {
-					var baseDocument = new TextDocument(changeWatcher.BaseDocument.Text);
+					var baseDocument = new TextDocument(DocumentUtilitites.GetTextSource(changeWatcher.BaseDocument));
 					if (differ.editor.SyntaxHighlighting != null) {
 						var mainHighlighter = new DocumentHighlighter(baseDocument, differ.editor.SyntaxHighlighting.MainRuleSet);
 						var popupHighlighter = differ.editor.TextArea.GetService(typeof(IHighlighter)) as DocumentHighlighter;
 						
-						if (prevLineInfo.Change == ChangeType.Deleted)
-							popupHighlighter.InitialSpanStack = mainHighlighter.GetSpanStack(prevLineInfo.OldStartLineNumber);
-						else
-							popupHighlighter.InitialSpanStack = mainHighlighter.GetSpanStack(lineInfo.OldStartLineNumber);
+						popupHighlighter.InitialSpanStack = mainHighlighter.GetSpanStack(currLineInfo.OldStartLineNumber);
 					}
 				}
 				
 				differ.revertButton.Click += delegate {
 					if (hasNewVersion) {
-						int delimiter = 0;
-						DocumentLine l = Document.GetLineByOffset(offset + length);
-						if (added)
-							delimiter = l.DelimiterLength;
-						if (length == 0)
-							oldText += DocumentUtilitites.GetLineTerminator(new AvalonEditDocumentAdapter(Document, null), l.LineNumber);
-						Document.Replace(offset, length + delimiter, oldText);
+						Document.Replace(offset, length, oldText);
 						tooltip.IsOpen = false;
 					}
 				};
 				
 				tooltip.Child = new Border() {
 					Child = differ,
-					BorderBrush = Brushes.Black,
+					BorderBrush = editor.TextArea.Foreground,
 					BorderThickness = new Thickness(1)
 				};
 				

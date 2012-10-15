@@ -18,21 +18,28 @@ namespace ICSharpCode.PackageManagement
 		RegisteredPackageSourceSettings registeredPackageSourceSettings;
 		Properties properties;
 		List<RecentPackageInfo> recentPackages;
+		PackageRestoreConsent packageRestoreConsent;
 		
 		public PackageManagementOptions(Properties properties, ISettings settings)
 		{
 			this.properties = properties;
 			registeredPackageSourceSettings = new RegisteredPackageSourceSettings(settings);
+			packageRestoreConsent = new PackageRestoreConsent(settings);
 		}
 		
 		public PackageManagementOptions(Properties properties)
-			: this(properties, Settings.UserSettings)
+			: this(properties, Settings.LoadDefaultSettings())
 		{
 		}
 		
 		public PackageManagementOptions()
 			: this(PropertyService.Get("PackageManagementSettings", new Properties()))
 		{
+		}
+		
+		public bool IsPackageRestoreEnabled {
+			get { return packageRestoreConsent.IsGrantedInSettings; }
+			set { packageRestoreConsent.IsGrantedInSettings = value; }
 		}
 		
 		public RegisteredPackageSources PackageSources {

@@ -2,9 +2,10 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
-using System.ComponentModel;
-using System.Linq;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Dom;
@@ -48,8 +49,7 @@ namespace ICSharpCode.VBNetBinding
 			InitVB();
 		}
 		
-		public const string DefaultTargetsFile = @"$(MSBuildBinPath)\Microsoft.VisualBasic.Targets";
-		public const string ExtendedTargetsFile = @"$(SharpDevelopBinPath)\SharpDevelop.Build.VisualBasic.targets";
+		public const string DefaultTargetsFile = @"$(MSBuildToolsPath)\Microsoft.VisualBasic.targets";
 		
 		public VBNetProject(ProjectCreateInformation info)
 			: base(info)
@@ -67,12 +67,17 @@ namespace ICSharpCode.VBNetBinding
 		protected override ParseProjectContent CreateProjectContent()
 		{
 			ParseProjectContent pc = base.CreateProjectContent();
-			ReferenceProjectItem vbRef = new ReferenceProjectItem(this, "Microsoft.VisualBasic");
-			if (vbRef != null) {
-				pc.AddReferencedContent(AssemblyParserService.GetProjectContentForReference(vbRef));
-			}
 			MyNamespaceBuilder.BuildNamespace(this, pc);
 			return pc;
+		}
+		
+		public override IEnumerable<ReferenceProjectItem> ResolveAssemblyReferences(CancellationToken cancellationToken)
+		{
+			ReferenceProjectItem[] additionalItems = {
+				new ReferenceProjectItem(this, "mscorlib"),
+				new ReferenceProjectItem(this, "Microsoft.VisualBasic"),
+			};
+			return MSBuildInternals.ResolveAssemblyReferences(this, additionalItems);
 		}
 		
 		void InitVB()
@@ -89,14 +94,6 @@ namespace ICSharpCode.VBNetBinding
 			get { return LanguageProperties.VBNet; }
 		}
 		
-		public override ItemType GetDefaultItemType(string fileName)
-		{
-			if (string.Equals(Path.GetExtension(fileName), ".vb", StringComparison.OrdinalIgnoreCase))
-				return ItemType.Compile;
-			else
-				return base.GetDefaultItemType(fileName);
-		}
-		
 		public override void StartBuild(ProjectBuildOptions options, IBuildFeedbackSink feedbackSink)
 		{
 			if (this.MinimumSolutionVersion == Solution.SolutionVersionVS2005) {
@@ -109,43 +106,6 @@ namespace ICSharpCode.VBNetBinding
 				base.StartBuild(options, feedbackSink);
 			}
 		}
-		
-		/*
-		protected override void AddOrRemoveExtensions()
-		{
-			// Test if SharpDevelop-Build extensions are required
-			bool needExtensions = false;
-			
-			foreach (var p in GetAllProperties("TargetFrameworkVersion")) {
-				if (p.IsImported == false) {
-					if (p.Value.StartsWith("CF")) {
-						needExtensions = true;
-					}
-				}
-			}
-			
-			foreach (Microsoft.Build.BuildEngine.Import import in MSBuildProject.Imports) {
-				if (needExtensions) {
-					if (DefaultTargetsFile.Equals(import.ProjectPath, StringComparison.OrdinalIgnoreCase)) {
-						//import.ProjectPath = extendedTargets;
-						MSBuildInternals.SetImportProjectPath(this, import, ExtendedTargetsFile);
-						// Workaround for SD2-1490. It would be better if the project browser could refresh itself
-						// when necessary.
-						ProjectBrowserPad.Instance.ProjectBrowserControl.RefreshView();
-						break;
-					}
-				} else {
-					if (ExtendedTargetsFile.Equals(import.ProjectPath, StringComparison.OrdinalIgnoreCase)) {
-						//import.ProjectPath = defaultTargets;
-						MSBuildInternals.SetImportProjectPath(this, import, DefaultTargetsFile);
-						// Workaround for SD2-1490. It would be better if the project browser could refresh itself
-						// when necessary.
-						ProjectBrowserPad.Instance.ProjectBrowserControl.RefreshView();
-						break;
-					}
-				}
-			}
-		}*/
 		
 		public Nullable<bool> OptionInfer {
 			get { return GetValue("OptionInfer", false); }
@@ -172,12 +132,41 @@ namespace ICSharpCode.VBNetBinding
 		
 		bool? GetValue(string name, bool defaultVal)
 		{
-			string val = GetEvaluatedProperty(name);
+			string val;
+			try {
+				val = GetEvaluatedProperty(name);
+			} catch (ObjectDisposedException) {
+				// This can happen when the project is disposed but the resolver still tries
+				// to access Option Infer (or similar).
+				val = null;
+			}
 			
 			if (val == null)
 				return defaultVal;
 			
 			return "On".Equals(val, StringComparison.OrdinalIgnoreCase);
+		}
+		
+		protected override ProjectBehavior CreateDefaultBehavior()
+		{
+			return new VBProjectBehavior(this, base.CreateDefaultBehavior());
+		}
+	}
+	
+	public class VBProjectBehavior : ProjectBehavior
+	{
+		public VBProjectBehavior(VBNetProject project, ProjectBehavior next = null)
+			: base(project, next)
+		{
+			
+		}
+		
+		public override ItemType GetDefaultItemType(string fileName)
+		{
+			if (string.Equals(Path.GetExtension(fileName), ".vb", StringComparison.OrdinalIgnoreCase))
+				return ItemType.Compile;
+			else
+				return base.GetDefaultItemType(fileName);
 		}
 	}
 }

@@ -61,7 +61,7 @@ namespace ICSharpCode.NRefactory.Parser.VB
 					char ch = (char)nextChar;
 					#region XML mode
 					CheckXMLState(startLocation);
-					if (inXmlMode && xmlModeStack.Peek().level <= 0 && !xmlModeStack.Peek().isDocumentStart && !xmlModeStack.Peek().inXmlTag) {
+					if (inXmlMode && xmlModeStack.Count > 0 && xmlModeStack.Peek().level <= 0 && !xmlModeStack.Peek().isDocumentStart && !xmlModeStack.Peek().inXmlTag) {
 						XmlModeInfo info = xmlModeStack.Peek();
 						int peek = nextChar;
 						while (true) {
@@ -312,12 +312,15 @@ namespace ICSharpCode.NRefactory.Parser.VB
 						if (ch == '%' && ReaderPeek() == '>') {
 							int x = Col - 1;
 							int y = Line;
-							inXmlMode = true;
+							// in invalid code xmlModeStack might happen to be empty.
+							// do not set lexer to XML mode, if there was no valid XML before the inline VB code.
+							// fixes http://community.sharpdevelop.net/forums/t/15920.aspx
+							inXmlMode = xmlModeStack.Any();
 							ReaderRead();
 							return new Token(Tokens.XmlEndInlineVB, new Location(x, y), new Location(Col, Line));
 						}
 						#endregion
-						if (ch == '<' && (ef.NextTokenIsPotentialStartOfExpression || ef.NextTokenIsStartOfImportsOrAccessExpression)) {
+						if (ch == '<' && ef.XmlAllowed && (ef.NextTokenIsPotentialStartOfExpression || ef.NextTokenIsStartOfImportsOrAccessExpression)) {
 							xmlModeStack.Push(new XmlModeInfo(ef.NextTokenIsStartOfImportsOrAccessExpression));
 							XmlModeInfo info = xmlModeStack.Peek();
 							int x = Col - 1;
@@ -361,6 +364,7 @@ namespace ICSharpCode.NRefactory.Parser.VB
 			}
 		}
 
+		[Conditional("DEBUG")]
 		void CheckXMLState(Location startLocation)
 		{
 			if (inXmlMode && !xmlModeStack.Any())
@@ -1135,13 +1139,22 @@ namespace ICSharpCode.NRefactory.Parser.VB
 		public override void SkipCurrentBlock(int targetToken)
 		{
 			int lastKind = -1;
-			int kind = base.lastToken.kind;
-			while (kind != Tokens.EOF &&
-			       !(lastKind == Tokens.End && kind == targetToken))
-			{
+			int kind = lastToken.kind;
+			int lambdaDepth = 0;
+			
+			while (kind != Tokens.EOF) {
 				lastKind = kind;
+				StartPeek();
+				// lambda nesting depth is not correct at end of lambda,
+				// so we have to check right before the end
+				if (Peek().kind == Tokens.End)
+					lambdaDepth = ef.LambdaNestingDepth;
 				NextToken();
 				kind = lastToken.kind;
+				// special handling for multi line lambdas
+				// once lambdaDepth <= 0 we've reached the end of the method (after the last End Sub/Function)
+				if (lastKind == Tokens.End && kind == targetToken && lambdaDepth <= 0)
+					break;
 			}
 		}
 		

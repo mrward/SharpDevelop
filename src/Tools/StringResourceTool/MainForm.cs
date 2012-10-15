@@ -256,9 +256,6 @@ namespace StringResourceTool
 			outputTextBox.Text = b.ToString();
 		}
 		
-		string[] specialStarts = {"Dialog.HighlightingEditor.",
-			"ICSharpCode.SharpDevelop.Commands.ChooseLayoutCommand."};
-		
 		/// <summary>Gets entries in t1 that are missing from t2.</summary>
 		List<string> FindMissing(HashSet<string> t1, HashSet<string> t2)
 		{
@@ -285,7 +282,7 @@ namespace StringResourceTool
 						FindUsedStrings(fileName, t, resourceService);
 						break;
 					case ".xaml":
-						FindUsedStrings(fileName, t, xamlLocalize);
+						FindUsedStrings(fileName, t, xamlLocalize, xamlLocalizeElementSyntax);
 						break;
 					case ".resx":
 					case ".resources":
@@ -294,7 +291,7 @@ namespace StringResourceTool
 					case ".pdb":
 						break;
 					default:
-						FindUsedStrings(fileName, t, null);
+						FindUsedStrings(fileName, t);
 						break;
 				}
 			}
@@ -305,8 +302,9 @@ namespace StringResourceTool
 		readonly static Regex pattern         = new Regex(@"\$\{res:(" + resourceNameRegex + @")\}", RegexOptions.Compiled);
 		readonly static Regex resourceService = new Regex(@"ResourceService.GetString\(\""(" + resourceNameRegex + @")\""\)", RegexOptions.Compiled);
 		readonly static Regex xamlLocalize = new Regex(@"\{\w+:Localize\s+(" + resourceNameRegex + @")\}", RegexOptions.Compiled);
+		readonly static Regex xamlLocalizeElementSyntax = new Regex(@"\<\w+:LocalizeExtension\s+Key\s*=\s*[""'](" + resourceNameRegex + @")[""']", RegexOptions.Compiled);
 		
-		void FindUsedStrings(string fileName, HashSet<string> t, Regex extraPattern)
+		void FindUsedStrings(string fileName, HashSet<string> t, params Regex[] extraPatterns)
 		{
 			StreamReader sr = File.OpenText(fileName);
 			string content = sr.ReadToEnd();
@@ -315,7 +313,7 @@ namespace StringResourceTool
 				//Debug.WriteLine(fileName);
 				t.Add(m.Groups[1].Captures[0].Value);
 			}
-			if (extraPattern != null) {
+			foreach (var extraPattern in extraPatterns) {
 				foreach (Match m in extraPattern.Matches(content)) {
 					//Debug.WriteLine(fileName);
 					t.Add(m.Groups[1].Captures[0].Value);

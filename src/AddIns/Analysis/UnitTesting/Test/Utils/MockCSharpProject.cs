@@ -13,7 +13,7 @@ namespace UnitTesting.Tests.Utils
 		bool saved;
 		
 		public MockCSharpProject()
-			: this(new Solution(), "MyTests")
+			: this(new Solution(new MockProjectChangeWatcher()), "MyTests")
 		{
 		}
 		
@@ -21,6 +21,7 @@ namespace UnitTesting.Tests.Utils
 			: base(new ProjectCreateInformation {
 					Solution = solution,
 					ProjectName = name,
+					Platform = "x86",
 					TargetFramework = TargetFramework.Net40Client,
 					OutputProjectFileName = "c:\\projects\\" + name + "\\" + name + ".csproj"
 				})

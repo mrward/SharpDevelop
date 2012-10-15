@@ -322,8 +322,9 @@ namespace ICSharpCode.SharpDevelop.Project
 		/// Creates an item with the specified sub items. And the current
 		/// Condition status for this item.
 		/// </summary>
-		public object BuildItem(object caller, Codon codon, ArrayList subItems)
+		public object BuildItem(BuildItemArgs args)
 		{
+			Codon codon = args.Codon;
 			return new CustomToolDescriptor(codon.Id, codon.Properties["fileNamePattern"],
 			                                codon.Properties["class"], codon.AddIn);
 		}
@@ -355,6 +356,7 @@ namespace ICSharpCode.SharpDevelop.Project
 		static Dictionary<string, CustomToolDescriptor> toolDict;
 		static List<CustomToolDescriptor> customToolList;
 		static CustomToolRun activeToolRun;
+		static BeforeBuildCustomToolRunner beforeBuildCustomToolRunner;
 		
 		internal static void Initialize()
 		{
@@ -368,6 +370,8 @@ namespace ICSharpCode.SharpDevelop.Project
 				initialized = true;
 				FileUtility.FileSaved += OnFileSaved;
 			}
+			
+			beforeBuildCustomToolRunner = new BeforeBuildCustomToolRunner();
 		}
 		
 		static void OnFileSaved(object sender, FileNameEventArgs e)

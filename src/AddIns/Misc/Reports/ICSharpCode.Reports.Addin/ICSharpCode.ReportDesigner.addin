@@ -12,6 +12,7 @@
 	</Manifest>
 	
 	<Runtime>
+		<Import assembly = "ICSharpCode.Reports.Core.dll" />
 		<Import assembly = "ICSharpCode.Reports.Addin.dll">
 			<Doozer name="ReportDialogPanel" class="ICSharpCode.Reports.Addin.ReportWizard.DialogPanelDoozer"/>
 		</Import>
@@ -22,7 +23,7 @@
 	<Path name ="/SharpDevelop/Workbench/DisplayBindings">
 		<DisplayBinding id="SharpDevelopReportsBinding"
 		                insertbefore="Text"
-		                fileNamePattern="\.srd$"
+		                fileNamePattern="\.(srd)$"
 		                languagePattern="^SharpDevelopReports$"
 		                class="ICSharpCode.Reports.Addin.ReportDesignerDisplayBinding"/>
 	</Path>
@@ -32,7 +33,8 @@
 		<FileFilter id="SharpDevelopReports"
 		            insertbefore="AllFiles"
 		            name="SharpDevelop Reports (*.srd)"
-		            extensions="*.srd"/>
+		            extensions="*.srd"
+		            mimeType = "text/xml"/>
 	</Path>
 	
 	<!-- ReportExplorer -->

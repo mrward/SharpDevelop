@@ -2,11 +2,15 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
+
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.Design;
 using NuGet;
 using NUnit.Framework;
+using PackageManagement.Tests.Helpers;
 
 namespace PackageManagement.Tests
 {
@@ -14,21 +18,21 @@ namespace PackageManagement.Tests
 	public class PackageFromRepositoryTests
 	{
 		FakePackage fakePackage;
-		PackageFromRepository package;
+		TestablePackageFromRepository package;
 		FakePackageRepository fakeRepository;
 		
 		void CreatePackage()
 		{
-			fakePackage = new FakePackage("Test");
-			fakeRepository = new FakePackageRepository();
-			package = new PackageFromRepository(fakePackage, fakeRepository);
+			package = new TestablePackageFromRepository();
+			fakePackage = package.FakePackagePassedToConstructor;
+			fakeRepository = package.FakePackageRepositoryPassedToConstructor;
 		}
 		
 		[Test]
 		public void Repository_PackageCreatedWithSourceRepository_ReturnsSourceRepository()
 		{
 			CreatePackage();
-			var repository = package.Repository;
+			IPackageRepository repository = package.Repository;
 			
 			Assert.AreEqual(fakeRepository, repository);
 		}
@@ -39,8 +43,8 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			fakePackage.AssemblyReferenceList.Add(new FakePackageAssemblyReference());
 			
-			var assemblyReferences = package.AssemblyReferences;
-			var expectedAssemblyReferences = fakePackage.AssemblyReferenceList;
+			IEnumerable<IPackageAssemblyReference> assemblyReferences = package.AssemblyReferences;
+			List<IPackageAssemblyReference> expectedAssemblyReferences = fakePackage.AssemblyReferenceList;
 			
 			CollectionAssert.AreEqual(expectedAssemblyReferences, assemblyReferences);
 		}
@@ -59,9 +63,9 @@ namespace PackageManagement.Tests
 		public void Version_WrappedPackageVersionIsOnePointOne_ReturnsOnePointOne()
 		{
 			CreatePackage();
-			var expectedVersion = new Version("1.1");
+			var expectedVersion = new SemanticVersion("1.1");
 			fakePackage.Version = expectedVersion;
-			var version = package.Version;
+			SemanticVersion version = package.Version;
 			
 			Assert.AreEqual(expectedVersion, version);
 		}
@@ -71,7 +75,7 @@ namespace PackageManagement.Tests
 		{
 			CreatePackage();
 			fakePackage.Title = "Test";
-			var title = package.Title;
+			string title = package.Title;
 			
 			Assert.AreEqual("Test", title);
 		}
@@ -82,8 +86,8 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			fakePackage.AuthorsList.Add("Author1");
 			
-			var authors = package.Authors;
-			var expectedAuthors = fakePackage.AuthorsList;
+			IEnumerable<string> authors = package.Authors;
+			List<string> expectedAuthors = fakePackage.AuthorsList;
 			
 			CollectionAssert.AreEqual(expectedAuthors, authors);
 		}
@@ -94,8 +98,8 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			fakePackage.OwnersList.Add("Owner1");
 			
-			var owners = package.Owners;
-			var expectedOwners = fakePackage.OwnersList;
+			IEnumerable<string> owners = package.Owners;
+			List<string> expectedOwners = fakePackage.OwnersList;
 			
 			CollectionAssert.AreEqual(expectedOwners, owners);
 		}
@@ -106,7 +110,7 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			var expectedUrl = new Uri("http://sharpdevelop.net");
 			fakePackage.IconUrl = expectedUrl;
-			var url = package.IconUrl;
+			Uri url = package.IconUrl;
 			
 			Assert.AreEqual(expectedUrl, url);
 		}
@@ -117,7 +121,7 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			var expectedUrl = new Uri("http://sharpdevelop.net");
 			fakePackage.LicenseUrl = expectedUrl;
-			var url = package.LicenseUrl;
+			Uri url = package.LicenseUrl;
 			
 			Assert.AreEqual(expectedUrl, url);
 		}
@@ -128,7 +132,7 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			var expectedUrl = new Uri("http://sharpdevelop.net");
 			fakePackage.ProjectUrl = expectedUrl;
-			var url = package.ProjectUrl;
+			Uri url = package.ProjectUrl;
 			
 			Assert.AreEqual(expectedUrl, url);
 		}
@@ -139,7 +143,7 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			var expectedUrl = new Uri("http://sharpdevelop.net");
 			fakePackage.ReportAbuseUrl = expectedUrl;
-			var url = package.ReportAbuseUrl;
+			Uri url = package.ReportAbuseUrl;
 			
 			Assert.AreEqual(expectedUrl, url);
 		}
@@ -158,7 +162,7 @@ namespace PackageManagement.Tests
 		{
 			CreatePackage();
 			fakePackage.Description = "Test";
-			var description = package.Description;
+			string description = package.Description;
 			
 			Assert.AreEqual("Test", description);
 		}
@@ -168,7 +172,7 @@ namespace PackageManagement.Tests
 		{
 			CreatePackage();
 			fakePackage.Summary = "Test";
-			var summary = package.Summary;
+			string summary = package.Summary;
 			
 			Assert.AreEqual("Test", summary);
 		}
@@ -178,7 +182,7 @@ namespace PackageManagement.Tests
 		{
 			CreatePackage();
 			fakePackage.Language = "Test";
-			var language = package.Language;
+			string language = package.Language;
 			
 			Assert.AreEqual("Test", language);
 		}
@@ -188,7 +192,7 @@ namespace PackageManagement.Tests
 		{
 			CreatePackage();
 			fakePackage.Tags = "Test";
-			var tags = package.Tags;
+			string tags = package.Tags;
 			
 			Assert.AreEqual("Test", tags);
 		}
@@ -199,8 +203,8 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			fakePackage.FrameworkAssembliesList.Add(new FrameworkAssemblyReference("System.Xml"));
 			
-			var assemblies = package.FrameworkAssemblies;
-			var expectedAssemblies = fakePackage.FrameworkAssemblies;
+			IEnumerable<FrameworkAssemblyReference> assemblies = package.FrameworkAssemblies;
+			IEnumerable<FrameworkAssemblyReference> expectedAssemblies = fakePackage.FrameworkAssemblies;
 			
 			CollectionAssert.AreEqual(expectedAssemblies, assemblies);
 		}
@@ -209,12 +213,11 @@ namespace PackageManagement.Tests
 		public void Dependencies_WrappedPackageHasOneDependency_ReturnsOneDependency()
 		{
 			CreatePackage();
-			fakePackage.DependenciesList.Add(new PackageDependency("Test"));
+			fakePackage.AddDependency("Test");
 			
-			var dependencies = package.Dependencies;
-			var expectedDependencies = fakePackage.Dependencies;
+			IEnumerable<PackageDependency> dependencies = package.Dependencies;
 			
-			CollectionAssert.AreEqual(expectedDependencies, dependencies);
+			CollectionAssert.AreEqual(fakePackage.DependenciesList, dependencies);
 		}
 		
 		[Test]
@@ -223,8 +226,8 @@ namespace PackageManagement.Tests
 			CreatePackage();
 			fakePackage.FilesList.Add(new PhysicalPackageFile());
 			
-			var files = package.GetFiles();
-			var expectedFiles = fakePackage.FilesList;
+			IEnumerable<IPackageFile> files = package.GetFiles();
+			IEnumerable<IPackageFile> expectedFiles = fakePackage.FilesList;
 			
 			CollectionAssert.AreEqual(expectedFiles, files);
 		}
@@ -234,29 +237,9 @@ namespace PackageManagement.Tests
 		{
 			CreatePackage();
 			fakePackage.DownloadCount = 10;
-			var count = package.DownloadCount;
+			int count = package.DownloadCount;
 			
 			Assert.AreEqual(10, count);
-		}
-		
-		[Test]
-		public void RatingsCount_WrappedPackageRatingsCountIsTen_ReturnsTen()
-		{
-			CreatePackage();
-			fakePackage.RatingsCount = 10;
-			var count = package.RatingsCount;
-			
-			Assert.AreEqual(10, count);
-		}
-		
-		[Test]
-		public void Rating_WrappedPackageRatingIsFive_ReturnsFive()
-		{
-			CreatePackage();
-			fakePackage.Rating = 5.0;
-			var rating = package.Rating;
-			
-			Assert.AreEqual(5.0, rating);
 		}
 		
 		[Test]
@@ -266,7 +249,7 @@ namespace PackageManagement.Tests
 			var expectedStream = new MemoryStream();
 			fakePackage.Stream = expectedStream;
 			
-			var stream = package.GetStream();
+			Stream stream = package.GetStream();
 			
 			Assert.AreEqual(expectedStream, stream);
 		}
@@ -285,10 +268,119 @@ namespace PackageManagement.Tests
 		public void HasDependencies_WrappedPackageHasOneDependency_ReturnsTrue()
 		{
 			CreatePackage();
-			fakePackage.DependenciesList.Add(new PackageDependency("Test"));
+			fakePackage.AddDependency("Test");
 			bool result = package.HasDependencies;
 			
 			Assert.IsTrue(result);
+		}
+		
+		[Test]
+		public void LastUpdated_PackageWrapsDataServicePackageThatHasLastUpdatedDateOffset_ReturnsDateFromDataServicePackage()
+		{
+			CreatePackage();
+			var expectedDateTime = new DateTime(2011, 1, 2);
+			package.DateTimeOffsetToReturnFromGetDataServicePackageLastUpdated = new DateTimeOffset(expectedDateTime);
+			
+			DateTime? lastUpdated = package.LastUpdated;
+			
+			Assert.AreEqual(expectedDateTime, lastUpdated.Value);
+		}
+		
+		[Test]
+		public void LastUpdated_PackageWrapsPackageThatDoesNotHaveLastUpdatedDateOffset_ReturnsNullDate()
+		{
+			CreatePackage();
+			package.DateTimeOffsetToReturnFromGetDataServicePackageLastUpdated = null;
+			
+			DateTime? lastUpdated = package.LastUpdated;
+			
+			Assert.IsFalse(lastUpdated.HasValue);
+		}
+		
+		[Test]
+		public void IsLatestVersion_WrappedPackageIsNotLatestVersion_ReturnsFalse()
+		{
+			CreatePackage();
+			fakePackage.IsLatestVersion = false;
+			bool result = package.IsLatestVersion;
+			
+			Assert.IsFalse(result);
+		}
+		
+		[Test]
+		public void IsLatestVersion_WrappedPackageHasOneDependency_ReturnsTrue()
+		{
+			CreatePackage();
+			fakePackage.IsLatestVersion = true;
+			bool result = package.IsLatestVersion;
+			
+			Assert.IsTrue(result);
+		}
+		
+		[Test]
+		public void Published_PackageWrapsPackageThatHasPublishedDateOffset_ReturnsDateTimeOffsetFromWrappedPackage()
+		{
+			CreatePackage();
+			var dateTime = new DateTime(2011, 1, 2);
+			var expectedDateTimeOffset = new DateTimeOffset(dateTime);
+			fakePackage.Published = expectedDateTimeOffset;
+			
+			DateTimeOffset? published = package.Published;
+			
+			Assert.AreEqual(expectedDateTimeOffset, published.Value);
+		}
+		
+		[Test]
+		public void Copyright_WrappedPackageCopyrightIsTest_ReturnsTest()
+		{
+			CreatePackage();
+			fakePackage.Copyright = "Test";
+			string copyright = package.Copyright;
+			
+			Assert.AreEqual("Test", copyright);
+		}
+		
+		[Test]
+		public void ReleaseNotes_WrappedPackageReleaseNotesIsTest_ReturnsTest()
+		{
+			CreatePackage();
+			fakePackage.ReleaseNotes = "Test";
+			string releaseNotes = package.ReleaseNotes;
+			
+			Assert.AreEqual("Test", releaseNotes);
+		}
+		
+		[Test]
+		public void IsAbsoluteLatestVersion_WrappedPackageIsAbsoluteLatestVersion_ReturnsTrue()
+		{
+			CreatePackage();
+			fakePackage.IsAbsoluteLatestVersion = true;
+			bool result = package.IsAbsoluteLatestVersion;
+			
+			Assert.IsTrue(result);
+		}
+		
+		[Test]
+		public void Listed_WrappedPackageIsListed_ReturnsTrue()
+		{
+			CreatePackage();
+			fakePackage.Listed = true;
+			bool result = package.Listed;
+			
+			Assert.IsTrue(result);
+		}
+		
+		[Test]
+		public void DependencySets_WrappedPackageIsListed_ReturnsTrue()
+		{
+			CreatePackage();
+			fakePackage.AddDependency("Test");
+			List<PackageDependencySet> expectedDependencies = fakePackage.DependencySets.ToList();
+			
+			List<PackageDependencySet> dependencies = package.DependencySets.ToList();
+			
+			Assert.AreEqual(1, dependencies.Count);
+			Assert.AreEqual(expectedDependencies[0].Dependencies, dependencies[0].Dependencies);
 		}
 	}
 }

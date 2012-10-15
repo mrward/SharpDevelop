@@ -20,9 +20,32 @@ namespace PackageManagement.Tests.EnvDTE
 		void CreateDTE()
 		{
 			fakeProjectService = new FakePackageManagementProjectService();
-			fakeProjectService.OpenSolution = new SD.Solution();
+			OpenSolution(@"d:\projects\MyProject\MyProject.sln");
 			fakeFileService = new FakeFileService(null);
 			dte = new DTE(fakeProjectService, fakeFileService);
+		}
+		
+		void OpenSolution(string fileName)
+		{
+			fakeProjectService.OpenSolution = new SD.Solution(new SD.MockProjectChangeWatcher());
+			SetOpenSolutionFileName(fileName);
+		}
+		
+		void NoOpenSolution()
+		{
+			fakeProjectService.OpenSolution = null;
+		}
+		
+		void SetOpenSolutionFileName(string fileName)
+		{
+			fakeProjectService.OpenSolution.FileName = fileName;
+		}
+		
+		TestableProject AddProjectToSolution(string projectName)
+		{
+			TestableProject project = ProjectHelper.CreateTestProject(projectName);
+			fakeProjectService.AddFakeProject(project);
+			return project;
 		}
 		
 		[Test]
@@ -30,7 +53,7 @@ namespace PackageManagement.Tests.EnvDTE
 		{
 			CreateDTE();
 			string fileName = @"d:\projects\myproject\myproject.sln";
-			fakeProjectService.OpenSolution.FileName = fileName;
+			SetOpenSolutionFileName(fileName);
 			
 			string fullName = dte.Solution.FullName;
 			
@@ -42,7 +65,7 @@ namespace PackageManagement.Tests.EnvDTE
 		{
 			CreateDTE();
 			string expectedFileName = @"d:\projects\myproject\myproject.sln";
-			fakeProjectService.OpenSolution.FileName = expectedFileName;
+			SetOpenSolutionFileName(expectedFileName);
 			
 			string fileName = dte.Solution.FileName;
 			
@@ -53,7 +76,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Solution_NoOpenSolution_ReturnsNull()
 		{
 			CreateDTE();
-			fakeProjectService.OpenSolution = null;
+			NoOpenSolution();
 			
 			Solution solution = dte.Solution;
 			
@@ -88,6 +111,76 @@ namespace PackageManagement.Tests.EnvDTE
 			Properties properties = dte.Properties("FONTSANDCOLORS", "TEXTEDITOR");
 			
 			Assert.IsNotNull(properties);
+		}
+		
+		[Test]
+		public void ActiveSolutionProjects_NoSolutionOpen_ReturnsEmptyArray()
+		{
+			CreateDTE();
+			NoOpenSolution();
+			
+			Array projects = dte.ActiveSolutionProjects as Array;
+			
+			Assert.AreEqual(0, projects.Length);
+		}
+		
+		[Test]
+		public void ActiveSolutionProjects_SolutionHasOneProject_ReturnsArrayWithOneItem()
+		{
+			CreateDTE();
+			AddProjectToSolution("ProjectA");
+			
+			Array projects = dte.ActiveSolutionProjects as Array;
+			
+			Assert.AreEqual(1, projects.Length);
+		}
+		
+		[Test]
+		public void ActiveSolutionProjects_SolutionHasOneProject_ReturnsArrayContainingProject()
+		{
+			CreateDTE();
+			TestableProject expectedProject = AddProjectToSolution("ProjectA");
+			
+			Array projects = dte.ActiveSolutionProjects as Array;
+			
+			Project project = projects.GetValue(0) as Project;
+			string name = project.Name;
+			
+			Assert.AreEqual("ProjectA", name);
+		}
+		
+		[Test]
+		public void Version_CheckVersion_Returns10()
+		{
+			CreateDTE();
+			
+			string version = dte.Version;
+			
+			Assert.AreEqual("10.0", version);
+		}
+		
+		[Test]
+		public void Solution_SetGlobalsVariableValueAndThenAccessSolutionPropertyAgainAndGetSolutionGlobalsVariable_GlobalsVariableValueReturned()
+		{
+			CreateDTE();
+			
+			dte.Solution.Globals.set_VariableValue("test", "test-value");
+			object variableValue = dte.Solution.Globals.get_VariableValue("test");
+			
+			Assert.AreEqual("test-value", variableValue);
+		}
+		
+		[Test]
+		public void Solution_OpenSolutionChangesAfterSolutionPropertyAccessed_SolutionReturnedForCurrentOpenSolution()
+		{
+			CreateDTE();
+			SetOpenSolutionFileName(@"d:\projects\first\first.sln");
+			Solution firstSolution = dte.Solution;
+			
+			OpenSolution(@"d:\projects\second\second.sln");
+			
+			string fileName = dte.Solution.FileName;
+			Assert.AreEqual(@"d:\projects\second\second.sln", fileName);
 		}
 	}
 }

@@ -14,6 +14,29 @@ namespace Debugger
 {
 	internal enum DebuggeeStateAction { Keep, Clear }
 	
+	/// <summary>
+	/// Debug Mode Flags.
+	/// </summary>
+	public enum DebugModeFlag
+	{
+		/// <summary>
+		/// Run in the same mode as without debugger.
+		/// </summary>
+		Default,
+		/// <summary>
+		/// Run in forced optimized mode.
+		/// </summary>
+		Optimized,
+		/// <summary>
+		/// Run in debug mode (easy inspection) but slower.
+		/// </summary>
+		Debug,
+		/// <summary>
+		/// Run in ENC mode (ENC possible) but even slower than debug
+		/// </summary>
+		Enc
+	}
+	
 	public class Process: DebuggerObject
 	{
 		NDebugger debugger;
@@ -27,6 +50,7 @@ namespace Debugger
 		AppDomainCollection appDomains;
 		
 		string workingDirectory;
+		
 		
 		public NDebugger Debugger {
 			get { return debugger; }
@@ -107,6 +131,8 @@ namespace Debugger
 		public string WorkingDirectory {
 			get { return workingDirectory; }
 		}
+		
+		public static DebugModeFlag DebugMode { get; set; }
 		
 		internal Process(NDebugger debugger, ICorDebugProcess corProcess, string workingDirectory)
 		{
@@ -207,16 +233,21 @@ namespace Debugger
 			return written;
 		}
 		
+		internal Thread GetThread(ICorDebugThread corThread)
+		{
+			foreach(Thread thread in this.Threads) {
+				if (thread.CorThread == corThread) {
+					return thread;
+				}
+			}
+			Thread t = new Thread(this, corThread);
+			this.Threads.Add(t);
+			return t;
+		}
+		
 		#region Exceptions
 		
-		bool pauseOnHandledException = false;
-		
 		public event EventHandler<ExceptionEventArgs> ExceptionThrown;
-		
-		public bool PauseOnHandledException {
-			get { return pauseOnHandledException; }
-			set { pauseOnHandledException = value; }
-		}
 		
 		protected internal virtual void OnExceptionThrown(ExceptionEventArgs e)
 		{
@@ -323,9 +354,12 @@ namespace Debugger
 			CheckSelectedStackFrames();
 			SelectMostRecentStackFrameWithLoadedSymbols();
 			
-			if (this.PauseSession.PausedReason == PausedReason.Exception) {
+			// if CurrentException is set an exception has occurred.
+			if (SelectedThread.CurrentException != null) {
 				ExceptionEventArgs args = new ExceptionEventArgs(this, this.SelectedThread.CurrentException, this.SelectedThread.CurrentExceptionType, this.SelectedThread.CurrentExceptionIsUnhandled);
 				OnExceptionThrown(args);
+				// clear exception, it is being processed by the debugger.
+				this.SelectedThread.CurrentException = null;
 				// The event could have resumed or killed the process
 				if (this.IsRunning || this.TerminateCommandIssued || this.HasExited) return;
 			}
@@ -673,13 +707,48 @@ namespace Debugger
 							breakpoint.Remove();
 						breakpoint = null;
 					};
-				} catch { 
+				} catch {
 					// the app does not have an entry point - COM exception
 				}
 				BreakAtBeginning = false;
 			}
+			
+			if (ModulesAdded != null)
+				ModulesAdded(this, new ModuleEventArgs(e.Item));
 		}
 		
 		#endregion
+		
+		public event EventHandler<ModuleEventArgs> ModulesAdded;
+		
+		public StackFrame GetCurrentExecutingFrame()
+		{
+			if (IsRunning || SelectedThread == null)
+				return null;
+			
+			if (IsSelectedFrameForced()) {
+				return SelectedStackFrame; // selected from callstack or threads pads
+			}
+			
+			if (SelectedStackFrame != null) {
+				if (SelectedThread.MostRecentStackFrame != null) {
+					if (SelectedStackFrame.HasSymbols && SelectedThread.MostRecentStackFrame.HasSymbols)
+						return SelectedStackFrame;
+					else
+						return SelectedThread.MostRecentStackFrame;
+				} else {
+					return SelectedThread.MostRecentStackFrame;
+				}
+			} else {
+				return SelectedThread.MostRecentStackFrame;
+			}
+		}
+		
+		public bool IsSelectedFrameForced()
+		{
+			return pauseSession.PausedReason == PausedReason.CurrentFunctionChanged ||
+				pauseSession.PausedReason == PausedReason.CurrentThreadChanged ||
+				pauseSession.PausedReason == PausedReason.EvalComplete;
+		}
 	}
 }

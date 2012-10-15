@@ -1,16 +1,13 @@
 ﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
 // This code is distributed under the BSD license (for details please see \src\AddIns\Debugger\Debugger.AddIn\license.txt)
 
-using ICSharpCode.Core.WinForms;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using Aga.Controls.Tree;
-using Aga.Controls.Tree.NodeControls;
 using Debugger;
-using Debugger.AddIn.TreeModel;
 using ICSharpCode.Core;
+using ICSharpCode.Core.WinForms;
+using ICSharpCode.SharpDevelop.Debugging;
 using ICSharpCode.SharpDevelop.Gui;
 
 namespace ICSharpCode.SharpDevelop.Services
@@ -18,6 +15,8 @@ namespace ICSharpCode.SharpDevelop.Services
 	internal sealed partial class DebuggeeExceptionForm
 	{
 		Process process;
+		bool isUnhandled;
+		public Debugger.Exception Exception { get; private set; }
 		
 		DebuggeeExceptionForm(Process process)
 		{
@@ -41,9 +40,11 @@ namespace ICSharpCode.SharpDevelop.Services
 			
 			this.btnBreak.Text = StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Break}");
 			this.btnStop.Text  = StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Terminate}");
+			this.btnContinue.Text  = StringParser.Parse("${res:MainWindow.Windows.Debug.ExceptionForm.Continue}");
 			
 			this.btnBreak.Image = WinFormsResourceService.GetBitmap("Icons.16x16.Debug.Break");
 			this.btnStop.Image = WinFormsResourceService.GetBitmap("Icons.16x16.StopProcess");
+			this.btnContinue.Image = WinFormsResourceService.GetBitmap("Icons.16x16.Debug.Continue");
 		}
 
 		void ProcessHandler(object sender, EventArgs e)
@@ -57,13 +58,16 @@ namespace ICSharpCode.SharpDevelop.Services
 			this.process.Resumed -= ProcessHandler;
 		}
 		
-		public static void Show(Process process, string title, string message, string stacktrace, Bitmap icon)
+		public static void Show(Process process, string title, string message, string stacktrace, Bitmap icon, bool isUnhandled, Debugger.Exception exception)
 		{
 			DebuggeeExceptionForm form = new DebuggeeExceptionForm(process);
 			form.Text = title;
 			form.pictureBox.Image = icon;
 			form.lblExceptionText.Text = message;
 			form.exceptionView.Text = stacktrace;
+			form.isUnhandled = isUnhandled;
+			form.btnContinue.Enabled = !isUnhandled;
+			form.Exception = exception;
 			
 			form.Show(WorkbenchSingleton.MainWin32Window);
 		}
@@ -77,6 +81,8 @@ namespace ICSharpCode.SharpDevelop.Services
 				//string textLine = TextUtilities.GetLineAsString(textEditorControl.Document, line);
 				Point clickPos = exceptionView.PointToClient(Control.MousePosition);
 				int index = exceptionView.GetCharIndexFromPosition(clickPos);
+				if (index < 0)
+					return;
 				int start = index;
 				// find start of current line
 				while (--start > 0 && fullText[start - 1] != '\n');
@@ -100,12 +106,21 @@ namespace ICSharpCode.SharpDevelop.Services
 		
 		void BtnBreakClick(object sender, EventArgs e)
 		{
-			Close();
+			if (this.process.SelectedThread.CurrentExceptionIsUnhandled)
+				Close();
+			else if (((WindowsDebugger)DebuggerService.CurrentDebugger).BreakAndInterceptHandledException(Exception))
+				Close();
 		}
 		
 		void BtnStopClick(object sender, EventArgs e)
 		{
 			this.process.Terminate();
+			Close();
+		}
+		
+		void BtnContinueClick(object sender, EventArgs e)
+		{
+			this.process.AsyncContinue();
 			Close();
 		}
 	}

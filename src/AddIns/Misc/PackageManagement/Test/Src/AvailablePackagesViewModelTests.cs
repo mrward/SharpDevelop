@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.Design;
 using NuGet;
@@ -75,6 +76,17 @@ namespace PackageManagement.Tests
 			registeredPackageRepositories.AddPackageSources(sources);
 		}
 		
+		PackageSource AddTwoPackageSourcesToRegisteredSourcesWithFirstOneDisabled()
+		{
+			var expectedPackageSources = new PackageSource[] {
+				new PackageSource("http://first.com", "First") { IsEnabled = false },
+				new PackageSource("http://second.com", "Second") { IsEnabled = true }
+			};
+			AddPackageSourcesToRegisteredSources(expectedPackageSources);
+			registeredPackageRepositories.HasMultiplePackageSources = true;
+			return expectedPackageSources[0];
+		}
+		
 		void CreateNewActiveRepositoryWithDifferentPackages()
 		{
 			var package = new FakePackage("NewRepositoryPackageId");
@@ -111,18 +123,10 @@ namespace PackageManagement.Tests
 		{
 			CreateViewModel();
 			
-			var package1 = new FakePackage() {
-             	Id = "Test",
-             	Version = new Version(0, 1, 0, 0)
-            };
-			var package2 = new FakePackage() {
-				Id = "Test",
-				Version = new Version(0, 2, 0, 0)
-			};
-			var package3 = new FakePackage() {
-				Id = "Test",
-				Version = new Version(0, 3, 0, 0)
-			};
+			var package1 = new FakePackage("Test", "0.1.0.0");
+			var package2 = new FakePackage("Test", "0.2.0.0");
+			var package3 = new FakePackage("Test", "0.3.0.0");
+			
 			var packages = new FakePackage[] {
 				package1, package2, package3
 			};
@@ -151,21 +155,10 @@ namespace PackageManagement.Tests
 		{
 			CreateViewModel();
 			
-			var package1 = new FakePackage() {
-             	Id = "Test",
-             	Description = "",
-             	Version = new Version(0, 1, 0, 0)
-            };
-			var package2 = new FakePackage() {
-				Id = "Test",
-             	Description = "",
-				Version = new Version(0, 2, 0, 0)
-			};
-			var package3 = new FakePackage() {
-				Id = "Test",
-             	Description = "",
-				Version = new Version(0, 3, 0, 0)
-			};
+			var package1 = new FakePackage("Test", "0.1.0.0");
+			var package2 = new FakePackage("Test", "0.2.0.0");
+			var package3 = new FakePackage("Test", "0.3.0.0");
+			
 			var packages = new FakePackage[] {
 				package1, package2, package3
 			};
@@ -189,26 +182,11 @@ namespace PackageManagement.Tests
 			CreateViewModel();
 			viewModel.PageSize = 2;
 			
-			var package1 = new FakePackage() {
-             	Id = "First",
-             	Description = "",
-             	Version = new Version(0, 1, 0, 0)
-            };
-			var package2 = new FakePackage() {
-				Id = "Secon",
-             	Description = "",
-				Version = new Version(0, 2, 0, 0)
-			};
-			var package3 = new FakePackage() {
-				Id = "Test",
-             	Description = "",
-				Version = new Version(0, 3, 0, 0)
-			};
-			var package4 = new FakePackage() {
-				Id = "Test",
-             	Description = "",
-				Version = new Version(0, 4, 0, 0)
-			};
+			var package1 = new FakePackage("First", "0.1.0.0");
+			var package2 = new FakePackage("Second", "0.2.0.0");
+			var package3 = new FakePackage("Test", "0.3.0.0");
+			var package4 = new FakePackage("Test", "0.4.0.0");
+			
 			var packages = new FakePackage[] {
 				package1, package2, package3, package4
 			};
@@ -391,6 +369,91 @@ namespace PackageManagement.Tests
 			
 			ApplicationException ex = Assert.Throws<ApplicationException>(() => CompleteReadPackagesTask());
 			Assert.AreEqual("Test", ex.Message);
+		}
+		
+		[Test]
+		public void ReadPackages_RepositoryHasPrereleaseAndReleasePackage_HasReleasePackageOnly()
+		{
+			CreateViewModel();
+			
+			var releasePackage = new FakePackage("Test", "1.1.0.0");
+			var prereleasePackage = new FakePackage("Test", "1.1.0-alpha");
+			
+			var packages = new FakePackage[] {
+				releasePackage, prereleasePackage
+			};
+			
+			registeredPackageRepositories.FakeActiveRepository.FakePackages.AddRange(packages);
+			
+			viewModel.ReadPackages();
+			CompleteReadPackagesTask();
+			
+			var expectedPackages = new FakePackage[] {
+				releasePackage
+			};
+			
+			PackageCollectionAssert.AreEqual(expectedPackages, viewModel.PackageViewModels);
+		}
+		
+		[Test]
+		public void ReadPackages_TwoPackagesWithDifferentDownloadCounts_HighestDownloadCountShownFirst()
+		{
+			CreateViewModel();
+			
+			var package1 = new FakePackage("A", "0.1.0.0") { DownloadCount = 1 };
+			var package2 = new FakePackage("Z", "0.1.0.0") { DownloadCount = 1000 };
+			
+			var packages = new FakePackage[] {
+				package1, package2
+			};
+			
+			registeredPackageRepositories.FakeActiveRepository.FakePackages.AddRange(packages);
+			
+			viewModel.ReadPackages();
+			CompleteReadPackagesTask();
+			
+			var expectedPackages = new FakePackage[] {
+				package2, package1
+			};
+			
+			PackageCollectionAssert.AreEqual(expectedPackages, viewModel.PackageViewModels);
+		}
+		
+		
+		[Test]
+		public void GetPackagesFromPackageSource_RepositoryHasThreePackagesWithSameIdButDifferentVersions_LatestPackageVersionOnlyRequestedFromPackageSource()
+		{
+			CreateViewModel();
+			var package1 = new FakePackage("Test", "0.1.0.0") { IsLatestVersion = false };
+			var package2 = new FakePackage("Test", "0.2.0.0") { IsLatestVersion = false };
+			var package3 = new FakePackage("Test", "0.3.0.0") { IsLatestVersion = true };
+			var packages = new FakePackage[] {
+				package1, package2, package3
+			};
+			registeredPackageRepositories.FakeActiveRepository.FakePackages.AddRange(packages);
+			viewModel.ReadPackages();
+			
+			IList<IPackage> allPackages = viewModel.GetPackagesFromPackageSource().ToList();
+			
+			var expectedPackages = new FakePackage[] {
+				package3
+			};
+			PackageCollectionAssert.AreEqual(expectedPackages, allPackages);
+		}
+		
+		[Test]
+		public void PackageSources_TwoPackageSourcesButFirstIsDisabled_DoesNotReturnDisabledPackageSource()
+		{
+			CreateRegisteredPackageRepositories();
+			AddTwoPackageSourcesToRegisteredSourcesWithFirstOneDisabled();
+			CreateViewModel(registeredPackageRepositories);
+			
+			IEnumerable<PackageSource> packageSources = viewModel.PackageSources;
+			
+			bool containsDisabledPackageSource = packageSources.Contains(registeredPackageRepositories.PackageSources[0]);
+			bool containsEnabledPackageSource = packageSources.Contains(registeredPackageRepositories.PackageSources[1]);
+			Assert.IsFalse(containsDisabledPackageSource);
+			Assert.IsTrue(containsEnabledPackageSource);
 		}
 	}
 }

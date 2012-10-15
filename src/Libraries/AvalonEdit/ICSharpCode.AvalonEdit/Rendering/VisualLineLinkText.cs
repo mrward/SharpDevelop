@@ -2,6 +2,7 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Documents;
@@ -46,12 +47,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <inheritdoc/>
 		public override TextRun CreateTextRun(int startVisualColumn, ITextRunConstructionContext context)
 		{
-			this.TextRunProperties.SetForegroundBrush(Brushes.Blue);
+			this.TextRunProperties.SetForegroundBrush(context.TextView.LinkTextForegroundBrush);
+			this.TextRunProperties.SetBackgroundBrush(context.TextView.LinkTextBackgroundBrush);
 			this.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
 			return base.CreateTextRun(startVisualColumn, context);
 		}
 		
-		bool LinkIsClickable()
+		/// <summary>
+		/// Gets whether the link is currently clickable.
+		/// </summary>
+		/// <remarks>Returns true when control is pressed; or when
+		/// <see cref="RequireControlModifierForClick"/> is disabled.</remarks>
+		protected bool LinkIsClickable()
 		{
 			if (NavigateUri == null)
 				return false;

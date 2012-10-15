@@ -49,6 +49,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public IList<HighlightedSection> Sections { get; private set; }
 		
+		/// <summary>
+		/// Gets the default color of all text outside a <see cref="HighlightedSection"/>.
+		/// </summary>
+		public HighlightingColor DefaultTextColor { get; set; }
 		
 		sealed class HtmlElement : IComparable<HtmlElement>
 		{
@@ -127,12 +131,14 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 					HtmlClipboard.EscapeHtml(w, document.GetText(textOffset, newOffset - textOffset), options);
 				}
 				textOffset = Math.Max(textOffset, newOffset);
-				if (e.IsEnd) {
-					w.Write("</span>");
-				} else {
-					w.Write("<span");
-					options.WriteStyleAttributeForColor(w, e.Color);
-					w.Write('>');
+				if (options.ColorNeedsSpanForStyling(e.Color)) {
+					if (e.IsEnd) {
+						w.Write("</span>");
+					} else {
+						w.Write("<span");
+						options.WriteStyleAttributeForColor(w, e.Color);
+						w.Write('>');
+					}
 				}
 			}
 			HtmlClipboard.EscapeHtml(w, document.GetText(textOffset, endOffset - textOffset), options);

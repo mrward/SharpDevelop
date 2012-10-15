@@ -27,18 +27,8 @@ namespace FSharpBinding
 				base.AddImport(@"$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets", null);
 				base.ReevaluateIfNecessary(); // provoke exception if import is invalid
 			} catch (InvalidProjectFileException ex) {
+				Dispose();
 				throw new ProjectLoadException("Please ensure that the F# compiler is installed on your computer.\n\n" + ex.Message, ex);
-			}
-		}
-		
-		public override ItemType GetDefaultItemType(string fileName)
-		{
-			if (string.Equals(".fs", Path.GetExtension(fileName), StringComparison.InvariantCultureIgnoreCase)) {
-				return ItemType.Compile;
-			} else if (string.Equals(".fsi", Path.GetExtension(fileName), StringComparison.InvariantCultureIgnoreCase)) {
-				return ItemType.Compile;
-			} else {
-				return base.GetDefaultItemType(fileName);
 			}
 		}
 		
@@ -51,6 +41,31 @@ namespace FSharpBinding
 		public override LanguageProperties LanguageProperties {
 			get {
 				return LanguageProperties.None;
+			}
+		}
+		
+		protected override ProjectBehavior CreateDefaultBehavior()
+		{
+			return new FSharpProjectBehavior(this, base.CreateDefaultBehavior());
+		}
+	}
+	
+	public class FSharpProjectBehavior : ProjectBehavior
+	{
+		public FSharpProjectBehavior(FSharpProject project, ProjectBehavior next = null)
+			: base(project, next)
+		{
+			
+		}
+		
+		public override ItemType GetDefaultItemType(string fileName)
+		{
+			if (string.Equals(".fs", Path.GetExtension(fileName), StringComparison.InvariantCultureIgnoreCase)) {
+				return ItemType.Compile;
+			} else if (string.Equals(".fsi", Path.GetExtension(fileName), StringComparison.InvariantCultureIgnoreCase)) {
+				return ItemType.Compile;
+			} else {
+				return base.GetDefaultItemType(fileName);
 			}
 		}
 	}

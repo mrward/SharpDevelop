@@ -6,16 +6,20 @@ using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.PackageManagement.EnvDTE
 {
-	public class Property
+	public class Property : MarshalByRefObject
 	{
 		public Property(string name)
 		{
 			this.Name = name;
 		}
 		
-		public string Name { get; private set; }
+		public Property()
+		{
+		}
 		
-		public object Value {
+		public virtual string Name { get; private set; }
+		
+		public virtual object Value {
 			get { return GetValue(); }
 			set { SetValue(value); }
 		}
@@ -29,7 +33,7 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		{
 		}
 		
-		public object Object {
+		public virtual object Object {
 			get { return GetObject(); }
 			set { }
 		}

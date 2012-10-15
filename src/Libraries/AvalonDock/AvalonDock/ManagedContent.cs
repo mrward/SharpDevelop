@@ -269,7 +269,9 @@ namespace AvalonDock
             {
                 _dragEnabledArea.MouseRightButtonDown += (s, e) =>
                     {
-                        if (!e.Handled)
+                        // HACK: WPF still calls MouseRightButtonDown even if this managed content was just closed,
+                        // causing an exception (SD-1858). So avoid handling this event if the ManagedContent was unloaded.
+                        if (!e.Handled && this.IsLoaded)
                         {
                             Activate();
                             if (_dragEnabledArea.ContextMenu == null)
@@ -335,7 +337,9 @@ namespace AvalonDock
 
         protected virtual void OnDragMouseLeave(object sender, MouseEventArgs e)
         {
-            if (!e.Handled && isMouseDown && e.LeftButton == MouseButtonState.Pressed && Manager != null)
+        	// The MouseLeave event can occur if the managed content was closed while the user held the left mouse button pressed.
+        	// In that case, this.IsLoaded will be false and we won't handle the event
+            if (!e.Handled && isMouseDown && e.LeftButton == MouseButtonState.Pressed && Manager != null && this.IsLoaded)
             {
                 if (!IsMouseCaptured)
                 {
@@ -400,7 +404,9 @@ namespace AvalonDock
         {
             base.OnMouseDown(e);
 
-            if (!e.Handled)
+            // HACK: WPF still calls MouseRightButtonDown even if this managed content was just closed,
+            // causing an exception (SD-1858). So avoid handling this event if the ManagedContent was unloaded.
+            if (!e.Handled && this.IsLoaded)
             {
                 Activate();
                 //FocusManager.SetFocusedElement(Content as DependencyObject, DefaultElement);
