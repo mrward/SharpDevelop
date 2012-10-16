@@ -28,10 +28,10 @@ namespace ICSharpCode.SharpDevelop.Project
 		{
 			this.fileName = fileName;
 			
-			WorkbenchSingleton.AssertMainThread();
+			//WorkbenchSingleton.AssertMainThread();
 			activeWatchers.Add(this);
 			
-			WorkbenchSingleton.MainWindow.Activated += MainFormActivated;
+			//WorkbenchSingleton.MainWindow.Activated += MainFormActivated;
 		}
 		
 		public void Enable()
@@ -53,7 +53,7 @@ namespace ICSharpCode.SharpDevelop.Project
 
 		void SetWatcher()
 		{
-			WorkbenchSingleton.AssertMainThread();
+			//WorkbenchSingleton.AssertMainThread();
 
 			if (watcher != null) {
 				watcher.EnableRaisingEvents = false;
@@ -72,8 +72,8 @@ namespace ICSharpCode.SharpDevelop.Project
 			try {
 				if (watcher == null) {
 					watcher = new FileSystemWatcher();
-					if (WorkbenchSingleton.Workbench != null)
-						watcher.SynchronizingObject = WorkbenchSingleton.Workbench.SynchronizingObject;
+					//if (WorkbenchSingleton.Workbench != null)
+					//	watcher.SynchronizingObject = WorkbenchSingleton.Workbench.SynchronizingObject;
 					watcher.Changed += OnFileChangedEvent;
 					watcher.Created += OnFileChangedEvent;
 					watcher.Renamed += OnFileChangedEvent;
@@ -108,12 +108,12 @@ namespace ICSharpCode.SharpDevelop.Project
 			LoggingService.Debug("Project file " + e.Name + " was changed externally: {1}" + e.ChangeType);
 			if (!wasChangedExternally) {
 				wasChangedExternally = true;
-				if (WorkbenchSingleton.Workbench.IsActiveWindow) {
+				//if (WorkbenchSingleton.Workbench.IsActiveWindow) {
 					// delay reloading message a bit, prevents showing two messages
 					// when the file changes twice in quick succession; and prevents
 					// trying to reload the file while it is still being written
-					WorkbenchSingleton.CallLater(TimeSpan.FromSeconds(0.5), delegate { MainFormActivated(this, EventArgs.Empty); });
-				}
+				//	WorkbenchSingleton.CallLater(TimeSpan.FromSeconds(0.5), delegate { MainFormActivated(this, EventArgs.Empty); });
+				//}
 			}
 		}
 
@@ -149,9 +149,9 @@ namespace ICSharpCode.SharpDevelop.Project
 
 		public void Dispose()
 		{
-			WorkbenchSingleton.AssertMainThread();
+			//WorkbenchSingleton.AssertMainThread();
 			if (!disposed) {
-				WorkbenchSingleton.MainWindow.Activated -= MainFormActivated;
+			//	WorkbenchSingleton.MainWindow.Activated -= MainFormActivated;
 				activeWatchers.Remove(this);
 			}
 			if (watcher != null) {
