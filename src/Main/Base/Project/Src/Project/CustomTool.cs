@@ -396,6 +396,10 @@ namespace ICSharpCode.SharpDevelop.Project
 		
 		public static IEnumerable<string> GetCompatibleCustomToolNames(FileProjectItem item)
 		{
+			if (!initialized) {
+				Initialize();
+			}
+			
 			string fileName = item.FileName;
 			foreach (CustomToolDescriptor desc in customToolList) {
 				if (desc.CanRunOnFile(fileName)) {
