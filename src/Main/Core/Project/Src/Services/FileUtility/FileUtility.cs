@@ -742,9 +742,9 @@ namespace ICSharpCode.Core
 		
 		public static void RaiseFileSaved(FileNameEventArgs e)
 		{
-			if (FileSaved != null) {
-				FileSaved(null, e);
-			}
+			//if (FileSaved != null) {
+			//	FileSaved(null, e);
+			//}
 		}
 		
 		public static event EventHandler<FileNameEventArgs> FileLoaded;
