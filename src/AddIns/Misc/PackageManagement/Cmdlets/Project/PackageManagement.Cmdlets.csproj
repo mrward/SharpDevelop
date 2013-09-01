@@ -28,6 +28,9 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Irony">
+      <HintPath>..\..\..\..\..\..\..\Utils\Pash\Source\PashConsole\bin\Debug\Irony.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Core">
       <HintPath>..\..\RequiredLibraries\NuGet.Core.dll</HintPath>
     </Reference>
@@ -35,7 +38,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="System.Management.Automation">
+      <HintPath>..\..\..\..\..\..\..\Utils\Pash\Source\PashConsole\bin\Debug\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>

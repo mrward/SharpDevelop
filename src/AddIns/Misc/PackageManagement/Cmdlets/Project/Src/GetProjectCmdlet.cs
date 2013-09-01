@@ -13,7 +13,8 @@ using ICSharpCode.SharpDevelop.Project;
 namespace ICSharpCode.PackageManagement.Cmdlets
 {
 	[Cmdlet(VerbsCommon.Get, "Project", DefaultParameterSetName = ParameterSetProjectsFilteredByName)]
-	[OutputType(typeof(Project))]
+	//TODO: PowerShell OutputTypeAttribute
+	//[OutputType(typeof(Project))]
 	public class GetProjectCmdlet : PackageManagementCmdlet
 	{
 		const string ParameterSetAllProjects = "AllProjects";

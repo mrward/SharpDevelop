@@ -10,7 +10,8 @@ using Microsoft.VisualStudio.Shell;
 namespace ICSharpCode.PackageManagement.Cmdlets
 {
 	[Cmdlet(VerbsCommon.Get, "VSComponentModel")]
-	[OutputType(typeof(IComponentModel))]
+	//TODO: PowerShell OutputTypeAttribute
+	//[OutputType(typeof(IComponentModel))]
 	public class GetVSComponentModelCmdlet : PSCmdlet
 	{
 		public GetVSComponentModelCmdlet()

@@ -21,12 +21,6 @@ namespace PackageManagement.Cmdlets.Tests.Helpers
 			}
 		}
 		
-		public PSTransactionContext CurrentPSTransaction {
-			get {
-				throw new NotImplementedException();
-			}
-		}
-		
 		public void WriteDebug(string text)
 		{
 			throw new NotImplementedException();
