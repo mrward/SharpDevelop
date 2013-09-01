@@ -44,7 +44,7 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 		void OpenSolution()
 		{
 			if (Solution != null) {
-				ConsoleHost.OpenSolution(Solution);
+				OpenSolution(Solution);
 			}
 		}
 	}

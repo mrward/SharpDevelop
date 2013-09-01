@@ -108,5 +108,11 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 				script.Run(this);
 			}
 		}
+		
+		protected void OpenSolution(string path)
+		{
+			string fullPath = GetUnresolvedProviderPathFromPSPath(path);
+			ConsoleHost.OpenSolution(fullPath);
+		}
 	}
 }
