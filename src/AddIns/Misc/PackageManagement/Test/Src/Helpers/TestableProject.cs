@@ -2,9 +2,13 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+
 using ICSharpCode.SharpDevelop.Internal.Templates;
 using ICSharpCode.SharpDevelop.Project;
+using Microsoft.Build.Construction;
 
 namespace PackageManagement.Tests.Helpers
 {
@@ -13,6 +17,7 @@ namespace PackageManagement.Tests.Helpers
 		public bool IsSaved;
 		string assemblyName;
 		string rootNamespace;
+		bool isStartable = true;
 		
 		public ItemType ItemTypeToReturnFromGetDefaultItemType {
 			get { return TestableProjectBehaviour.ItemTypeToReturnFromGetDefaultItemType; }
@@ -24,6 +29,10 @@ namespace PackageManagement.Tests.Helpers
 		public TestableProject(ProjectCreateInformation createInfo)
 			: base(createInfo)
 		{
+		}
+		
+		public override bool IsStartable {
+			get { return isStartable; }
 		}
 		
 		public override void Save(string fileName)
@@ -86,6 +95,21 @@ namespace PackageManagement.Tests.Helpers
 			FileProjectItem dependentFile = AddFile(include);
 			dependentFile.DependentUpon = dependentUpon;
 			return dependentFile;
+		}
+		
+		public ProjectImportElement GetLastMSBuildChildElement()
+		{
+			return MSBuildProjectFile.LastChild as ProjectImportElement;
+		}
+		
+		public ProjectImportElement GetFirstMSBuildChildElement()
+		{
+			return MSBuildProjectFile.FirstChild as ProjectImportElement;
+		}
+		
+		public ICollection<ProjectImportElement> GetImports()
+		{
+			return MSBuildProjectFile.Imports;
 		}
 	}
 }

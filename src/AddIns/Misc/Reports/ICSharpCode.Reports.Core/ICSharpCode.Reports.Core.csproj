@@ -176,6 +176,7 @@
     <Compile Include="Project\Exporter\ExportRenderer\IExportRunner.cs" />
     <Compile Include="Project\Exporter\GapList.cs" />
     <Compile Include="Project\Expressions\EvaluationHelper.cs" />
+    <Compile Include="Project\Expressions\SimpleExpressionEvaluator\Compilation\Functions\DateSubtract.cs" />
     <Compile Include="Project\Expressions\SimpleExpressionEvaluator\Compilation\Functions\ReportingService\FieldReference.cs" />
     <Compile Include="Project\Exporter\BasePager.cs" />
     <Compile Include="Project\Exporter\Converters\BaseConverter.cs" />
@@ -376,6 +377,7 @@
     <Compile Include="Project\Xml\BaseItemLoader.cs" />
     <Compile Include="Project\Xml\MycroParser.cs" />
     <Compile Include="Project\Xml\MycroWriter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Project\Dialogs\EditorDialog.resx">
       <DependentUpon>EditorDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -393,6 +395,7 @@
     <None Include="Project\ReportViewer\Resources\Icons\Next.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Properties" />
     <Folder Include="Project\DataManager\DataAccess" />
     <Folder Include="Project\WpfReportViewer" />
     <Folder Include="Project\WPF" />

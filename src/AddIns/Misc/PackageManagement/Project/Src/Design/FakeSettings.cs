@@ -128,7 +128,7 @@ namespace ICSharpCode.PackageManagement.Design
 		public void MakePackageSourceSectionsNull()
 		{
 			Sections.Remove(RegisteredPackageSourceSettings.PackageSourcesSectionName);
-			Sections.Add(RegisteredPackageSourceSettings.PackageSourcesSectionName, null);			
+			Sections.Add(RegisteredPackageSourceSettings.PackageSourcesSectionName, null);
 		}
 		
 		public void AddFakePackageSources(IEnumerable<PackageSource> packageSources)
@@ -181,6 +181,21 @@ namespace ICSharpCode.PackageManagement.Design
 			get {
 				return SectionsDeleted.Contains("packageRestore");
 			}
+		}
+		
+		public string GetValue(string section, string key, bool isPath)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public IList<KeyValuePair<string, string>> GetValues(string section, bool isPath)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public IList<SettingValue> GetSettingValues(string section, bool isPath)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

@@ -45,13 +45,23 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 		public SwitchParameter IncludePrerelease { get; set; }
 		
 		[Parameter]
+		public FileConflictAction FileConflictAction { get; set; }
+		
+		[Parameter]
 		public string Solution { get; set; }
 		
 		protected override void ProcessRecord()
 		{
 			OpenSolution();
 			ThrowErrorIfProjectNotOpen();
-			InstallPackage();
+			using (IConsoleHostFileConflictResolver resolver = CreateFileConflictResolver()) {
+				InstallPackage();
+			}
+		}
+		
+		IConsoleHostFileConflictResolver CreateFileConflictResolver()
+		{
+			return ConsoleHost.CreateFileConflictResolver(FileConflictAction);
 		}
 		
 		void OpenSolution()
@@ -64,8 +74,10 @@ namespace ICSharpCode.PackageManagement.Cmdlets
 		void InstallPackage()
 		{
 			IPackageManagementProject project = GetProject();
-			InstallPackageAction action = CreateInstallPackageTask(project);
-			action.Execute();
+			using (project.SourceRepository.StartInstallOperation(Id)) {
+				InstallPackageAction action = CreateInstallPackageTask(project);
+				action.Execute();
+			}
 		}
 		
 		IPackageManagementProject GetProject()

@@ -229,6 +229,146 @@ Téléchargez un AddIn depuis l'Internet, cliquez ensuite sur 'Installer un AddI
   <data name="AddInManager.UnknownFileFormat" xml:space="preserve">
     <value>Format de fichier inconnu:</value>
   </data>
+  <data name="AddInManager2.AddInsView.InstallFromArchive" xml:space="preserve">
+    <value>Installer depuis un fichier...</value>
+  </data>
+  <data name="AddInManager2.AddInsView.Repository" xml:space="preserve">
+    <value>Dépôt:</value>
+  </data>
+  <data name="AddInManager2.AddInsView.Search" xml:space="preserve">
+    <value>Rechercher:</value>
+  </data>
+  <data name="AddInManager2.AddInsView.ShowPreinstalledAddIns" xml:space="preserve">
+    <value>Voir les Add-Ins pré-installés</value>
+  </data>
+  <data name="AddInManager2.AddInsView.ShowPrereleaseAddIns" xml:space="preserve">
+    <value>Voir les pré-releases</value>
+  </data>
+  <data name="AddInManager2.CannotRemoveAddInManager" xml:space="preserve">
+    <value>Impossible de désinstaller le gestionnaire d'Add-In, car il est nécessaire pour ré-installer des Add-Ins.</value>
+  </data>
+  <data name="AddInManager2.DefaultRepository" xml:space="preserve">
+    <value>Dépôt des Add-Ins SharpDevelop</value>
+  </data>
+  <data name="AddInManager2.Details.CreatedBy" xml:space="preserve">
+    <value>Auteur:</value>
+  </data>
+  <data name="AddInManager2.Details.Dependencies" xml:space="preserve">
+    <value>Dépendances:</value>
+  </data>
+  <data name="AddInManager2.Details.DownloadCount" xml:space="preserve">
+    <value>Téléchargements:</value>
+  </data>
+  <data name="AddInManager2.Details.FileName" xml:space="preserve">
+    <value>Nom de fichier:</value>
+  </data>
+  <data name="AddInManager2.Details.InstalledVersion" xml:space="preserve">
+    <value>Version installée:</value>
+  </data>
+  <data name="AddInManager2.Details.LastUpdated" xml:space="preserve">
+    <value>Dernière mise à jour:</value>
+  </data>
+  <data name="AddInManager2.Details.MoreInformation" xml:space="preserve">
+    <value>Plus d'informations</value>
+  </data>
+  <data name="AddInManager2.Details.NewVersion" xml:space="preserve">
+    <value>Nouvelle version:</value>
+  </data>
+  <data name="AddInManager2.Details.Rating" xml:space="preserve">
+    <value>Evaluation:</value>
+  </data>
+  <data name="AddInManager2.Details.ReportAbuse" xml:space="preserve">
+    <value>Signaler un abus</value>
+  </data>
+  <data name="AddInManager2.Details.Version" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="AddInManager2.Details.ViewLicenseTerms" xml:space="preserve">
+    <value>Voir le contrat de license</value>
+  </data>
+  <data name="AddInManager2.DisableDependentWarning" xml:space="preserve">
+    <value>Les Add-Ins installés suivant sont dépendant de "{0}"
+
+{1}
+
+Ils ne fonctionneront plus si vous désactivez cet Add-In! Souhaitez-vous continuer?</value>
+  </data>
+  <data name="AddInManager2.InstallDependentMessage" xml:space="preserve">
+    <value>Package "{0}" nécessite au moins une dépendance:
+
+{1}
+
+L'application va essayer de les télécharger et de les installer. Souhaitez-vous continuer?</value>
+  </data>
+  <data name="AddInManager2.InvalidPackage" xml:space="preserve">
+    <value>Le package sélectionné ne contient pas un Add-In SharpDevelop.</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.AcceptButton" xml:space="preserve">
+    <value>J'&amp;Accepte</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.DeclineButton" xml:space="preserve">
+    <value>Je &amp;Décline</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Explanation.Package" xml:space="preserve">
+    <value>En cliquant "J'accepte", vous êtes d'accord pour la license du package suivant.
+Si vous ne le souhaitez pas, veuillez cliquer "Je décline".</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Explanation.Packages" xml:space="preserve">
+    <value>En cliquant "J'accepte", vous êtes d'accord pour la license des packages suivant.
+Si vous ne le souhaitez pas, veuillez cliquer "Je décline".</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Introduction.Package" xml:space="preserve">
+    <value>Le package suivant nécessite que vous acceptiez sa license:</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Introduction.Packages" xml:space="preserve">
+    <value>Le package suivant nécessite que vous acceptiez sa license:</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Title" xml:space="preserve">
+    <value>Contrat de license</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Add" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.MoveDown" xml:space="preserve">
+    <value>Descendre</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.MoveUp" xml:space="preserve">
+    <value>Monter</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Name" xml:space="preserve">
+    <value>Nom:</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Remove" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Source" xml:space="preserve">
+    <value>Source:</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Tree.AddIns" xml:space="preserve">
+    <value>Add-Ins</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Tree.Repositories" xml:space="preserve">
+    <value>Dépots</value>
+  </data>
+  <data name="AddInManager2.RemoveDependentWarning" xml:space="preserve">
+    <value>Les Add-Ins installés suivant sont dépendant de "{0}"
+
+{1}
+
+Ils ne fonctionneront plus si vous désinstallez cet Add-In! Souhaitez-vous continuer?</value>
+  </data>
+  <data name="AddInManager2.SDAddInFileFilter" xml:space="preserve">
+    <value>SharpDevelop Add-Ins|*.sdaddin;*.addin|Tous les fichiers|*.*</value>
+  </data>
+  <data name="AddInManager2.Views.Available" xml:space="preserve">
+    <value>Disponible</value>
+  </data>
+  <data name="AddInManager2.Views.Installed" xml:space="preserve">
+    <value>Installées</value>
+  </data>
+  <data name="AddInManager2.Views.Updates" xml:space="preserve">
+    <value>Mises à jour</value>
+  </data>
   <data name="AddIns.AvalonEdit.InconsistentNewlines.Description" xml:space="preserve">
     <value>Ce fichier contient des retour-chariots inconsistents.</value>
   </data>
@@ -1501,8 +1641,18 @@ Pour créer ou manipuler un objet ActiveX/COM, déplcaer une classe depuis TypeL
   <data name="Dialog.HighlightingEditor.Import" xml:space="preserve">
     <value>Importer les couleurs de surlignage</value>
   </data>
+  <data name="Dialog.HighlightingEditor.NotSupportedMessage" xml:space="preserve">
+    <value>Version des paramétres non-supportée !</value>
+  </data>
+  <data name="Dialog.HighlightingEditor.OverwriteCustomizationsMessage" xml:space="preserve">
+    <value>Toutes les personnalisations seront réinitialisées et le fichier sélectionné sera importé.
+Voulez-vous continuer ?</value>
+  </data>
   <data name="Dialog.HighlightingEditor.Properties.Value" xml:space="preserve">
     <value>Valeur</value>
+  </data>
+  <data name="Dialog.HighlightingEditor.ResetAll" xml:space="preserve">
+    <value>Tout réinitialiser aux valeurs par défaut</value>
   </data>
   <data name="Dialog.HighlightingEditor.SampleText" xml:space="preserve">
     <value>Echantillon de texte</value>
@@ -1797,7 +1947,7 @@ Voulez-vous ajouter le nouveau fichier au projet ${CurrentProjectName}?</value>
     <value>Paramètres de complétion de code</value>
   </data>
   <data name="Dialog.Options.IDEOptions.CodeCompletion.LanguageDependend" xml:space="preserve">
-    <value>Certaines des options ci-dessous ne sont accessibles  que pour certains langages de programmation.</value>
+    <value>Les options suivantes dépendent du language, certaines ne sont donc pas accessibles.</value>
   </data>
   <data name="Dialog.Options.IDEOptions.CodeCompletion.MainOption" xml:space="preserve">
     <value>Cette option permet de complètement désactiver la complétion de code:</value>
@@ -1859,6 +2009,12 @@ Voulez-vous ajouter le nouveau fichier au projet ${CurrentProjectName}?</value>
   <data name="Dialog.Options.IDEOptions.Debugging" xml:space="preserve">
     <value>Déboguage en cours</value>
   </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.EnableDecompiler" xml:space="preserve">
+    <value>Activer la décompilation</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.EnableEditAndContinue" xml:space="preserve">
+    <value>Activer "Editer et Continuer"</value>
+  </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Exceptions" xml:space="preserve">
     <value>Exceptions</value>
   </data>
@@ -1888,6 +2044,12 @@ Voulez-vous ajouter le nouveau fichier au projet ${CurrentProjectName}?</value>
   </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Stepping.StepOverSingleLineProperties" xml:space="preserve">
     <value>Pas-à-pas sur les propriétés d'une ligne</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.SuppressJITOptimization" xml:space="preserve">
+    <value>Supprimer les optimisations JIT</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.SuppressNGENOptimization" xml:space="preserve">
+    <value>Supprimer les optimisations NGEN</value>
   </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Symbols" xml:space="preserve">
     <value>Symboles</value>
@@ -2348,6 +2510,12 @@ Voulez-vous ajouter le nouveau fichier au projet ${CurrentProjectName}?</value>
   <data name="Dialog.ProjectOptions.Build.TargetCPU.Any" xml:space="preserve">
     <value>Tout processeur</value>
   </data>
+  <data name="Dialog.ProjectOptions.Build.TargetCPU.Any32" xml:space="preserve">
+    <value>x86/x64 - préfère 32 bits</value>
+  </data>
+  <data name="Dialog.ProjectOptions.Build.TargetCPU.Any64" xml:space="preserve">
+    <value>x86/x64 - préfère 64 bits</value>
+  </data>
   <data name="Dialog.ProjectOptions.Build.TargetCPU.Itanium" xml:space="preserve">
     <value>Processeur Itanium 64bits</value>
   </data>
@@ -2701,6 +2869,9 @@ Vous pouvez aussi choisir de stocker la configuration dans le fichier .user-file
   </data>
   <data name="FormsDesigner.DesignTabPages.SourceTabPage" xml:space="preserve">
     <value>Source</value>
+  </data>
+  <data name="Gloabl.Advanced" xml:space="preserve">
+    <value>Avancé</value>
   </data>
   <data name="Global.AbortButtonText" xml:space="preserve">
     <value>Stopper</value>
@@ -4436,6 +4607,9 @@ Soit ils n'existent pas, soit le document Wix n'est pas pour WiX 3.0 et l'espace
   <data name="ICSharpCode.WixBinding.WixNetFxExtensionTitle" xml:space="preserve">
     <value>Extension du framework .NET</value>
   </data>
+  <data name="ICSharpCode.WixBinding.WixNotInstalled" xml:space="preserve">
+    <value>WiX n'est pas installé. Téléchargez le depuis http://wixtoolset.org/</value>
+  </data>
   <data name="ICSharpCode.WixBinding.WixPackageFilesDiffControl.NoDiffFound" xml:space="preserve">
     <value>Aucune différence n'a été trouvée.</value>
   </data>
@@ -5714,6 +5888,9 @@ Soit ils n'existent pas, soit le document Wix n'est pas pour WiX 3.0 et l'espace
   <data name="ResourceEditor.ResourceCodeGeneratorTool.CouldNotGenerateResourceProperty" xml:space="preserve">
     <value>Générateur de code ressource: aucune propriété de ressource ne peut être générée pour la ressource '{0}'.</value>
   </data>
+  <data name="ResourceEditor.ResourceEdit.CommentColumn" xml:space="preserve">
+    <value>Commentaire</value>
+  </data>
   <data name="ResourceEditor.ResourceEdit.ContentColumn" xml:space="preserve">
     <value>Contenu</value>
   </data>
@@ -5725,6 +5902,12 @@ Soit ils n'existent pas, soit le document Wix n'est pas pour WiX 3.0 et l'espace
   </data>
   <data name="ResourceEditor.ResourceEdit.ContextMenu.CopyResourceName" xml:space="preserve">
     <value>Copier le nom de la ressource</value>
+  </data>
+  <data name="ResourceEditor.ResourceEdit.ContextMenu.EditComment" xml:space="preserve">
+    <value>Editer le commentaire</value>
+  </data>
+  <data name="ResourceEditor.ResourceEdit.ContextMenu.EditCommentText" xml:space="preserve">
+    <value>Saisissez le nouveau texte pour le commentaire de cette ressource:</value>
   </data>
   <data name="ResourceEditor.ResourceEdit.ContextMenu.Rename" xml:space="preserve">
     <value>&amp;Renommer</value>
@@ -5740,6 +5923,9 @@ Soit ils n'existent pas, soit le document Wix n'est pas pour WiX 3.0 et l'espace
   </data>
   <data name="SharpDevelop.FileFilter.AllFiles" xml:space="preserve">
     <value>Tous les fichiers (*.*)</value>
+  </data>
+  <data name="SharpDevelop.FileFilter.AllKnownFiles" xml:space="preserve">
+    <value>Toutes les extensions connues</value>
   </data>
   <data name="SharpDevelop.FileFilter.AssemblyFiles" xml:space="preserve">
     <value>Fichiers d'Assemblies (*.exe;*.dll)</value>
@@ -6405,6 +6591,24 @@ Les fichiers de resources ont été renommés/déplacés en conséquence.</value
   <data name="Templates.File.NAnt.NAntBuildFile.Name" xml:space="preserve">
     <value>Fichier de construction NAnt</value>
   </data>
+  <data name="Templates.File.PRISMViewAndViewModelUnity.Description" xml:space="preserve">
+    <value>Créée une vue pour un module PRISM depuis un ViewModel.</value>
+  </data>
+  <data name="Templates.File.PRISMViewAndViewModelUnity.Name" xml:space="preserve">
+    <value>Vue PRISM et ViewModel (Unity)</value>
+  </data>
+  <data name="Templates.File.PRISMViewModelUnity.Description" xml:space="preserve">
+    <value>Créée un ViewModel pour un module PRISM.</value>
+  </data>
+  <data name="Templates.File.PRISMViewModelUnity.Name" xml:space="preserve">
+    <value>ViewModel PRISM (Unity)</value>
+  </data>
+  <data name="Templates.File.PRISMViewUnity.Description" xml:space="preserve">
+    <value>Créée une vue pour un module PRISM.</value>
+  </data>
+  <data name="Templates.File.PRISMViewUnity.Name" xml:space="preserve">
+    <value>Vue PRISM (Unity)</value>
+  </data>
   <data name="Templates.File.Properties.AddIFDEFTest" xml:space="preserve">
     <value>Ajoute '#if TEST ... #endif'</value>
   </data>
@@ -6674,6 +6878,24 @@ Les fichiers de resources ont été renommés/déplacés en conséquence.</value
   </data>
   <data name="Templates.Project.PortableLibrary.Name" xml:space="preserve">
     <value>Bibliothèque de classes portables</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationSmallUnity.Description" xml:space="preserve">
+    <value>Créée une petite application PRISM avec Bootstrapper et Infrastructure.</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationSmallUnity.Name" xml:space="preserve">
+    <value>Application PRISM - petite (Unity)</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationUnity.Description" xml:space="preserve">
+    <value>Créée une application PRISM avec Bootstrapper et Infrastructure.</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationUnity.Name" xml:space="preserve">
+    <value>Application PRISM (Unity)</value>
+  </data>
+  <data name="Templates.Project.PRISMModuleUnity.Description" xml:space="preserve">
+    <value>Créée un module PRISM avec une vue et selon un ViewModel.</value>
+  </data>
+  <data name="Templates.Project.PRISMModuleUnity.Name" xml:space="preserve">
+    <value>Module PRISM (Unity)</value>
   </data>
   <data name="Templates.Project.SetupProject.Description" xml:space="preserve">
     <value>Un projet pour créer un installer MSI.</value>
@@ -7264,10 +7486,10 @@ Les fichiers de resources ont été renommés/déplacés en conséquence.</value
     <value>&amp;Recherche</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.ClrBookmark" xml:space="preserve">
-    <value>Effa&amp;cer les points d'arrêt</value>
+    <value>Effa&amp;cer les marque-pages</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.ClrBookmark.Description" xml:space="preserve">
-    <value>Effacer tous les Favoris...</value>
+    <value>Effacer tous les marque-pages</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.Find" xml:space="preserve">
     <value>&amp;Rechercher...</value>
@@ -7288,16 +7510,16 @@ Les fichiers de resources ont été renommés/déplacés en conséquence.</value
     <value>Recherche incrémentale</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.NextBookmark" xml:space="preserve">
-    <value>Point d'arrêt &amp;suivant</value>
+    <value>Marque-page suivant ^X</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.NextBookmark.Description" xml:space="preserve">
-    <value>Aller au point d'arrêt suivant</value>
+    <value>Aller au marque-page suivant</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.PrevBookmark" xml:space="preserve">
-    <value>Point d'arrêt &amp;précédent</value>
+    <value>Marque-page &amp;précédent</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.PrevBookmark.Description" xml:space="preserve">
-    <value>Revenir au point d'arrêt précédent</value>
+    <value>Revenir au marque-page précédent</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.Replace" xml:space="preserve">
     <value>&amp;Remplacer...</value>
@@ -7306,10 +7528,10 @@ Les fichiers de resources ont été renommés/déplacés en conséquence.</value
     <value>Recherche incrémentale inversée</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.ToggleBookmark" xml:space="preserve">
-    <value>Point d'arrê&amp;t</value>
+    <value>Ac&amp;tiver/Désactiver un marque-page</value>
   </data>
   <data name="XML.MainMenu.SearchMenu.ToggleBookmark.Description" xml:space="preserve">
-    <value>Positionner/Dépositionner un point d'arrêt à la ligne courante</value>
+    <value>Activer/désactiver un marque-page à la ligne actuelle</value>
   </data>
   <data name="XML.MainMenu.ToolMenu" xml:space="preserve">
     <value>&amp;Outils</value>

@@ -6,17 +6,15 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-
 using ICSharpCode.Core;
 using ICSharpCode.Core.WinForms;
 using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Internal.Templates;
+using ICSharpCode.SharpDevelop.Project.Commands;
+using Microsoft.Build.Exceptions;
 
 namespace ICSharpCode.SharpDevelop.Project.Dialogs
 {
-	/// <summary>
-	/// Description of NewProjectDialog.
-	/// </summary>
 	public partial class NewProjectDialog : Form
 	{
 		protected List<TemplateItem> alltemplates = new List<TemplateItem>();
@@ -93,7 +91,6 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 			TreeViewHelper.ApplyViewStateString(PropertyService.Get("Dialogs.NewProjectDialog.CategoryTreeState", ""), categoryTreeView);
 			categoryTreeView.SelectedNode = TreeViewHelper.GetNodeByPath(categoryTreeView, PropertyService.Get("Dialogs.NewProjectDialog.LastSelectedCategory", initialSelectedCategory));
 		}
-		
 		
 		void InsertCategories(TreeNode node, IEnumerable<Category> catarray)
 		{
@@ -278,6 +275,7 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 		
 		public string NewProjectLocation;
 		public string NewSolutionLocation;
+		public ISolutionFolderNode SolutionFolderNode { get; set; }
 		
 		string CheckProjectName(string solution, string name, string location)
 		{
@@ -298,15 +296,23 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 			return null;
 		}
 		
-		void OpenEvent(object sender, EventArgs e)
+		void TryCreateProject(object sender, EventArgs e)
 		{
-			
+			try {
+				CreateProject();
+			} catch (InvalidProjectFileException ex) {
+				LoggingService.Error("Unable to create new project.", ex);
+				MessageService.ShowError(ex.Message);
+			}
+		}
+		
+		void CreateProject()
+		{
 			if (categoryTreeView.SelectedNode != null) {
 				PropertyService.Set("Dialogs.NewProjectDialog.LastSelectedCategory", TreeViewHelper.GetPath(categoryTreeView.SelectedNode));
 				PropertyService.Set("Dialogs.NewProjectDialog.CategoryTreeState", TreeViewHelper.GetViewStateString(categoryTreeView));
 				PropertyService.Set("Dialogs.NewProjectDialog.LargeImages", largeIconsRadioButton.Checked);
 			}
-			
 			
 			string solution = solutionNameTextBox.Text.Trim();
 			string name     = nameTextBox.Text.Trim();
@@ -322,7 +328,6 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 				try {
 					System.IO.Directory.CreateDirectory(NewProjectDirectory);
 				} catch (Exception) {
-					
 					MessageService.ShowError("${res:ICSharpCode.SharpDevelop.Gui.Dialogs.NewProjectDialog.CantCreateDirectoryError}");
 					return;
 				}
@@ -342,7 +347,6 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 				}
 				
 				cinfo.ProjectBasePath = NewProjectDirectory;
-				
 				cinfo.SolutionName    = solution;
 				cinfo.ProjectName     = name;
 				
@@ -350,12 +354,16 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 				if (NewSolutionLocation == null || NewSolutionLocation.Length == 0) {
 					return;
 				}
+				
+				NewProjectLocation = cinfo.createdProjects.Count > 0 ? cinfo.createdProjects[0].FileName : "";
 				if (createNewSolution) {
 					ProjectService.LoadSolution(NewSolutionLocation);
+				} else {
+					AddExistingProjectToSolution.AddProject(SolutionFolderNode, NewProjectLocation);
+					ProjectService.SaveSolution();
 				}
 				item.Template.RunOpenActions(cinfo);
 				
-				NewProjectLocation = cinfo.createdProjects.Count > 0 ? cinfo.createdProjects[0].FileName : "";
 				DialogResult = DialogResult.OK;
 			}
 		}
@@ -433,7 +441,7 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 			smallIconsRadioButton.CheckedChanged += new EventHandler(IconSizeChange);
 			smallIconsRadioButton.Image = IconService.GetBitmap("Icons.16x16.SmallIconsIcon");
 			
-			openButton.Click += new EventHandler(OpenEvent);
+			openButton.Click += new EventHandler(TryCreateProject);
 			browseButton.Click += new EventHandler(BrowseDirectories);
 			createDirectoryForSolutionCheckBox.CheckedChanged += new EventHandler(PathChanged);
 			

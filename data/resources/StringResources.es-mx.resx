@@ -1505,8 +1505,18 @@ Ejemplo: "120", "MainClass", "Main.cs, 120".</value>
   <data name="Dialog.HighlightingEditor.Import" xml:space="preserve">
     <value>Importar colores de resaltado</value>
   </data>
+  <data name="Dialog.HighlightingEditor.NotSupportedMessage" xml:space="preserve">
+    <value>Versión de configuraciones no soportada!</value>
+  </data>
+  <data name="Dialog.HighlightingEditor.OverwriteCustomizationsMessage" xml:space="preserve">
+    <value>Esto reiniciará todas las personalizaciones y luego importará el archivo seleccionado.
+¿Quiere continuar?</value>
+  </data>
   <data name="Dialog.HighlightingEditor.Properties.Value" xml:space="preserve">
     <value>Valor</value>
+  </data>
+  <data name="Dialog.HighlightingEditor.ResetAll" xml:space="preserve">
+    <value>Restablecer todo a predeterminado</value>
   </data>
   <data name="Dialog.HighlightingEditor.SampleText" xml:space="preserve">
     <value>Texto de ejemplo</value>
@@ -1863,6 +1873,12 @@ Ejemplo: "120", "MainClass", "Main.cs, 120".</value>
   <data name="Dialog.Options.IDEOptions.Debugging" xml:space="preserve">
     <value>Depuración</value>
   </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.EnableDecompiler" xml:space="preserve">
+    <value>Habilitar decompilador</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.EnableEditAndContinue" xml:space="preserve">
+    <value>Habilitar Editar y Continuar</value>
+  </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Exceptions" xml:space="preserve">
     <value>Excepciones</value>
   </data>
@@ -1892,6 +1908,12 @@ Ejemplo: "120", "MainClass", "Main.cs, 120".</value>
   </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Stepping.StepOverSingleLineProperties" xml:space="preserve">
     <value>Pasar por propiedades de una única línea</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.SuppressJITOptimization" xml:space="preserve">
+    <value>Suprimir optimización JIT</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.SuppressNGENOptimization" xml:space="preserve">
+    <value>Suprimir optimización NGEN</value>
   </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Symbols" xml:space="preserve">
     <value>Símbolos</value>
@@ -2352,6 +2374,12 @@ Ejemplo: "120", "MainClass", "Main.cs, 120".</value>
   <data name="Dialog.ProjectOptions.Build.TargetCPU.Any" xml:space="preserve">
     <value>Cualquier procesador</value>
   </data>
+  <data name="Dialog.ProjectOptions.Build.TargetCPU.Any32" xml:space="preserve">
+    <value>Cualquier procesador (preferentemente 32-bit)</value>
+  </data>
+  <data name="Dialog.ProjectOptions.Build.TargetCPU.Any64" xml:space="preserve">
+    <value>Cualquier procesador (preferentemente 32-bit)</value>
+  </data>
   <data name="Dialog.ProjectOptions.Build.TargetCPU.Itanium" xml:space="preserve">
     <value>Procesador Intel Itanium de 64-bits</value>
   </data>
@@ -2704,6 +2732,9 @@ También puede elegir guardar la opción en el archivo .user en lugar de en el a
   </data>
   <data name="FormsDesigner.DesignTabPages.SourceTabPage" xml:space="preserve">
     <value>Código</value>
+  </data>
+  <data name="Gloabl.Advanced" xml:space="preserve">
+    <value>Avanzado</value>
   </data>
   <data name="Global.AbortButtonText" xml:space="preserve">
     <value>Abortar</value>
@@ -5746,6 +5777,9 @@ Microsoft.Tools.WindowsInstallerXml.Extensions.NetFxCompiler, WixNetFxExtension<
   <data name="SharpDevelop.FileFilter.AllFiles" xml:space="preserve">
     <value>Todos los archivos (*.*)</value>
   </data>
+  <data name="SharpDevelop.FileFilter.AllKnownFiles" xml:space="preserve">
+    <value>Todas las extensiones de archivos conocidas</value>
+  </data>
   <data name="SharpDevelop.FileFilter.AssemblyFiles" xml:space="preserve">
     <value>Archivos de ensamblado (*.exe;*.dll)</value>
   </data>
@@ -6410,6 +6444,24 @@ Los archivos de recursos han sido renombrados/movidos convenientemente.</value>
   <data name="Templates.File.NAnt.NAntBuildFile.Name" xml:space="preserve">
     <value>Archivo de compilación NAnt</value>
   </data>
+  <data name="Templates.File.PRISMViewAndViewModelUnity.Description" xml:space="preserve">
+    <value>Crea una Vista para un Módulo PRISM con un ViewModel acorde.</value>
+  </data>
+  <data name="Templates.File.PRISMViewAndViewModelUnity.Name" xml:space="preserve">
+    <value>View y ViewModel PRISM (Unity)</value>
+  </data>
+  <data name="Templates.File.PRISMViewModelUnity.Description" xml:space="preserve">
+    <value>Crea un ViewModel para un Módulo PRISM.</value>
+  </data>
+  <data name="Templates.File.PRISMViewModelUnity.Name" xml:space="preserve">
+    <value>ViewModel PRISM (Unity)</value>
+  </data>
+  <data name="Templates.File.PRISMViewUnity.Description" xml:space="preserve">
+    <value>Crea un View para un Módulo PRISM.</value>
+  </data>
+  <data name="Templates.File.PRISMViewUnity.Name" xml:space="preserve">
+    <value>View PRISM (unity)</value>
+  </data>
   <data name="Templates.File.Properties.AddIFDEFTest" xml:space="preserve">
     <value>Agregar '#if TEST ... #endif'</value>
   </data>
@@ -6679,6 +6731,24 @@ Los archivos de recursos han sido renombrados/movidos convenientemente.</value>
   </data>
   <data name="Templates.Project.PortableLibrary.Name" xml:space="preserve">
     <value>Biblioteca de Clases Portable</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationSmallUnity.Description" xml:space="preserve">
+    <value>Crea una pequeña aplicación PRISM con Bootstrapper e  Infraestructura.</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationSmallUnity.Name" xml:space="preserve">
+    <value>Aplicación PRISM - pequeña (Unity)</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationUnity.Description" xml:space="preserve">
+    <value>Crea una aplicación PRISM con Bootstrapper e Infraestructura.</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationUnity.Name" xml:space="preserve">
+    <value>Aplicación PRISM (Unity)</value>
+  </data>
+  <data name="Templates.Project.PRISMModuleUnity.Description" xml:space="preserve">
+    <value>Crea un Módulo PRISM con un View y un ViewModel acorde.</value>
+  </data>
+  <data name="Templates.Project.PRISMModuleUnity.Name" xml:space="preserve">
+    <value>Módulo PRISM (Unity)</value>
   </data>
   <data name="Templates.Project.SetupProject.Description" xml:space="preserve">
     <value>Un proyecto de instalador de Windows para crear un instalador MSI.</value>

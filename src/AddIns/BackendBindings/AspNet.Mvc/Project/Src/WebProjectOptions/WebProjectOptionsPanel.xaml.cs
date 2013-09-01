@@ -26,19 +26,17 @@ namespace ICSharpCode.AspNet.Mvc
 		
 		protected override void Load(MSBuildBasedProject project, string configuration, string platform)
 		{
+			base.Load(project, configuration, platform);
 			CreateWebProject(project);
 			if (!WebProjectService.IsIISOrIISExpressInstalled) {
 				StatusLabel.Text = ResourceService.GetString("ICSharpCode.WebProjectOptionsPanel.IISNotFound");
-				return;
 			}
 			
-			if (properties.UseIISExpress) {			
-				if (WebProjectService.IsIISExpressInstalled) {
-					UseIISExpress.IsChecked = true;
-					PortTextBox.Text = properties.DevelopmentServerPort.ToString();
-					ProjectUrl.Text = String.Empty;
-					SelectIISExpress();
-				}
+			if (properties.UseIISExpress) {
+				UseIISExpress.IsChecked = true;
+				PortTextBox.Text = properties.DevelopmentServerPort.ToString();
+				ProjectUrl.Text = String.Empty;
+				SelectIISExpress();
 			} else if (properties.UseIIS) {
 				if (WebProjectService.IISVersion != IISVersion.None) {
 					UseLocalIIS.IsChecked = true;
@@ -100,13 +98,12 @@ namespace ICSharpCode.AspNet.Mvc
 			bool isIISExpressInstalled = WebProjectService.IsIISExpressInstalled;
 			
 			if (!isIISExpressInstalled) {
-				UseIISExpress.IsChecked = false;
-				properties.UseIISExpress = false;
 				StatusLabel.Text = ResourceService.GetString("ICSharpCode.WebProjectOptionsPanel.IISNotFound");
 			} else {
 				StatusLabel.Text = String.Empty;
 			}
-			IISExpressGroup.IsEnabled = CreateVirtualDirectoryButton.IsEnabled = isIISExpressInstalled;
+			IISExpressGroup.IsEnabled = true;
+			CreateVirtualDirectoryButton.IsEnabled = isIISExpressInstalled;
 			LocalIISGroup.IsEnabled = false;
 		}
 		
@@ -125,13 +122,12 @@ namespace ICSharpCode.AspNet.Mvc
 			
 			if (!isIISInstalled) {
 				StatusLabel.Text = ResourceService.GetString("ICSharpCode.WebProjectOptionsPanel.IISNotFound");
-				ProjectUrl.Text = String.Empty;
-				UseLocalIIS.IsChecked = false;
 			} else {
 				StatusLabel.Text = String.Empty;
 				ProjectUrl.Text = properties.IISUrl;
 			}
-			LocalIISGroup.IsEnabled = CreateVirtualDirectoryButton.IsEnabled = isIISInstalled;
+			LocalIISGroup.IsEnabled = true;
+			CreateVirtualDirectoryButton.IsEnabled = isIISInstalled;
 			IISExpressGroup.IsEnabled = false;
 		}
 		
@@ -180,7 +176,9 @@ namespace ICSharpCode.AspNet.Mvc
 		
 		void PortTextBox_KeyUp(object sender, KeyEventArgs e)
 		{
-			properties.DevelopmentServerPort = Int32.Parse(PortTextBox.Text);
+			int port;
+			if (int.TryParse(PortTextBox.Text, out port))
+				properties.DevelopmentServerPort = port;
 			properties.IISUrl = String.Format(@"{0}:{1}/", WebBehavior.LocalHost, PortTextBox.Text);
 		}
 	}

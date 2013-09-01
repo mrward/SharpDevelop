@@ -203,36 +203,6 @@
 				<ComponentRef Id="SharpDevelopProgramMenuItems"/>
 				<ComponentRef Id="DesktopFolderItems"/>
 				
-				<ComponentRef Id="DariceCub"/>
-				<ComponentRef Id="HeatExe"/>
-				<ComponentRef Id="InsigniaExe"/>
-				<ComponentRef Id="InsigniaExeConfig"/>
-				<ComponentRef Id="NitExe"/>
-				<ComponentRef Id="NitExeConfig"/>
-				<ComponentRef Id="LuxExe"/>
-				<ComponentRef Id="LuxExeConfig"/>
-				<ComponentRef Id="LuxTargets"/>
-				<ComponentRef Id="LuxTasksDll"/>
-				<ComponentRef Id="MeltExe"/>
-				<ComponentRef Id="MergeModCub"/>
-				<ComponentRef Id="MSPatchCDll"/>
-				<ComponentRef Id="PyroExe"/>
-				<ComponentRef Id="SmokeExe"/>
-				<ComponentRef Id="TorchExe"/>
-				<ComponentRef Id="WConsoleDll"/>
-				<ComponentRef Id="WuiDll"/>
-				<ComponentRef Id="WixDifxAppExtensionDll"/>
-				<ComponentRef Id="WixIIsExtensionDll"/>
-				<ComponentRef Id="WixLuxExtensionDll"/>
-				<ComponentRef Id="WixPSExtensionDll"/>
-				<ComponentRef Id="WixSqlExtensionDll"/>
-				<ComponentRef Id="WixUIExtensionDll"/>
-				<ComponentRef Id="WixUtilExtensionDll"/>
-				<ComponentRef Id="WixComPlusExtensionDll"/>
-				<ComponentRef Id="WixMsmqExtensionDll"/>
-				<ComponentRef Id="WixDirectXExtensionDll"/>
-				<ComponentRef Id="WixFirewallExtensionDll"/>
-				<ComponentRef Id="WixGamingExtensionDll"/>
 				<ComponentRef Id="WixDIfxAppSchema"/>
 				<ComponentRef Id="WixIisSchema"/>
 				<ComponentRef Id="WixMSMQSchema"/>
@@ -243,32 +213,11 @@
 				<ComponentRef Id="WixVSSchema"/>
 				<ComponentRef Id="WixFirewallSchema"/>
 				<ComponentRef Id="WixGamingSchema"/>
-				<ComponentRef Id="WixLicenseFiles"/>
-				<ComponentRef Id="WixBitmapFiles"/>
-				<ComponentRef Id="WixVSExtension"/>
-				<ComponentRef Id="Difxapp_ia64Wixlib"/>
-				<ComponentRef Id="Difxapp_x64Wixlib"/>
-				<ComponentRef Id="Difxapp_x86Wixlib"/>
 				<ComponentRef Id="EmptyWixFileTemplate"/>
 				<ComponentRef Id="WixDefaultLicenseRtf"/>
 				<ComponentRef Id="EmptyWixProjectTemplate"/>
 				<ComponentRef Id="EmptyWixDialogTemplate"/>
 				<ComponentRef Id="WixDialogTemplate"/>
-
-				<ComponentRef Id="CandleExe"/>
-				<ComponentRef Id="DarkExe"/>
-				<ComponentRef Id="LightExe"/>
-				<ComponentRef Id="LitExe"/>
-				<ComponentRef Id="MergeModDll"/>
-				<ComponentRef Id="MicrosoftDeploymentWindowsInstallerDll"/>
-				<ComponentRef Id="MicrosoftToolsWindowsInstallerXmlNAntTasksDll"/>
-				<ComponentRef Id="WInteropDll"/>
-				<ComponentRef Id="WixDll"/>
-				<ComponentRef Id="Wix200xTargets"/>
-				<ComponentRef Id="Wix2010Targets"/>
-				<ComponentRef Id="WixCopExe"/>
-				<ComponentRef Id="WixNetFxExtensionDll"/>
-				<ComponentRef Id="WixTasksDll"/>
 
 				<ComponentRef Id="NUnitUtilDll"/>
 				<ComponentRef Id="NUnitConsoleFiles"/>
@@ -291,11 +240,15 @@
 				<ComponentRef Id="CSharpRecentFilesCollectionTemplate"/>				
 				<ComponentRef Id="CSharpRecentFilesCollectionTemplateRecentFileElementClass"/>				
 				<ComponentRef Id="CSharpRecentFilesCollectionTemplateRecentFilesCollectionClass"/>
-				<ComponentRef Id="EmptyCSharpMvcWebProjectTemplate"/>
-				<ComponentRef Id="CSharpMvcWebProjectTemplate"/>
+				<ComponentRef Id="EmptyCSharpMvc3WebProjectTemplate"/>
+				<ComponentRef Id="CSharpMvc3WebProjectTemplate"/>
+				<ComponentRef Id="EmptyCSharpMvc4WebProjectTemplate"/>
+				<ComponentRef Id="CSharpMvc4WebProjectTemplate"/>
 				<ComponentRef Id="VBFileTemplates"/>
-				<ComponentRef Id="EmptyVBMvcWebProjectTemplate"/>
-				<ComponentRef Id="VBMvcWebProjectTemplate"/>
+				<ComponentRef Id="EmptyVBMvc3WebProjectTemplate"/>
+				<ComponentRef Id="VBMvc3WebProjectTemplate"/>
+				<ComponentRef Id="EmptyVBMvc4WebProjectTemplate"/>
+				<ComponentRef Id="VBMvc4WebProjectTemplate"/>
 				<ComponentRef Id="CSharpMvcControllerFileTemplate"/>
 				<ComponentRef Id="CSharpMvcViewPageFileTemplate"/>
 				<ComponentRef Id="CSharpMvcViewContentPageFileTemplate"/>
@@ -468,8 +421,11 @@
 				<ComponentRef Id="RubyBindingSdTestRunnerRb"/>
 				
 				<ComponentRef Id="FSharpBindingDll"/>
-				<ComponentRef Id="FSharpBindingAddin"/>	
-				<ComponentRef Id="FSharpConsoleProjectTemplate"/>	
+				<ComponentRef Id="FSharpBindingAddin"/>
+				<ComponentRef Id="FSharp2ConsoleProjectTemplate"/>
+				<ComponentRef Id="FSharp3ConsoleProjectTemplate"/>
+				<ComponentRef Id="FSharp2LibraryProjectTemplate"/>
+				<ComponentRef Id="FSharp3LibraryProjectTemplate"/>
 				<ComponentRef Id="FSharpEmptyClassTemplate"/>
 				
 				<ComponentRef Id="SharpDevelopSourceAnalysisTargets"/>
@@ -526,6 +482,7 @@
 				<ComponentRef Id="AboutNuGetCmdletsHelpTxt"/>
 				<ComponentRef Id="NuGetConsoleTypesDll"/>
 				<ComponentRef Id="NuGetCoreDll"/>
+				<ComponentRef Id="NuGetExe"/>
 				<ComponentRef Id="NuGetNuspecSchema"/>
 				<ComponentRef Id="NuGetLicenseTxt"/>
 				<ComponentRef Id="PackageFormatPs1Xml"/>
@@ -533,8 +490,10 @@
 				<ComponentRef Id="PackageManagementCmdletsDll"/>
 				<ComponentRef Id="PackageManagementCmdletsDllHelpXml"/>
 				<ComponentRef Id="PackageManagementDll"/>
-				<ComponentRef Id="PackageManagementEnvDTEHelpersDll"/>
+				<ComponentRef Id="SharpDevelopEnvDteDll"/>
 				<ComponentRef Id="PackageManagementPowerShellDll"/>
+				<ComponentRef Id="PackageManagementICSharpCodeSharpDevelopDomDll"/>
+				<ComponentRef Id="MicrosoftWebXmlTransformDll"/>
 				<ComponentRef Id="JQuery172NuGetPackage"/>
 				<ComponentRef Id="Modernizr253NuGetPackage"/>
 			
@@ -593,8 +552,10 @@
 				<ComponentRef Id="VBMvcRazorLayoutPageFileTemplate"/>
 				<ComponentRef Id="VBMvcRazorPartialPageFileTemplate"/>
 				<ComponentRef Id="VBMvcRazorViewPageFileTemplate"/>
-				<ComponentRef Id="CSharpMvcRazorProjectTemplate"/>
-				<ComponentRef Id="VBMvcRazorProjectTemplate"/>
+				<ComponentRef Id="CSharpMvc3RazorProjectTemplate"/>
+				<ComponentRef Id="CSharpMvc4RazorProjectTemplate"/>
+				<ComponentRef Id="VBMvc3RazorProjectTemplate"/>
+				<ComponentRef Id="VBMvc4RazorProjectTemplate"/>
 
 				<ComponentRef Id="JavaScriptBindingDll"/>
 				<ComponentRef Id="JavaScriptBindingAddin"/>

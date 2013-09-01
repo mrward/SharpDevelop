@@ -7,6 +7,7 @@ using System.Resources;
 
 using ICSharpCode.Core;
 using ICSharpCode.PackageManagement.Scripting;
+using NuGet;
 
 namespace ICSharpCode.PackageManagement
 {
@@ -27,12 +28,14 @@ namespace ICSharpCode.PackageManagement
 		static readonly IPackageRepositoryCache projectTemplatePackageRepositoryCache;
 		static readonly RegisteredProjectTemplatePackageSources projectTemplatePackageSources;
 		static readonly PackageRepositoryCache packageRepositoryCache;
+		static readonly UserAgentGeneratorForRepositoryRequests userAgentGenerator;
 		
 		static PackageManagementServices()
 		{
 			InitializeCoreServices();
 			options = new PackageManagementOptions(new Properties());
 			packageRepositoryCache = new PackageRepositoryCache(options.PackageSources, options.RecentPackages);
+			userAgentGenerator = new UserAgentGeneratorForRepositoryRequests(packageRepositoryCache);
 			registeredPackageRepositories = new RegisteredPackageRepositories(packageRepositoryCache, options);
 			projectTemplatePackageSources = new RegisteredProjectTemplatePackageSources();
 			projectTemplatePackageRepositoryCache = new ProjectTemplatePackageRepositoryCache(packageRepositoryCache, projectTemplatePackageSources);
@@ -46,6 +49,17 @@ namespace ICSharpCode.PackageManagement
 			resetPowerShellWorkingDirectory = new ResetPowerShellWorkingDirectoryOnSolutionClosed(projectService, ConsoleHost);
 			var consolePackageActionRunner = new ConsolePackageActionRunner(ConsoleHost, packageActionsToRun);
 			packageActionRunner = new PackageActionRunner(consolePackageActionRunner, packageManagementEvents);
+			
+			InitializeCredentialProvider();
+		}
+		
+		static void InitializeCredentialProvider()
+		{
+			ISettings settings = Settings.LoadDefaultSettings(null, null, null);
+			var packageSourceProvider = new PackageSourceProvider(settings);
+			var credentialProvider = new SettingsCredentialProvider(new SharpDevelopCredentialProvider(), packageSourceProvider);
+			
+			HttpClient.DefaultCredentialProvider = credentialProvider;
 		}
 		
 		static void InitializeCoreServices()

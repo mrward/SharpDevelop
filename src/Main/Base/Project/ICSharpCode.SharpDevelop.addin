@@ -225,7 +225,7 @@
 				          class = "ICSharpCode.SharpDevelop.Project.Commands.AddNewProjectToSolution"/>
 				<MenuItem id    = "AddExitingProjectToSolution"
 				          label = "${res:ProjectComponent.ContextMenu.ExistingProject}"
-				          class = "ICSharpCode.SharpDevelop.Project.Commands.AddExitingProjectToSolution"/>
+				          class = "ICSharpCode.SharpDevelop.Project.Commands.AddExistingProjectToSolution"/>
 				<MenuItem id    = "Separator1" type = "Separator" />
 				<MenuItem id    = "AddItem"
 				          label = "${res:ProjectComponent.ContextMenu.AddItem}"
@@ -552,12 +552,14 @@
 			          icon  = "Icons.16x16.PasteIcon"
 			          loadclasslazy = "false"
 			          class = "ICSharpCode.SharpDevelop.Project.Commands.PasteProjectBrowserNode"/>
-			<MenuItem id = "Remove"
-			          label = "${res:Global.RemoveButtonText}"
-			          type = "Item"
-			          icon  = "Icons.16x16.DeleteIcon"
-			          loadclasslazy = "false"
-			          class = "ICSharpCode.SharpDevelop.Project.Commands.DeleteProjectBrowserNode"/>
+		</Condition>
+		<MenuItem id = "Remove"
+		          label = "${res:Global.RemoveButtonText}"
+		          type = "Item"
+		          icon  = "Icons.16x16.DeleteIcon"
+		          loadclasslazy = "false"
+		          class = "ICSharpCode.SharpDevelop.Project.Commands.DeleteProjectBrowserNode"/>
+		<Condition name="WriteableProject" action="Disable">
 			<MenuItem id = "Rename"
 			          label    = "${res:ProjectComponent.ContextMenu.Rename}"
 			          shortcut = "F2"
@@ -1210,7 +1212,7 @@
 			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.SelectCulturePanel"/>
 			<OptionPanel id    = "SelectStyle"
 			             label = "${res:Dialog.Options.IDEOptions.SelectVisualStyle.PanelName}"
-			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.SelectStylePanel"/>
+			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.SelectStylePanel"/>		
 			<OptionPanel id    = "LoadSave"
 			             label = "${res:Dialog.Options.IDEOptions.LoadSaveOptions.PanelName}"
 			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.LoadSaveOptions"/>
@@ -1227,11 +1229,14 @@
 			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.ProjectAndSolutionOptions"/>
 		
 		</OptionPanel>
+		
 		<OptionPanel id    = "CodingOptions"
 		             label = "${res:Dialog.Options.IDEOptions.CodingOptionsText}">
+			
 			<OptionPanel id    = "CodeGeneration"
 			             label = "${res:Dialog.Options.IDEOptions.CodeGenerationOptionsPanel.Title}"
 			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.CodeGenerationPanel"/>
+			
 			<OptionPanel id    = "EditStandardHeaderPanel"
 			             label = "${res:Dialog.Options.IDEOptions.EditStandardHeaderPanel.Title}"
 			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.EditStandardHeaderPanel"/>
@@ -1239,9 +1244,11 @@
 		
 		<OptionPanel id    = "ToolsOptions"
 		             label = "${res:Dialog.Options.IDEOptions.ToolsOptionsText}">
+		
 			<OptionPanel id    = "ExternalTools"
 			             label = "${res:Dialog.Options.ExternalToolsText}"
-			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.ExternalToolPane"/>
+			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.ExternalToolPanel"/>
+			
 			<OptionPanel id    = "ServiceReferences"
 			             label = "Service References"
 			             class = "ICSharpCode.SharpDevelop.Gui.OptionPanels.ServiceReference.ServiceReferenceOptionsPanel"/>

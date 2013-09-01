@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Runtime.Versioning;
 
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.Design;
@@ -381,6 +382,54 @@ namespace PackageManagement.Tests
 			
 			Assert.AreEqual(1, dependencies.Count);
 			Assert.AreEqual(expectedDependencies[0].Dependencies, dependencies[0].Dependencies);
+		}
+		
+		[Test]
+		public void GetSupportedFrameworks_OneFramework_ReturnsOneFramework()
+		{
+			CreatePackage();
+			FrameworkName expectedFramework = fakePackage.AddSupportedFramework(".NET Framework, Version=4.0");
+			
+			List<FrameworkName> supportedFrameworks = package.GetSupportedFrameworks().ToList();
+			
+			Assert.AreEqual(1, supportedFrameworks.Count);
+			Assert.AreEqual(expectedFramework, supportedFrameworks[0]);
+		}
+		
+		[Test]
+		public void ToString_PackageHasIdAndVersion_ReturnsWrappedPackageToString()
+		{
+			CreatePackage();
+			fakePackage.Id = "MyPackage";
+			fakePackage.Version = new SemanticVersion("1.1");
+			
+			string result = package.ToString();
+			
+			Assert.AreEqual("MyPackage 1.1", result);
+		}
+		
+		[Test]
+		public void MinClientVersion_PackageHasMinClientVersion_ReturnsWrappedPackageMinClientVersion()
+		{
+			CreatePackage();
+			var expectedVersion = new Version("1.1");
+			fakePackage.MinClientVersion = expectedVersion;
+			
+			Version version = package.MinClientVersion;
+			
+			Assert.AreEqual(expectedVersion, version);
+		}
+		
+		[Test]
+		public void PackageAssemblyReferences_PackageHasOnePackageAssemblyReference_ReturnsWrappedPackagePackageAssemblyReferences()
+		{
+			CreatePackage();
+			fakePackage.AddPackageReferences("Test");
+			List<PackageReferenceSet> expectedReferences = fakePackage.PackageAssemblyReferences.ToList();
+			
+			List<PackageReferenceSet> result = package.PackageAssemblyReferences.ToList();
+			
+			Assert.AreEqual(expectedReferences, result);
 		}
 	}
 }

@@ -228,6 +228,151 @@
   <data name="AddInManager.UnknownFileFormat" xml:space="preserve">
     <value>Onbekend bestandsformaat:</value>
   </data>
+  <data name="AddInManager2.AddInsView.InstallFromArchive" xml:space="preserve">
+    <value>Installeer uit het archief...</value>
+  </data>
+  <data name="AddInManager2.AddInsView.Repository" xml:space="preserve">
+    <value>Repository:</value>
+  </data>
+  <data name="AddInManager2.AddInsView.Search" xml:space="preserve">
+    <value>Zoek:</value>
+  </data>
+  <data name="AddInManager2.AddInsView.ShowPreinstalledAddIns" xml:space="preserve">
+    <value>Geef de voor geïnstalleerde AddIns weer</value>
+  </data>
+  <data name="AddInManager2.AddInsView.ShowPrereleaseAddIns" xml:space="preserve">
+    <value>Pre releases weergeven</value>
+  </data>
+  <data name="AddInManager2.CannotRemoveAddInManager" xml:space="preserve">
+    <value>De AddinManager kan niet verwijderd worden, omdat deze nodig is om invoegtoepassingen te her-installeren.</value>
+  </data>
+  <data name="AddInManager2.DefaultRepository" xml:space="preserve">
+    <value>SharpDevelop AddIn Repository</value>
+  </data>
+  <data name="AddInManager2.Details.CreatedBy" xml:space="preserve">
+    <value>Ontworpen door:</value>
+  </data>
+  <data name="AddInManager2.Details.Dependencies" xml:space="preserve">
+    <value>Afhankelijkheden:</value>
+  </data>
+  <data name="AddInManager2.Details.DownloadCount" xml:space="preserve">
+    <value>Downloads:</value>
+  </data>
+  <data name="AddInManager2.Details.FileName" xml:space="preserve">
+    <value>Bestandsnaam:</value>
+  </data>
+  <data name="AddInManager2.Details.InstalledVersion" xml:space="preserve">
+    <value>Geïnstalleerde versie:</value>
+  </data>
+  <data name="AddInManager2.Details.LastUpdated" xml:space="preserve">
+    <value>Laatste update:</value>
+  </data>
+  <data name="AddInManager2.Details.MoreInformation" xml:space="preserve">
+    <value>Meer informatie</value>
+  </data>
+  <data name="AddInManager2.Details.NewVersion" xml:space="preserve">
+    <value>Nieuwe versie:</value>
+  </data>
+  <data name="AddInManager2.Details.Rating" xml:space="preserve">
+    <value>Waardering:</value>
+  </data>
+  <data name="AddInManager2.Details.ReportAbuse" xml:space="preserve">
+    <value>Rapporteer misbruik</value>
+  </data>
+  <data name="AddInManager2.Details.Version" xml:space="preserve">
+    <value>Versie:</value>
+  </data>
+  <data name="AddInManager2.Details.ViewLicenseTerms" xml:space="preserve">
+    <value>Lezen van de licentie voorwaarden</value>
+  </data>
+  <data name="AddInManager2.DisableDependentWarning" xml:space="preserve">
+    <value>Volgende geïnstalleerde AddIns zijn afhankelijk van "{0}":
+
+{1}
+
+Ze stoppen met werken als deze AddIn uitgeschakeld wordt. Wilt u doorgaan?</value>
+  </data>
+  <data name="AddInManager2.InstallDependentMessage" xml:space="preserve">
+    <value>Package "{0}" heeft tenminste één toegevoegde package nodig:
+
+{1}
+
+De applicatie zal proberen ze te downloaden en te installeren. Wilt u doorgaan?</value>
+  </data>
+  <data name="AddInManager2.InvalidPackage" xml:space="preserve">
+    <value>De geselecteerde package bevat geen geldige SharpDevelop AddIn.</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.AcceptButton" xml:space="preserve">
+    <value>Ik &amp;accepteer</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.DeclineButton" xml:space="preserve">
+    <value>Ik weiger</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Explanation.Package" xml:space="preserve">
+    <value>Door de "Ik accepteer-accepteer-knop</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Explanation.Packages" xml:space="preserve">
+    <value>Door de "Accepteren" knop aan te klikken gaat u akkoord met de licentie voorwaarden voor de hierboven vermelde packages.
+Als u het niet eens bent met de licentie voorwaarden, klik dan de "Ik weiger" knop!</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Introduction.Package" xml:space="preserve">
+    <value>Volgende package vereist een akkoord-klik licentie:</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Introduction.Packages" xml:space="preserve">
+    <value>De volgende packages vereisen een klik-om te-accepteren licentie:</value>
+  </data>
+  <data name="AddInManager2.LicenseAcceptance.Title" xml:space="preserve">
+    <value>Overeengekomen licentie voorwaarden</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Add" xml:space="preserve">
+    <value>Voeg toe</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.MoveDown" xml:space="preserve">
+    <value>Naar beneden</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.MoveUp" xml:space="preserve">
+    <value>Naar boven</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Name" xml:space="preserve">
+    <value>Naam:</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Remove" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Source" xml:space="preserve">
+    <value>Broncode:</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Tree.AddIns" xml:space="preserve">
+    <value>AddIns</value>
+  </data>
+  <data name="AddInManager2.OptionPanel.Tree.Repositories" xml:space="preserve">
+    <value>Repositories</value>
+  </data>
+  <data name="AddInManager2.RemoveDependentWarning" xml:space="preserve">
+    <value>Volgende geïnstalleerde AddIns zijn afhankelijk van "{0}":
+
+{1}
+
+Deze stoppen met werken na verwijderen van deze AddIn.</value>
+  </data>
+  <data name="AddInManager2.SDAddInFileFilter" xml:space="preserve">
+    <value>SharpDevelop AddIns|*.sdaddin;*.addin|Alle bestanden|*.*</value>
+  </data>
+  <data name="AddInManager2.UpdateNotifier.BubbleText" xml:space="preserve">
+    <value>Hier klikken om de updates te zien.</value>
+  </data>
+  <data name="AddInManager2.UpdateNotifier.BubbleTitle" xml:space="preserve">
+    <value>Er zijn updates voor SharpDevelop beschikbaar.</value>
+  </data>
+  <data name="AddInManager2.Views.Available" xml:space="preserve">
+    <value>Beschikbaar</value>
+  </data>
+  <data name="AddInManager2.Views.Installed" xml:space="preserve">
+    <value>Geïnstalleerd</value>
+  </data>
+  <data name="AddInManager2.Views.Updates" xml:space="preserve">
+    <value>Updates</value>
+  </data>
   <data name="AddIns.AvalonEdit.InconsistentNewlines.Description" xml:space="preserve">
     <value>Dit bestand bevat afwijkende newlines.</value>
   </data>
@@ -1507,8 +1652,18 @@ Voorbeelden: "120", "MainClass", "Main.cs, 120".</value>
   <data name="Dialog.HighlightingEditor.Import" xml:space="preserve">
     <value>Selectie kleuren importeren</value>
   </data>
+  <data name="Dialog.HighlightingEditor.NotSupportedMessage" xml:space="preserve">
+    <value>Settings versie niet ondersteund!</value>
+  </data>
+  <data name="Dialog.HighlightingEditor.OverwriteCustomizationsMessage" xml:space="preserve">
+    <value>Dit zet alle toegevoegde wijzigingen terug en importeert vervolgens het geselecteerde bestand.
+Wilt u doorgaan?</value>
+  </data>
   <data name="Dialog.HighlightingEditor.Properties.Value" xml:space="preserve">
     <value>Waarde</value>
+  </data>
+  <data name="Dialog.HighlightingEditor.ResetAll" xml:space="preserve">
+    <value>Alles terug naar verstekwaardes.</value>
   </data>
   <data name="Dialog.HighlightingEditor.SampleText" xml:space="preserve">
     <value>Voorbeeldtekst</value>
@@ -1865,6 +2020,12 @@ Wilt u het nieuwe bestand toevoegen aan project ${CurrentProjectName}?</value>
   <data name="Dialog.Options.IDEOptions.Debugging" xml:space="preserve">
     <value>Foutopsporing</value>
   </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.EnableDecompiler" xml:space="preserve">
+    <value>Decompiler inschakelen</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.EnableEditAndContinue" xml:space="preserve">
+    <value>Bewerken en Doorgaan inschakelen</value>
+  </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Exceptions" xml:space="preserve">
     <value>Uitzonderingen</value>
   </data>
@@ -1894,6 +2055,12 @@ Wilt u het nieuwe bestand toevoegen aan project ${CurrentProjectName}?</value>
   </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Stepping.StepOverSingleLineProperties" xml:space="preserve">
     <value>Stap over éénregelige eigenschappen</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.SuppressJITOptimization" xml:space="preserve">
+    <value>Onderdruk JIT optimalisering</value>
+  </data>
+  <data name="Dialog.Options.IDEOptions.Debugging.SuppressNGENOptimization" xml:space="preserve">
+    <value>Onderdruk NGEN optimalisering</value>
   </data>
   <data name="Dialog.Options.IDEOptions.Debugging.Symbols" xml:space="preserve">
     <value>Symbolen</value>
@@ -2354,6 +2521,12 @@ Wilt u het nieuwe bestand toevoegen aan project ${CurrentProjectName}?</value>
   <data name="Dialog.ProjectOptions.Build.TargetCPU.Any" xml:space="preserve">
     <value>Elke processor</value>
   </data>
+  <data name="Dialog.ProjectOptions.Build.TargetCPU.Any32" xml:space="preserve">
+    <value>Elke processor (voorkeur 32-bit)</value>
+  </data>
+  <data name="Dialog.ProjectOptions.Build.TargetCPU.Any64" xml:space="preserve">
+    <value>Elke processor (voorkeur 64-bit)</value>
+  </data>
   <data name="Dialog.ProjectOptions.Build.TargetCPU.Itanium" xml:space="preserve">
     <value>Intel 64-bit Itanium processor</value>
   </data>
@@ -2705,6 +2878,9 @@ Er kan worden gekozen voor opslag van de instellingen in het .user bestand inpla
   </data>
   <data name="FormsDesigner.DesignTabPages.SourceTabPage" xml:space="preserve">
     <value>Bron</value>
+  </data>
+  <data name="Gloabl.Advanced" xml:space="preserve">
+    <value>Uitgebreid</value>
   </data>
   <data name="Global.AbortButtonText" xml:space="preserve">
     <value>Afbreken</value>
@@ -4438,6 +4614,9 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
   <data name="ICSharpCode.WixBinding.WixNetFxExtensionTitle" xml:space="preserve">
     <value>.NET Raamwerk uitbreiding</value>
   </data>
+  <data name="ICSharpCode.WixBinding.WixNotInstalled" xml:space="preserve">
+    <value>WiX is niet geïnstalleerd. Download a.u.b. WiX van http://wixtoolset.org/</value>
+  </data>
   <data name="ICSharpCode.WixBinding.WixPackageFilesDiffControl.NoDiffFound" xml:space="preserve">
     <value>Geen verschil gevonden.</value>
   </data>
@@ -4781,7 +4960,7 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
     <value>Toon openbare leden</value>
   </data>
   <data name="MainWindow.Windows.ClassBrowser.ClassViewSettingsButton.ToolTip" xml:space="preserve">
-    <value>Klassen Overzicht instellingen</value>
+    <value>Weergave Klassen Instellingen</value>
   </data>
   <data name="MainWindow.Windows.ClassBrowser.ClearSearch.ToolTip" xml:space="preserve">
     <value>Maak zoeken leeg</value>
@@ -5129,10 +5308,10 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
     <value>Prioriteit</value>
   </data>
   <data name="MainWindow.Windows.Debug.Threads.Priority.AboveNormal" xml:space="preserve">
-    <value>Bovengemiddeld</value>
+    <value>Boven normaal</value>
   </data>
   <data name="MainWindow.Windows.Debug.Threads.Priority.BelowNormal" xml:space="preserve">
-    <value>Benedengemiddeld</value>
+    <value>Beneden normaal</value>
   </data>
   <data name="MainWindow.Windows.Debug.Threads.Priority.Highest" xml:space="preserve">
     <value>Hoogste</value>
@@ -5171,7 +5350,7 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
     <value>Observatiepunt verwijderen</value>
   </data>
   <data name="MainWindow.Windows.DefinitionViewLabel" xml:space="preserve">
-    <value>Definitie overzicht</value>
+    <value>Definitie Weergave</value>
   </data>
   <data name="MainWindow.Windows.ErrorList" xml:space="preserve">
     <value>Fouten</value>
@@ -5716,6 +5895,9 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
   <data name="ResourceEditor.ResourceCodeGeneratorTool.CouldNotGenerateResourceProperty" xml:space="preserve">
     <value>Hulpbron code generator: er kon geen eigenschap gegenereerd worden voor hulpbron '{0}',</value>
   </data>
+  <data name="ResourceEditor.ResourceEdit.CommentColumn" xml:space="preserve">
+    <value>Commentaar</value>
+  </data>
   <data name="ResourceEditor.ResourceEdit.ContentColumn" xml:space="preserve">
     <value>Inhoud</value>
   </data>
@@ -5727,6 +5909,12 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
   </data>
   <data name="ResourceEditor.ResourceEdit.ContextMenu.CopyResourceName" xml:space="preserve">
     <value>Kopieer naam van hulpbron</value>
+  </data>
+  <data name="ResourceEditor.ResourceEdit.ContextMenu.EditComment" xml:space="preserve">
+    <value>Commentaar redigeren</value>
+  </data>
+  <data name="ResourceEditor.ResourceEdit.ContextMenu.EditCommentText" xml:space="preserve">
+    <value>Voer de nieuwe tekst voor het hulpbron commentaar in:</value>
   </data>
   <data name="ResourceEditor.ResourceEdit.ContextMenu.Rename" xml:space="preserve">
     <value>&amp;Hernoemen</value>
@@ -5742,6 +5930,9 @@ Microsoft.Tools.WindowsInstallerXml.Extenties.NetFxCompiler, WixNetFxExtentie</v
   </data>
   <data name="SharpDevelop.FileFilter.AllFiles" xml:space="preserve">
     <value>Alle bestanden (*.*)</value>
+  </data>
+  <data name="SharpDevelop.FileFilter.AllKnownFiles" xml:space="preserve">
+    <value>Alle bekende bestands extenties</value>
   </data>
   <data name="SharpDevelop.FileFilter.AssemblyFiles" xml:space="preserve">
     <value>Assembly bestanden (*.exe;*.dll)</value>
@@ -6408,6 +6599,24 @@ De hulpbron bestanden zijn hernoemd/verplaatst op de beschreven wijze.</value>
   <data name="Templates.File.NAnt.NAntBuildFile.Name" xml:space="preserve">
     <value>NAnt Build sjabloon</value>
   </data>
+  <data name="Templates.File.PRISMViewAndViewModelUnity.Description" xml:space="preserve">
+    <value>Maakt een Weergave voor PRISMA module volgens Weergavemodel.</value>
+  </data>
+  <data name="Templates.File.PRISMViewAndViewModelUnity.Name" xml:space="preserve">
+    <value>PRISMA Weergave en Weergavemodel (Eenheid)</value>
+  </data>
+  <data name="Templates.File.PRISMViewModelUnity.Description" xml:space="preserve">
+    <value>Maakt een Weergavemodel voor een PRISMA module.</value>
+  </data>
+  <data name="Templates.File.PRISMViewModelUnity.Name" xml:space="preserve">
+    <value>PRISMA Weergavemodel (Eenheid)</value>
+  </data>
+  <data name="Templates.File.PRISMViewUnity.Description" xml:space="preserve">
+    <value>Maakt een weergave voor een PRISMA module.</value>
+  </data>
+  <data name="Templates.File.PRISMViewUnity.Name" xml:space="preserve">
+    <value>PRISMA weergave (Eenheid)</value>
+  </data>
   <data name="Templates.File.Properties.AddIFDEFTest" xml:space="preserve">
     <value>'#if TEST ... #endif' toevoegen</value>
   </data>
@@ -6475,10 +6684,10 @@ De hulpbron bestanden zijn hernoemd/verplaatst op de beschreven wijze.</value>
     <value>Leeg Pad</value>
   </data>
   <data name="Templates.File.SharpDevelop.View.Description" xml:space="preserve">
-    <value>Een #D view inhoud (bijv. een tekstbewerker of bronbestand editor).</value>
+    <value>Een #D inhoudsweergave (bijv. tekstbewerker of bronbestand editor).</value>
   </data>
   <data name="Templates.File.SharpDevelop.View.Name" xml:space="preserve">
-    <value>Leeg View</value>
+    <value>Lege Weergave</value>
   </data>
   <data name="Templates.File.SingletonClass.Description" xml:space="preserve">
     <value>Klasse welke het singleton patroon volgt.</value>
@@ -6677,6 +6886,24 @@ De hulpbron bestanden zijn hernoemd/verplaatst op de beschreven wijze.</value>
   </data>
   <data name="Templates.Project.PortableLibrary.Name" xml:space="preserve">
     <value>Portable Klassen-bibliotheek</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationSmallUnity.Description" xml:space="preserve">
+    <value>Maakt een kleine  PRISMA applicatie met  bootstrapper en infrastructuur.</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationSmallUnity.Name" xml:space="preserve">
+    <value>PRISMA Applicatie - klein (Eenheid)</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationUnity.Description" xml:space="preserve">
+    <value>Maakt  een PRISMA applicatie met bootstrapper en infrastructuur.</value>
+  </data>
+  <data name="Templates.Project.PRISMApplicationUnity.Name" xml:space="preserve">
+    <value>PRISMA applicatie (Eenheid)</value>
+  </data>
+  <data name="Templates.Project.PRISMModuleUnity.Description" xml:space="preserve">
+    <value>Maakt een PRISMA module met weergave naar overeenkomend weergavemodel.</value>
+  </data>
+  <data name="Templates.Project.PRISMModuleUnity.Name" xml:space="preserve">
+    <value>PRISMA module (Eenheid)</value>
   </data>
   <data name="Templates.Project.SetupProject.Description" xml:space="preserve">
     <value>Windows installatie project om een MSI installatie programma te maken.</value>
@@ -7350,7 +7577,7 @@ Startfout:</value>
     <value>Reguliere expressie gereedschap</value>
   </data>
   <data name="XML.MainMenu.ViewMenu" xml:space="preserve">
-    <value>Beel&amp;d</value>
+    <value>Weerga&amp;ve</value>
   </data>
   <data name="XML.MainMenu.ViewMenu.DebugMenu" xml:space="preserve">
     <value>&amp;Foutopsporing</value>

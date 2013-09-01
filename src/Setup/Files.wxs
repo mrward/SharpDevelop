@@ -203,175 +203,6 @@
 								<File Source="..\..\bin\Mono.Cecil.dll" Id="Mono.Cecil.dll" Name="Mono.Cecil.dll" Assembly=".net" AssemblyApplication="Mono.Cecil.dll" AssemblyManifest="Mono.Cecil.dll" KeyPath="yes" />
 							</Component>
 							<Directory Id="ToolsFolder" Name="Tools">
-								<Directory Id="WixFolder" Name="Wix">
-									<Component Guid="78F8DB04-62B1-4A2F-A0D5-D8D890FE5D02" Id="WixVSExtension" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixVSExtension.dll" Id="WixVSExtension.dll" Name="WixVSExtension.dll" Assembly=".net" AssemblyApplication="WixVSExtension.dll" AssemblyManifest="WixVSExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Id="CandleExe" Guid="F76A6F0B-FE35-428A-9DFA-ED1BEB5322AF" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\candle.exe" Name="candle.exe" Id="candle.exe" Assembly=".net" AssemblyApplication="candle.exe" AssemblyManifest="candle.exe" KeyPath="yes" />
-										<File Source="..\..\bin\Tools\Wix\candle.exe.config" Id="candle.exe.config" Name="candle.exe.config" />
-									</Component>
-									<Component Id="WixLicenseFiles" Guid="48DABE56-3E5A-41C3-8451-236C9E9EF3C3" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\CPL.TXT" Name="CPL.TXT" Id="CPL.TXT" />
-									</Component>
-									<Component Id="DarkExe" Guid="45BAAB13-6E19-42DA-80BE-8C44EAD8A24E" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\dark.exe" Name="dark.exe" Id="dark.exe" Assembly=".net" AssemblyApplication="dark.exe" AssemblyManifest="dark.exe" KeyPath="yes" />
-										<File Source="..\..\bin\Tools\Wix\dark.exe.config" Id="dark.exe.config" Name="dark.exe.config" />
-									</Component>
-									<Component Id="LightExe" Guid="FFC7503F-A9BC-484C-BA88-4C0F700329DE" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\light.exe" Name="light.exe" Id="light.exe" Assembly=".net" AssemblyApplication="light.exe" AssemblyManifest="light.exe" KeyPath="yes" />
-										<File Source="..\..\bin\Tools\Wix\light.exe.config" Id="light.exe.config" Name="light.exe.config" />
-									</Component>
-									<Component Id="LitExe" Guid="58312D82-CA9F-432C-BDE4-B96C6CC4EB22" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\lit.exe" Name="lit.exe" Id="lit.exe" Assembly=".net" AssemblyApplication="lit.exe" AssemblyManifest="lit.exe" KeyPath="yes" />
-										<File Source="..\..\bin\Tools\Wix\lit.exe.config" Id="lit.exe.config" Name="lit.exe.config" />
-									</Component>
-									<Component Id="MergeModDll" Guid="2A3A1AA5-CB60-410A-B488-64F0A99682FF" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\mergemod.dll" Name="mergemod.dll" Id="mergemod.dll" />
-									</Component>
-									<Component Id="MicrosoftToolsWindowsInstallerXmlNAntTasksDll" Guid="BD16E99F-24CB-4D91-A763-5F513A528DBD" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\Microsoft.Tools.WindowsInstallerXml.NAntTasks.dll" Id="Microsoft.Tools.WindowsInstallerXml.NAntTasks.dll" Name="Microsoft.Tools.WindowsInstallerXml.NAntTasks.dll" Assembly=".net" AssemblyApplication="Microsoft.Tools.WindowsInstallerXml.NAntTasks.dll" AssemblyManifest="Microsoft.Tools.WindowsInstallerXml.NAntTasks.dll" KeyPath="yes" />
-									</Component>
-									<Component Id="WInteropDll" Guid="55EC9E38-B9E5-40E0-9B13-959154F215AB" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\winterop.dll" Name="winterop.dll" Id="winterop.dll" />
-									</Component>
-									<Component Id="WixDll" Guid="C0A01A75-4EED-49D5-BAC4-B218236D4524" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\wix.dll" Name="wix.dll" Id="wix.dll" Assembly=".net" AssemblyApplication="wix.dll" AssemblyManifest="wix.dll" KeyPath="yes" />
-									</Component>
-									<Component Id="WixCopExe" Guid="9DB7F19E-E737-46FC-A07B-1EEB7C710680" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixCop.exe" Name="WixCop.exe" Id="WixCop.exe" Assembly=".net" AssemblyApplication="WixCop.exe" AssemblyManifest="WixCop.exe" KeyPath="yes" />
-									</Component>
-									<Component Id="WixNetFxExtensionDll" Guid="CED55A4E-1F05-471F-8EA5-73277E3EFEFA" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixNetFxExtension.dll" Id="WixNetFxExtension.dll" Name="WixNetFxExtension.dll" Assembly=".net" AssemblyApplication="WixNetFxExtension.dll" AssemblyManifest="WixNetFxExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Id="WixTasksDll" Guid="B07D86EB-BB9A-4FD6-A882-2F0537AB21B5" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\wix.targets" Id="wix.targets" Name="wix.targets" />
-										<File Source="..\..\bin\Tools\Wix\WixTasks.dll" Name="WixTasks.dll" Id="WixTasks.dll" Assembly=".net" AssemblyApplication="WixTasks.dll" AssemblyManifest="WixTasks.dll" KeyPath="yes" />
-									</Component>
-									<Directory Id="WixBitmapsFolder" Name="Bitmaps">
-										<Component Guid="363E0512-B16C-43ED-A1BE-CE91DBD2463E" Id="WixBitmapFiles" DiskId="1">
-											<File Source="..\..\bin\Tools\Wix\Bitmaps\bannrbmp.bmp" Name="bannrbmp.bmp" Id="bannrbmp.bmp" />
-											<File Source="..\..\bin\Tools\Wix\Bitmaps\dlgbmp.bmp" Name="dlgbmp.bmp" Id="dlgbmp.bmp" />
-											<File Source="..\..\bin\Tools\Wix\Bitmaps\exclamic.ico" Name="exclamic.ico" Id="exclamic.ico" />
-											<File Source="..\..\bin\Tools\Wix\Bitmaps\info.ico" Name="info.ico" Id="info.ico" />
-											<File Source="..\..\bin\Tools\Wix\Bitmaps\New.ico" Name="New.ico" Id="New.ico" />
-											<File Source="..\..\bin\Tools\Wix\Bitmaps\Up.ico" Name="Up.ico" Id="Up.ico" />
-										</Component>
-									</Directory>
-									<Component Guid="6D18FAA0-440D-47FA-B9C1-790A00ADF96D" Id="DariceCub" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\darice.cub" Name="darice.cub" Id="darice.cub" KeyPath="yes" />
-									</Component>
-									<Component Guid="3EF5C4FB-8CAC-4E26-A8F1-1153587AA2BA" Id="HeatExe" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\heat.exe.config" Name="heat.exe.config" Id="heat.exe.config" />
-										<File Source="..\..\bin\Tools\Wix\heat.exe" Name="heat.exe" Id="heat.exe" KeyPath="yes" />
-									</Component>
-									<Component Guid="14177C96-097D-46EA-BCCF-8CC536E4A590" Id="MeltExe" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\melt.exe.config" Name="melt.exe.config" Id="melt.exe.config" />
-										<File Source="..\..\bin\Tools\Wix\melt.exe" Name="melt.exe" Id="melt.exe" KeyPath="yes" />
-									</Component>
-									<Component Guid="D6D6FFD1-A604-46A1-8FBD-379FCF50D3A0" Id="MergeModCub" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\mergemod.cub" Name="mergemod.cub" Id="mergemod.cub" KeyPath="yes" />
-									</Component>
-									<Component Guid="3BD54C3E-6967-4E90-BDF0-0EA005BC39D4" Id="MSPatchCDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\mspatchc.dll" Name="mspatchc.dll" Id="mspatchc.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="697F78FC-BD77-46F0-9485-DABFBE5DDAB0" Id="PyroExe" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\pyro.exe.config" Name="pyro.exe.config" Id="pyro.exe.config" />
-										<File Source="..\..\bin\Tools\Wix\pyro.exe" Name="pyro.exe" Id="pyro.exe" KeyPath="yes" />
-									</Component>
-									<Component Guid="A9351908-10B6-46BD-AB7E-40C9A303E8C1" Id="SmokeExe" KeyPath="yes">
-										<File Source="..\..\bin\Tools\Wix\smoke.exe.config" Name="smoke.exe.config" Id="smoke.exe.config" />
-										<File Source="..\..\bin\Tools\Wix\smoke.exe" Name="smoke.exe" Id="smoke.exe" />
-									</Component>
-									<Component Guid="11B93603-DEFB-48E3-81E7-500DC72C5B00" Id="TorchExe" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\torch.exe.config" Name="torch.exe.config" Id="torch.exe.config" />
-										<File Source="..\..\bin\Tools\Wix\torch.exe" Name="torch.exe" Id="torch.exe" KeyPath="yes" />
-									</Component>
-									<Component Guid="BCB44004-A7A2-4734-BF99-A078049A4258" Id="WConsoleDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\wconsole.dll" Name="wconsole.dll" Id="wconsole.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="2A50A069-7476-4DE1-A947-B1622F39D2F2" Id="WuiDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\wui.dll" Name="wui.dll" Id="wui.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="EBF81D57-1F21-41DF-8C4F-DBAC919BA99D" Id="WixDifxAppExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixDifxAppExtension.dll" Name="WixDifxAppExtension.dll" Id="WixDifxAppExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="7EFD65B5-BD14-4C38-B089-690FBBC7F2C7" Id="WixIIsExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixIIsExtension.dll" Name="WixIIsExtension.dll" Id="WixIIsExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="AE8B607B-A4DF-4282-A013-8588D884144F" Id="WixPSExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixPSExtension.dll" Name="WixPSExtension.dll" Id="WixPSExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="57293693-36D9-4817-A7B5-3AA0B14082DA" Id="WixSqlExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixSqlExtension.dll" Name="WixSqlExtension.dll" Id="WixSqlExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="D7DF419E-A022-488C-BCFB-5C52F1406C06" Id="WixUIExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixUIExtension.dll" Name="WixUIExtension.dll" Id="WixUIExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="9F85F147-14CD-4940-A166-292A550454E2" Id="WixUtilExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixUtilExtension.dll" Name="WixUtilExtension.dll" Id="WixUtilExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="8F2C8A8F-876B-4493-862E-23BE544F3E70" Id="WixComPlusExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixComPlusExtension.dll" Name="WixComPlusExtension.dll" Id="WixComPlusExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="14C6D703-D1E8-4D3C-8BAB-A78130818589" Id="WixMsmqExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixMsmqExtension.dll" Name="WixMsmqExtension.dll" Id="WixMsmqExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="43F0C244-A993-4ECE-985C-C89A727123DA" Id="WixDirectXExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixDirectXExtension.dll" Name="WixDirectXExtension.dll" Id="WixDirectXExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="169DE6D0-F8F4-47EF-803C-205E7991674E" Id="WixFirewallExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixFirewallExtension.dll" Name="WixFirewallExtension.dll" Id="WixFirewallExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="A49F5086-079E-4F5D-AD48-81DD1A7CF0BA" Id="WixGamingExtensionDll" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\WixGamingExtension.dll" Name="WixGamingExtension.dll" Id="WixGamingExtension.dll" KeyPath="yes" />
-									</Component>
-									<Component Guid="EA637AA9-E615-4AC9-A599-600135950415" Id="Difxapp_x64Wixlib" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\difxapp_x64.wixlib" Name="difxapp_x64.wixlib" Id="difxapp_x64.wixlib" KeyPath="yes" />
-									</Component>
-									<Component Guid="686E31B0-4BE9-4AA2-8C04-D17BAF820A86" Id="Difxapp_x86Wixlib" DiskId="1">
-										<File Source="..\..\bin\Tools\Wix\difxapp_x86.wixlib" Name="difxapp_x86.wixlib" Id="difxapp_x86.wixlib" KeyPath="yes" />
-									</Component>
-									<Component Id="Difxapp_ia64Wixlib" Guid="D125EF4D-DACC-47BB-8B1E-8CAE67D7B8EA" DiskId="1">
-										<File Id="difxapp_ia64.wixlib" Name="difxapp_ia64.wixlib" Source="..\..\bin\Tools\Wix\difxapp_ia64.wixlib" KeyPath="yes" />
-									</Component>
-									<Component Id="InsigniaExe" Guid="C69A068B-F60C-4ED1-A731-6B266C9CE852" DiskId="1">
-										<File Id="insignia.exe" Name="insignia.exe" Source="..\..\bin\Tools\Wix\insignia.exe" KeyPath="yes" Assembly=".net" AssemblyApplication="insignia.exe" AssemblyManifest="insignia.exe" />
-									</Component>
-									<Component Id="InsigniaExeConfig" Guid="69BC0DB5-A147-4C55-97DD-7C71DD0B8158" DiskId="1">
-										<File Id="insignia.exe.config" Name="insignia.exe.config" Source="..\..\bin\Tools\Wix\insignia.exe.config" KeyPath="yes" />
-									</Component>
-									<Component Id="LuxExe" Guid="06D047A2-5AF0-4B8B-9181-6E9A76BE4530" DiskId="1">
-										<File Id="lux.exe" Name="lux.exe" Source="..\..\bin\Tools\Wix\lux.exe" KeyPath="yes" Assembly=".net" AssemblyApplication="lux.exe" AssemblyManifest="lux.exe" />
-									</Component>
-									<Component Id="LuxExeConfig" Guid="20F2D2E5-0908-41B0-8FD5-70FA530B678A" DiskId="1">
-										<File Id="lux.exe.config" Name="lux.exe.config" Source="..\..\bin\Tools\Wix\lux.exe.config" KeyPath="yes" />
-									</Component>
-									<Component Id="LuxTargets" Guid="2A1C1410-82A4-4A37-A7AB-421FAAC377D1" DiskId="1">
-										<File Id="lux.targets" Name="lux.targets" Source="..\..\bin\Tools\Wix\lux.targets" KeyPath="yes" />
-									</Component>
-									<Component Id="LuxTasksDll" Guid="6CE43C66-3596-4C6D-9296-CBFDF62DB06E" DiskId="1">
-										<File Id="LuxTasks.dll" Name="LuxTasks.dll" Source="..\..\bin\Tools\Wix\LuxTasks.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="LuxTasks.dll" AssemblyManifest="LuxTasks.dll" />
-									</Component>
-									<Component Id="MicrosoftDeploymentWindowsInstallerDll" Guid="3EDECF4C-9057-4A5A-81AE-822D380D53C7" DiskId="1">
-										<File Id="Microsoft.Deployment.WindowsInstaller.dll" Name="Microsoft.Deployment.WindowsInstaller.dll" Source="..\..\bin\Tools\Wix\Microsoft.Deployment.WindowsInstaller.dll" KeyPath="yes" />
-									</Component>
-									<Component Id="NitExe" Guid="3C48B422-7827-47EE-92CD-8F03EAABE812" DiskId="1">
-										<File Id="nit.exe" Name="nit.exe" Source="..\..\bin\Tools\Wix\nit.exe" KeyPath="yes" Assembly=".net" AssemblyApplication="nit.exe" AssemblyManifest="nit.exe" />
-									</Component>
-									<Component Id="NitExeConfig" Guid="55C9BB7F-7AC2-476D-A1CC-5A12A4DEC242" DiskId="1">
-										<File Id="nit.exe.config" Name="nit.exe.config" Source="..\..\bin\Tools\Wix\nit.exe.config" KeyPath="yes" />
-									</Component>
-									<Component Id="Wix200xTargets" Guid="C00D650D-AAB4-4EB6-82AE-EFF944921519" DiskId="1">
-										<File Id="wix200x.targets" Name="wix200x.targets" Source="..\..\bin\Tools\Wix\wix200x.targets" KeyPath="yes" />
-									</Component>
-									<Component Id="Wix2010Targets" Guid="272EB1AD-F771-4661-94A8-936BEA072356" DiskId="1">
-										<File Id="wix2010.targets" Name="wix2010.targets" Source="..\..\bin\Tools\Wix\wix2010.targets" KeyPath="yes" />
-									</Component>
-									<Component Id="WixLuxExtensionDll" Guid="D9C14B60-3E2E-48F1-A9AC-B41617639863" DiskId="1">
-										<File Id="WixLuxExtension.dll" Name="WixLuxExtension.dll" Source="..\..\bin\Tools\Wix\WixLuxExtension.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="WixLuxExtension.dll" AssemblyManifest="WixLuxExtension.dll" />
-									</Component>
-								</Directory>
 								<Directory Id="NUnitFolder" Name="NUnit">
 									<Component Guid="108E9A75-72D2-40FA-B65C-EFB5ECADB245" Id="NUnitConsoleFiles" DiskId="1">
 										<File Source="..\..\bin\Tools\NUnit\nunit-console.exe" Id="nunit_console.exe" Name="nunit-console.exe" Assembly=".net" AssemblyApplication="nunit_console.exe" AssemblyManifest="nunit_console.exe" KeyPath="yes" />
@@ -479,6 +310,9 @@
 							</Component>
 							<Component Id="ICSharpCodeScriptingDll" Guid="62B44EFA-CCB4-4B73-B455-AE3C72B8121F" DiskId="1">
 								<File Id="ICSharpCode.Scripting.dll" Name="ICSharpCode.Scripting.dll" Source="..\..\bin\ICSharpCode.Scripting.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="ICSharpCode.Scripting.dll" AssemblyManifest="ICSharpCode.Scripting.dll" />
+							</Component>
+							<Component Id="SharpDevelopEnvDteDll" Guid="BEB5529F-D774-4C82-AA5A-AA877A64A79E" DiskId="1">
+								<File Id="SharpDevelop.EnvDTE.dll" Name="SharpDevelop.EnvDTE.dll" Source="..\..\bin\SharpDevelop.EnvDTE.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="SharpDevelop.EnvDTE.dll" AssemblyManifest="SharpDevelop.EnvDTE.dll" />
 							</Component>
 						</Directory>
 						<Directory Id="DocFolder" Name="doc">
@@ -863,11 +697,17 @@
 										<Component Guid="084FDE9A-C356-4D88-8718-00D53478225A" Id="WPFAssemblyInfoTemplate" DiskId="1">
 											<File Source="..\..\data\templates\project\CSharp\WPFAssemblyInfo.cs" Id="WPFAssemblyInfoTemplate" Name="WPFAssemblyInfo.cs" />
 										</Component>
-										<Component Id="CSharpMvcWebProjectTemplate" Guid="82060284-5670-4B2F-8AB0-BE075D09D4BE" DiskId="1">
-											<File Id="CSharp.MvcWebProject.xpt" Name="MvcWebProject.xpt" Source="..\..\data\templates\project\CSharp\MvcWebProject.xpt" KeyPath="yes" />
+										<Component Id="CSharpMvc3WebProjectTemplate" Guid="9B2CB6D6-7C79-4324-88AA-4F61A8CBB0AD" DiskId="1">
+											<File Id="CSharp.Mvc3WebProject.xpt" Name="Mvc3WebProject.xpt" Source="..\..\data\templates\project\CSharp\Mvc3WebProject.xpt" KeyPath="yes" />
 										</Component>
-										<Component Id="EmptyCSharpMvcWebProjectTemplate" Guid="3EA7EF3D-F72A-446C-AA21-BA97EF9B321A" DiskId="1">
-											<File Id="Empty.CSharp.MvcWebProject.xpt" Name="EmptyMvcWebProject.xpt" Source="..\..\data\templates\project\CSharp\EmptyMvcWebProject.xpt" KeyPath="yes" />
+										<Component Id="CSharpMvc4WebProjectTemplate" Guid="A7390705-CDC6-4B4E-A0F9-0D985C76A5B3" DiskId="1">
+											<File Id="CSharp.Mvc4WebProject.xpt" Name="Mvc4WebProject.xpt" Source="..\..\data\templates\project\CSharp\Mvc4WebProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="EmptyCSharpMvc3WebProjectTemplate" Guid="0C0ADD18-C2A6-4CBC-85BA-8B206621536C" DiskId="1">
+											<File Id="Empty.CSharp.Mvc3WebProject.xpt" Name="EmptyMvc3WebProject.xpt" Source="..\..\data\templates\project\CSharp\EmptyMvc3WebProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="EmptyCSharpMvc4WebProjectTemplate" Guid="7445FCA3-B0C2-4341-9BBE-725E7B6B0C4C" DiskId="1">
+											<File Id="Empty.CSharp.Mvc4WebProject.xpt" Name="EmptyMvc4WebProject.xpt" Source="..\..\data\templates\project\CSharp\EmptyMvc4WebProject.xpt" KeyPath="yes" />
 										</Component>
 										<Component Id="CSharpWcfServiceProjectTemplate" Guid="D793DD78-BE0C-11E0-AC34-34D04824019B" DiskId="1">
 											<File Id="CSharp.WcfServiceProject.xpt" Name="CSharp.WcfServiceProject.xpt" Source="..\..\data\templates\project\CSharp\CSharp.WcfServiceProject.xpt" KeyPath="yes" />
@@ -875,8 +715,11 @@
 										<Component Id="CSharpWcfRestServiceProjectTemplate" Guid="8FEE65EC-DD9C-11E0-8968-81B84724019B" DiskId="1">
 											<File Id="CSharp.WcfRestServiceProject.xpt" Name="CSharp.WcfRestServiceProject.xpt" Source="..\..\data\templates\project\CSharp\CSharp.WcfRestServiceProject.xpt" KeyPath="yes" />
 										</Component>
-										<Component Id="CSharpMvcRazorProjectTemplate" Guid="827EB7DD-A67C-4043-81A4-F4AC9CE92F8D" DiskId="1">
-											<File Id="CSharp.MvcR.azorProject.xpt" Name="MvcRazorProject.xpt" Source="..\..\data\templates\project\CSharp\MvcRazorProject.xpt" KeyPath="yes" />
+										<Component Id="CSharpMvc3RazorProjectTemplate" Guid="E1292B77-CCF9-4668-AD02-ACA406328947" DiskId="1">
+											<File Id="CSharp.Mvc3RazorProject.xpt" Name="Mvc3RazorProject.xpt" Source="..\..\data\templates\project\CSharp\Mvc3RazorProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="CSharpMvc4RazorProjectTemplate" Guid="05F2230F-ACCC-42F3-8EFA-68595EB7ECFC" DiskId="1">
+											<File Id="CSharp.Mvc4RazorProject.xpt" Name="Mvc4RazorProject.xpt" Source="..\..\data\templates\project\CSharp\Mvc4RazorProject.xpt" KeyPath="yes" />
 										</Component>
 									</Directory>
 									<Directory Id="MiscProjectTemplatesFolder" Name="Misc">
@@ -910,11 +753,17 @@
 											<File Id="WPFAssemblyInfo.vb" Name="WPFAssemblyInfo.vb" Source="..\..\data\templates\project\VB\WPFAssemblyInfo.vb" />
 											<File Id="WPFNavigationApplication.xpt" Name="WPFNavigationApplication.xpt" Source="..\..\data\templates\project\VB\WPFNavigationApplication.xpt" />
 										</Component>
-										<Component Id="VBMvcWebProjectTemplate" Guid="FBDC313E-FC77-4500-84EC-35F0E19925C1" DiskId="1">
-											<File Id="VB.MvcWebProject.xpt" Name="MvcWebProject.xpt" Source="..\..\data\templates\project\VB\MvcWebProject.xpt" KeyPath="yes" />
+										<Component Id="VBMvc3WebProjectTemplate" Guid="ED880219-5D19-4224-928B-1323FF38ADD1" DiskId="1">
+											<File Id="VB.Mvc3WebProject.xpt" Name="Mvc3WebProject.xpt" Source="..\..\data\templates\project\VB\Mvc3WebProject.xpt" KeyPath="yes" />
 										</Component>
-										<Component Id="EmptyVBMvcWebProjectTemplate" Guid="DCCCBDDE-6F8A-4163-8294-F84E5E76917C" DiskId="1">
-											<File Id="Empty.VB.MvcWebProject.xpt" Name="EmptyMvcWebProject.xpt" Source="..\..\data\templates\project\VB\EmptyMvcWebProject.xpt" KeyPath="yes" />
+										<Component Id="VBMvc4WebProjectTemplate" Guid="2E9A64C8-CCCD-434D-B06C-3BFDA6032EBF" DiskId="1">
+											<File Id="VB.Mvc4WebProject.xpt" Name="Mvc4WebProject.xpt" Source="..\..\data\templates\project\VB\Mvc4WebProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="EmptyVBMvc3WebProjectTemplate" Guid="7E148426-CAB9-4940-9C0F-F32EEAA0F507" DiskId="1">
+											<File Id="Empty.VB.Mvc3WebProject.xpt" Name="EmptyMvc3WebProject.xpt" Source="..\..\data\templates\project\VB\EmptyMvc3WebProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="EmptyVBMvc4WebProjectTemplate" Guid="FB3D1D9D-F511-4AF0-BE34-5B8859710684" DiskId="1">
+											<File Id="Empty.VB.Mvc4WebProject.xpt" Name="EmptyMvc4WebProject.xpt" Source="..\..\data\templates\project\VB\EmptyMvc4WebProject.xpt" KeyPath="yes" />
 										</Component>
 										<Component Id="VBWcfServiceProjectTemplate" Guid="FF1C11DA-BE0C-11E0-A35E-6FD04824019B" DiskId="1">
 											<File Id="VB.WcfServiceProject.xpt" Name="VB.WcfServiceProject.xpt" Source="..\..\data\templates\project\VB\VB.WcfServiceProject.xpt" KeyPath="yes" />
@@ -922,8 +771,11 @@
 										<Component Id="VBWcfRestServiceProjectTemplate" Guid="A45203E0-DD9C-11E0-974A-93B84724019B" DiskId="1">
 											<File Id="VB.WcfRestServiceProject.xpt" Name="VB.WcfRestServiceProject.xpt" Source="..\..\data\templates\project\VB\VB.WcfRestServiceProject.xpt" KeyPath="yes" />
 										</Component>
-										<Component Id="VBMvcRazorProjectTemplate" Guid="253A22C3-31B7-44AD-8F4D-8B55511487A1" DiskId="1">
-											<File Id="VB.MvcRazorProject.xpt" Name="MvcRazorProject.xpt" Source="..\..\data\templates\project\VB\MvcRazorProject.xpt" KeyPath="yes" />
+										<Component Id="VBMvc3RazorProjectTemplate" Guid="A801A2B6-FA38-4EE2-B38C-DE970491C979" DiskId="1">
+											<File Id="VB.Mvc3RazorProject.xpt" Name="Mvc3RazorProject.xpt" Source="..\..\data\templates\project\VB\Mvc3RazorProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="VBMvc4RazorProjectTemplate" Guid="573888E6-5A19-402E-B814-66A4161570BD" DiskId="1">
+											<File Id="VB.Mvc4RazorProject.xpt" Name="Mvc4RazorProject.xpt" Source="..\..\data\templates\project\VB\Mvc4RazorProject.xpt" KeyPath="yes" />
 										</Component>
 									</Directory>
 									<Component Guid="73EAC135-57B6-46C0-9F24-70A347B9AAC8" Id="ExampleProjectTemplate" DiskId="1">
@@ -1262,11 +1114,20 @@
 										<File Source="..\..\AddIns\BackendBindings\FSharpBinding\FSharpBinding.dll" Name="FSharpBinding.dll" Id="FSharpBinding.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="FSharpBinding.dll" AssemblyManifest="FSharpBinding.dll" />
 									</Component>
 									<Directory Id="FSharpBindingTemplates" Name="Templates">
-										<Component Guid="37A7695A-BA60-45A6-9BDB-FAE663D7A4C0" Id="FSharpConsoleProjectTemplate" DiskId="1">
-											<File Source="..\..\AddIns\BackendBindings\FSharpBinding\Templates\ConsoleProject.xpt" Name="ConsoleProject.xpt" Id="FSharp.Templates.ConsoleProject.xpt" KeyPath="yes" />
-										</Component>
 										<Component Guid="33142421-A648-4415-8C22-0F73479E0840" Id="FSharpEmptyClassTemplate" DiskId="1">
 											<File Source="..\..\AddIns\BackendBindings\FSharpBinding\Templates\EmptyClass.xft" Name="EmptyClass.xft" Id="FSharp.Templates.EmptyClass.xft" KeyPath="yes" />
+										</Component>
+										<Component Guid="604E9391-ECC8-486E-827F-9293EEC14533" Id="FSharp2ConsoleProjectTemplate" DiskId="1">
+											<File Source="..\..\AddIns\BackendBindings\FSharpBinding\Templates\FSharp2ConsoleProject.xpt" Name="FSharp2ConsoleProject.xpt" Id="FSharp.Templates.FSharp2ConsoleProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Guid="27FCD513-F51E-4F49-8602-03E39067D662" Id="FSharp3ConsoleProjectTemplate" DiskId="1">
+											<File Source="..\..\AddIns\BackendBindings\FSharpBinding\Templates\FSharp3ConsoleProject.xpt" Name="FSharp3ConsoleProject.xpt" Id="FSharp.Templates.FSharp3ConsoleProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="FSharp2LibraryProjectTemplate" Guid="4664CE65-92F2-4175-BF98-E33189F3F37F" DiskId="1">
+											<File Id="FSharp2LibraryProject.xpt" Name="FSharp2LibraryProject.xpt" Source="..\..\AddIns\BackendBindings\FSharpBinding\Templates\FSharp2LibraryProject.xpt" KeyPath="yes" />
+										</Component>
+										<Component Id="FSharp3LibraryProjectTemplate" Guid="A2B26292-DD79-4D80-A219-0A699C4C30FC" DiskId="1">
+											<File Id="FSharp3LibraryProject.xpt" Name="FSharp3LibraryProject.xpt" Source="..\..\AddIns\BackendBindings\FSharpBinding\Templates\FSharp3LibraryProject.xpt" KeyPath="yes" />
 										</Component>
 									</Directory>
 								</Directory>
@@ -1814,8 +1675,14 @@
 									<Component Id="NuGetConsoleTypesDll" Guid="7386637C-A6C6-4AD4-8EA3-C5E87AA3F552" DiskId="1">
 										<File Id="NuGet.Console.Types.dll" Name="NuGet.Console.Types.dll" Source="..\..\AddIns\Misc\PackageManagement\NuGet.Console.Types.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="NuGet.Console.Types.dll" AssemblyManifest="NuGet.Console.Types.dll" />
 									</Component>
-									<Component Id="PackageManagementEnvDTEHelpersDll" Guid="51609E3F-C1BA-4EB5-889B-61EA730207D6" DiskId="1">
-										<File Id="PackageManagement.EnvDTEHelpers.dll" Name="PackageManagement.EnvDTEHelpers.dll" Source="..\..\AddIns\Misc\PackageManagement\PackageManagement.EnvDTEHelpers.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="PackageManagement.EnvDTEHelpers.dll" AssemblyManifest="PackageManagement.EnvDTEHelpers.dll" />
+									<Component Id="PackageManagementICSharpCodeSharpDevelopDomDll" Guid="70460742-D237-4742-B563-7127376C56CB" DiskId="1">
+										<File Id="PackageManagement.ICSharpCode.SharpDevelop.Dom.dll" Name="ICSharpCode.SharpDevelop.Dom.dll" Source="..\..\AddIns\Misc\PackageManagement\ICSharpCode.SharpDevelop.Dom.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="PackageManagement.ICSharpCode.SharpDevelop.Dom.dll" AssemblyManifest="PackageManagement.ICSharpCode.SharpDevelop.Dom.dll" />
+									</Component>
+									<Component Id="MicrosoftWebXmlTransformDll" Guid="0A82C51B-E2D1-4817-8704-2CB390B4E833" DiskId="1">
+										<File Id="Microsoft.Web.XmlTransform.dll" Name="Microsoft.Web.XmlTransform.dll" Source="..\..\AddIns\Misc\PackageManagement\Microsoft.Web.XmlTransform.dll" KeyPath="yes" Assembly=".net" AssemblyApplication="Microsoft.Web.XmlTransform.dll" AssemblyManifest="Microsoft.Web.XmlTransform.dll" />
+									</Component>
+									<Component Id="NuGetExe" Guid="47FD372D-7F53-4466-B648-F674C64ED98B" DiskId="1">
+										<File Id="NuGet.exe" Name="NuGet.exe" Source="..\..\AddIns\Misc\PackageManagement\NuGet.exe" KeyPath="yes" Assembly=".net" AssemblyApplication="NuGet.exe" AssemblyManifest="NuGet.exe" />
 									</Component>
 								</Directory>
 								<Directory Id="TextTemplating" Name="TextTemplating">

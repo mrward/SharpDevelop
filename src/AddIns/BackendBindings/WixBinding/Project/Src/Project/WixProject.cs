@@ -7,10 +7,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-
+using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Internal.Templates;
 using ICSharpCode.SharpDevelop.Project;
+using Microsoft.Build.Exceptions;
 
 namespace ICSharpCode.WixBinding
 {
@@ -25,7 +26,7 @@ namespace ICSharpCode.WixBinding
 	
 	public class WixProject : CompilableProject, IWixPropertyValueProvider
 	{
-		public const string DefaultTargetsFile = @"$(WixToolPath)\wix.targets";
+		public const string DefaultTargetsFile = "$(WixTargetsPath)";
 		public const string FileNameExtension = ".wixproj";
 		
 		delegate bool IsFileNameMatch(string fileName);
@@ -39,13 +40,27 @@ namespace ICSharpCode.WixBinding
 			: base(info)
 		{
 			SetProperty("OutputType", "Package");
+			AddWixTargetsPathProperties();
+			AddImport(DefaultTargetsFile, null);
+			CheckWixIsInstalled();
+		}
+		
+		void CheckWixIsInstalled()
+		{
+			try {
+				ReevaluateIfNecessary();
+			} catch (InvalidProjectFileException ex) {
+				LoggingService.Error(ex);
+				throw new InvalidProjectFileException(StringParser.Parse("${res:ICSharpCode.WixBinding.WixNotInstalled}"));
+			}
+		}
+		
+		void AddWixTargetsPathProperties()
+		{
+			string condition = " '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ";
+			AddConditionalProperty("WixTargetsPath", @"$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets", condition);
 			
-			string wixToolPath = @"$(SharpDevelopBinPath)\Tools\Wix";
-			AddGuardedProperty("WixToolPath", wixToolPath);
-			AddGuardedProperty("WixTargetsPath", @"$(WixToolPath)\wix.targets");
-			AddGuardedProperty("WixTasksPath", @"$(WixToolPath)\WixTasks.dll");
-			
-			this.AddImport(DefaultTargetsFile, null);
+			AddGuardedProperty("WixTargetsPath", @"$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets");
 		}
 		
 		public override string Language {
@@ -227,7 +242,6 @@ namespace ICSharpCode.WixBinding
 		public WixStartBehavior(WixProject project, ProjectBehavior next = null)
 			: base(project, next)
 		{
-			
 		}
 		
 		new WixProject Project {

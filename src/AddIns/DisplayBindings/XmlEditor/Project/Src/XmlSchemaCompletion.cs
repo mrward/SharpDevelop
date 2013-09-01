@@ -335,9 +335,23 @@ namespace ICSharpCode.XmlEditor
 		{
 			XmlSchemaComplexType complexType = element.SchemaType as XmlSchemaComplexType;
 			if (complexType == null) {
-				complexType = FindNamedType(schema, element.SchemaTypeName);
+				if (element.SchemaTypeName.IsEmpty) {
+					return GetComplexTypeFromSubstitutionGroup(element);
+				}
+				return FindNamedType(schema, element.SchemaTypeName);
 			}
 			return complexType;
+		}
+		
+		XmlSchemaComplexType GetComplexTypeFromSubstitutionGroup(XmlSchemaElement element)
+		{
+			if (!element.SubstitutionGroup.IsEmpty) {
+				XmlSchemaElement substitutedElement = FindElement(element.SubstitutionGroup);
+				if (substitutedElement != null) {
+					return GetElementAsComplexType(substitutedElement);
+				}
+			}
+			return null;
 		}
 		
 		/// <summary>
@@ -1014,7 +1028,13 @@ namespace ICSharpCode.XmlEditor
 					completionItems.AddRange(GetAttributeValueCompletion(simpleType));
 				}
 			}
-
+			
+			if (union.BaseMemberTypes != null) {
+				foreach (XmlSchemaSimpleType simpleType in union.BaseMemberTypes) {
+					completionItems.AddRange(GetAttributeValueCompletion(simpleType));
+				}
+			}
+			
 			return completionItems;
 		}
 		

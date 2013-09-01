@@ -119,5 +119,11 @@ namespace ICSharpCode.PackageManagement.Design
 			}
 			return String.Empty;
 		}
+		
+		public FakeProjectBuilder FakeProjectBuilder = new FakeProjectBuilder();
+		
+		public IProjectBuilder ProjectBuilder {
+			get { return FakeProjectBuilder; }
+		}
 	}
 }

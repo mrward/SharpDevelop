@@ -160,6 +160,30 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
+		public void CreateAggregatePackageRepository_TwoRegisteredPackageSourcesButOneDisabled_ReturnsAggregateRepositoryCreatedWithOnlyEnabledPackageSource()
+		{
+			CreatePackageSources();
+			packageSourcesHelper.AddTwoPackageSources("Source1", "Source2");
+			packageSourcesHelper.RegisteredPackageSources[0].IsEnabled = false;
+			CreateCacheUsingPackageSources();
+			FakePackageRepository repository1 = AddFakePackageRepositoryForPackageSource("Source1");
+			FakePackageRepository repository2 = AddFakePackageRepositoryForPackageSource("Source2");
+			var expectedRepositories = new FakePackageRepository[] {
+				repository2
+			};
+			
+			cache.CreateAggregateRepository();
+			
+			IEnumerable<IPackageRepository> repositoriesUsedToCreateAggregateRepository = 
+				fakePackageRepositoryFactory.RepositoriesPassedToCreateAggregateRepository;
+			
+			var actualRepositoriesAsList = new List<IPackageRepository>(repositoriesUsedToCreateAggregateRepository);
+			IPackageRepository[] actualRepositories = actualRepositoriesAsList.ToArray();
+			
+			CollectionAssert.AreEqual(expectedRepositories, actualRepositories);
+		}
+				
+		[Test]
 		public void CreateAggregatePackageRepository_TwoRegisteredPackageRepositories_AllRegisteredRepositoriesUsedToCreateAggregateRepositoryFromFactory()
 		{
 			CreatePackageSources();
@@ -330,6 +354,31 @@ namespace PackageManagement.Tests
 			CreateRecentPackageRepositoryPassingAggregateRepository();
 			
 			Assert.IsNull(fakePackageRepositoryFactory.AggregateRepositoryPassedToCreateRecentPackageRepository);
+		}
+		
+		[Test]
+		public void CreateRepository_NewRepositoryCreated_RepositoryCreatedEventFired()
+		{
+			CreateCache();
+			PackageRepositoryFactoryEventArgs eventArgs = null;
+			cache.RepositoryCreated += (sender, e) => eventArgs = e;
+			
+			IPackageRepository repository = cache.CreateRepository(nuGetPackageSource.Source);
+			
+			Assert.AreEqual(fakePackageRepositoryFactory.FakePackageRepository, eventArgs.Repository);
+		}
+		
+		[Test]
+		public void CreateRepository_RepositoryCreatedTwice_RepositoryCreatedEventIsNotFiredOnSecondCallToCreateRepository()
+		{
+			CreateCache();
+			cache.CreateRepository(nuGetPackageSource.Source);
+			PackageRepositoryFactoryEventArgs eventArgs = null;
+			cache.RepositoryCreated += (sender, e) => eventArgs = e;
+			
+			cache.CreateRepository(nuGetPackageSource.Source);
+			
+			Assert.IsNull(eventArgs);
 		}
 	}
 }

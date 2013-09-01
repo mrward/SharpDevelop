@@ -8,7 +8,7 @@ using NuGet;
 
 namespace ICSharpCode.PackageManagement
 {
-	public abstract class ProcessPackageAction
+	public abstract class ProcessPackageAction : IPackageAction
 	{
 		IPackageManagementEvents packageManagementEvents;
 		
@@ -26,6 +26,7 @@ namespace ICSharpCode.PackageManagement
 		public SemanticVersion PackageVersion { get; set; }
 		public string PackageId { get; set; }
 		public IPackageScriptRunner PackageScriptRunner { get; set; }
+		public bool AllowPrereleaseVersions { get; set; }
 		
 		public virtual bool HasPackageScriptsToRun()
 		{
@@ -44,11 +45,23 @@ namespace ICSharpCode.PackageManagement
 		
 		public void Execute()
 		{
-			BeforeExecute();
-			if (PackageScriptRunner != null) {
-				ExecuteWithScriptRunner();
-			} else {
-				ExecuteCore();
+			RunWithExceptionReporting(() => {
+				BeforeExecute();
+				if (PackageScriptRunner != null) {
+					ExecuteWithScriptRunner();
+				} else {
+					ExecuteCore();
+				}
+			});
+		}
+		
+		void RunWithExceptionReporting(Action action)
+		{
+			try {
+				action();
+			} catch (Exception ex) {
+				packageManagementEvents.OnPackageOperationError(ex);
+				throw;
 			}
 		}
 		
@@ -97,8 +110,24 @@ namespace ICSharpCode.PackageManagement
 		void GetPackageIfMissing()
 		{
 			if (Package == null) {
-				Package = Project.SourceRepository.FindPackage(PackageId, PackageVersion);
+				FindPackage();
 			}
+			if (Package == null) {
+				ThrowPackageNotFoundError(PackageId);
+			}
+		}
+		
+		void FindPackage()
+		{
+			Package = Project
+				.SourceRepository
+				.FindPackage(PackageId, PackageVersion, AllowPrereleaseVersions, allowUnlisted: true);
+		}
+		
+		void ThrowPackageNotFoundError(string packageId)
+		{
+			string message = String.Format("Unable to find package '{0}'.", packageId);
+			throw new ApplicationException(message);
 		}
 		
 		protected bool PackageIdExistsInProject()

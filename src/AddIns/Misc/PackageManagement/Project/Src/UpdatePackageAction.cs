@@ -7,7 +7,7 @@ using NuGet;
 
 namespace ICSharpCode.PackageManagement
 {
-	public class UpdatePackageAction : ProcessPackageOperationsAction
+	public class UpdatePackageAction : ProcessPackageOperationsAction, IUpdatePackageSettings
 	{
 		public UpdatePackageAction(
 			IPackageManagementProject project,
@@ -20,7 +20,6 @@ namespace ICSharpCode.PackageManagement
 		
 		public bool UpdateDependencies { get; set; }
 		public bool UpdateIfPackageDoesNotExistInProject { get; set; }
-		public bool AllowPrereleaseVersions { get; set; }
 		
 		protected override IEnumerable<PackageOperation> GetPackageOperations()
 		{
