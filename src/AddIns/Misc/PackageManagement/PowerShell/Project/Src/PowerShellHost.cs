@@ -80,7 +80,9 @@ namespace ICSharpCode.PackageManagement.Scripting
 		Pipeline CreatePipeline(string command)
 		{
 			Pipeline pipeline = runspace.CreatePipeline();
-			pipeline.Commands.AddScript(command);
+			// TODO: PowerShell - support scripts
+			//pipeline.Commands.AddScript(command);
+			pipeline.Commands.Add(command);
 			pipeline.Commands.Add("out-default");
 			pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 			return pipeline;
