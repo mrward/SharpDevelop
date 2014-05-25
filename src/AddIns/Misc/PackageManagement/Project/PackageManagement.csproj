@@ -243,6 +243,7 @@
     <Compile Include="Src\IPackageRepositoryExtensions.cs" />
     <Compile Include="Src\PackageRepositoryFactoryEventArgs.cs" />
     <Compile Include="Src\ParentPackagesOperationEventArgs.cs" />
+    <Compile Include="Src\PashCommandLinePreprocessor.cs" />
     <Compile Include="Src\ProjectBuilder.cs" />
     <Compile Include="Src\ProjectRootElementExtensions.cs" />
     <Compile Include="Src\ReducedPackageOperations.cs" />

@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.Design;
 using ICSharpCode.PackageManagement.EnvDTE;
@@ -657,6 +659,32 @@ namespace PackageManagement.Tests.Scripting
 			host.SetDefaultRunspace();
 			
 			Assert.IsTrue(powerShellHost.IsSetDefaultRunspaceCalled);
+		}
+		
+		[Test]
+		[TestCase(
+			"Install-Package NUnit -Version 2.5.3",
+			"Install-Package NUnit -Version \"2.5.3\"")]
+		[TestCase(
+			"Install-Package NUnit -Version 2.5.3 -IncludePrerelease",
+			"Install-Package NUnit -Version \"2.5.3\" -IncludePrerelease")]
+		[TestCase(
+			"Install-Package NUnit -Version",
+			"Install-Package NUnit -Version")]
+		[TestCase(
+			"Install-Package NUnit -Version ",
+			"Install-Package NUnit -Version ")]
+		public void Run_CommandWithVersion_AddsQuotesAroundVersion(string command, string expectedCommand)
+		{
+			CreateHost();
+			var commands = new string[] { command };
+			scriptingConsole.AllTextToReturnFromReadLine.AddRange(commands);
+			host.ScriptingConsole = scriptingConsole;
+			
+			RunHost();
+			
+			string actualCommand = powerShellHost.AllCommandsPassedToExecuteCommand.Last();
+			Assert.AreEqual(expectedCommand, actualCommand);
 		}
 	}
 }
