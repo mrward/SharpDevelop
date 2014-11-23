@@ -45,6 +45,10 @@
     <Reference Include="Microsoft.Web.XmlTransform">
       <HintPath>..\RequiredLibraries\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.CSharp">
+      <HintPath>..\RequiredLibraries\Mono.CSharp.dll</HintPath>
+      <Aliases>MonoCSharp</Aliases>
+    </Reference>
     <Reference Include="NuGet.Console.Types">
       <HintPath>..\RequiredLibraries\NuGet.Console.Types.dll</HintPath>
     </Reference>
@@ -73,6 +77,7 @@
     <Folder Include="Src" />
     <Folder Include="Src\Design" />
     <Folder Include="Src\EnvDTE" />
+    <Folder Include="Src\ScriptCs" />
     <Folder Include="Src\VisualStudio" />
     <Folder Include="Src\Scripting" />
   </ItemGroup>
@@ -241,6 +246,21 @@
     <Compile Include="Src\RemovedPackageReferenceMonitor.cs" />
     <Compile Include="Src\ResolveFileConflictEventArgs.cs" />
     <Compile Include="Src\RestorePackagesCommand.cs" />
+    <Compile Include="Src\ScriptCs\RunScriptCsAction.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsEngine.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsHost.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsHostContext.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsHostInfo.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsInitializeScript.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsInitializeScriptFileName.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsInstallScript.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsInstallScriptFileName.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsLogger.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsScriptFactory.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsScriptRunner.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsSession.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsUninstallScript.cs" />
+    <Compile Include="Src\ScriptCs\ScriptCsUninstallScriptFileName.cs" />
     <Compile Include="Src\Scripting\ConsoleHostFileConflictResolver.cs" />
     <Compile Include="Src\Scripting\FileConflictAction.cs" />
     <Compile Include="Src\Scripting\GlobalMSBuildProjectCollection.cs" />
@@ -561,6 +581,10 @@
     <ProjectReference Include="..\PowerShell\Project\PackageManagement.PowerShell.csproj">
       <Project>{A406803B-C584-43A3-BCEE-A0BB3132CB5F}</Project>
       <Name>PackageManagement.PowerShell</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ScriptCs\ScriptCs.csproj">
+      <Project>{A4316443-D17A-4832-B7ED-634CB0F10EC2}</Project>
+      <Name>ScriptCs</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpDevelop.EnvDTE\SharpDevelop.EnvDTE.vbproj">
       <Project>{6FB1260D-68A2-41A0-BB09-F5F710842E99}</Project>

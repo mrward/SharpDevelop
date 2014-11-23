@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using ICSharpCode.PackageManagement.ScriptCs;
 using ICSharpCode.PackageManagement.Scripting;
 using NuGet;
 
@@ -86,8 +87,10 @@ namespace ICSharpCode.PackageManagement
 		
 		void ExecuteWithScriptRunner()
 		{
-			using (RunPackageScriptsAction runScriptsAction = CreateRunPackageScriptsAction()) {
-				ExecuteCore();
+			using (var runScriptCsAction = new RunScriptCsAction(Project, Logger)) {
+				using (RunPackageScriptsAction runScriptsAction = CreateRunPackageScriptsAction()) {
+					ExecuteCore();
+				}
 			}
 		}
 		

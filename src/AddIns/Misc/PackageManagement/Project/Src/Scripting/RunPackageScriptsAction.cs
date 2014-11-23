@@ -46,7 +46,9 @@ namespace ICSharpCode.PackageManagement.Scripting
 			this.scriptFactory = scriptFactory;
 			this.projectCollection = projectCollection;
 			
-			projectCollection.AddProject(project);
+			if (projectCollection != null) {
+				projectCollection.AddProject(project);
+			}
 			RegisterEvents();
 		}
 		
@@ -107,7 +109,9 @@ namespace ICSharpCode.PackageManagement.Scripting
 		{
 			IsDisposed = true;
 			UnregisterEvents();
-			projectCollection.Dispose();
+			if (projectCollection != null) {
+				projectCollection.Dispose();
+			}
 		}
 		
 		public bool IsDisposed { get; private set; }

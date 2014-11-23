@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.SharpDevelop.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.Xml", "..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory.Xml\ICSharpCode.NRefactory.Xml.csproj", "{DC393B66-92ED-4CAD-AB25-CFEF23F3D7C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptCs", "ScriptCs\ScriptCs.csproj", "{A4316443-D17A-4832-B7ED-634CB0F10EC2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -216,5 +218,9 @@ Global
 		{DC393B66-92ED-4CAD-AB25-CFEF23F3D7C6}.Debug|Any CPU.ActiveCfg = net_4_5_Debug|Any CPU
 		{DC393B66-92ED-4CAD-AB25-CFEF23F3D7C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DC393B66-92ED-4CAD-AB25-CFEF23F3D7C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4316443-D17A-4832-B7ED-634CB0F10EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4316443-D17A-4832-B7ED-634CB0F10EC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4316443-D17A-4832-B7ED-634CB0F10EC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4316443-D17A-4832-B7ED-634CB0F10EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

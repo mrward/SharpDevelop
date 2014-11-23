@@ -17,6 +17,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using ICSharpCode.PackageManagement.ScriptCs;
 using ICSharpCode.PackageManagement.Scripting;
 using ICSharpCode.SharpDevelop.Project;
 using NuGet;
@@ -65,7 +66,9 @@ namespace ICSharpCode.PackageManagement
 				if (PackageScriptRunner != null) {
 					ExecuteWithScriptRunner();
 				} else {
-					ExecuteCore();
+					using (var runScriptCsAction = new RunScriptCsAction(Project, Logger)) {
+						ExecuteCore();
+					}
 				}
 			});
 		}
@@ -89,8 +92,10 @@ namespace ICSharpCode.PackageManagement
 		
 		void ExecuteWithScriptRunner()
 		{
-			using (RunPackageScriptsAction runScriptsAction = CreateRunPackageScriptsAction()) {
-				ExecuteCore();
+			using (var runScriptCsAction = new RunScriptCsAction(Project, Logger)) {
+				using (RunPackageScriptsAction runScriptsAction = CreateRunPackageScriptsAction()) {
+					ExecuteCore();
+				}
 			}
 		}
 		
