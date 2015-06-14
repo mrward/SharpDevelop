@@ -1,0 +1,15 @@
+﻿<AddIn
+	name="ASP.NET Binding"
+	author="Matt Ward"
+	copyright="prj:///doc/copyright.txt"
+	description="Adds support for ASP.NET 5"
+	addInManagerHidden="preinstalled">
+	
+	<Manifest>
+		<Identity name="ICSharpCode.AspNet" />
+	</Manifest>
+	
+	<Runtime>
+		<Import assembly=":ICSharpCode.SharpDevelop" />
+	</Runtime>
+</AddIn>
