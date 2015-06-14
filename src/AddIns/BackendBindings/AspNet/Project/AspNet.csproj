@@ -49,7 +49,15 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Src\AspNetProject.cs" />
+    <Compile Include="Src\AspNetProjectBinding.cs" />
+    <Compile Include="Src\AspNetProjectLoader.cs" />
+    <Compile Include="Src\AspNetService.cs" />
+    <Compile Include="Src\AspNetStringTagProvider.cs" />
     <Compile Include="Src\Configuration\AssemblyInfo.cs" />
+    <Compile Include="Src\DnxMSBuildTargetsDirectory.cs" />
+    <Compile Include="Src\IsDnxMSBuildTargetInstalledConditionEvaluator.cs" />
+    <Compile Include="Src\IsDnxMSBuildTargetMissingConditionEvaluator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AspNet.addin">

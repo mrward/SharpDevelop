@@ -11,5 +11,34 @@
 	
 	<Runtime>
 		<Import assembly=":ICSharpCode.SharpDevelop" />
+		<Import assembly="AspNet.dll">
+			<ConditionEvaluator
+				name="IsDnxMSBuildTargetInstalled"
+				class="ICSharpCode.AspNet.IsDnxMSBuildTargetInstalledConditionEvaluator"/>
+			<ConditionEvaluator
+				name="IsDnxMSBuildTargetMissing"
+				class="ICSharpCode.AspNet.IsDnxMSBuildTargetMissingConditionEvaluator"/>
+		</Import>
 	</Runtime>
+
+	<Path name="/SharpDevelop/Workbench/Combine/FileFilter">
+		<FileFilter
+			id="AspNetProjects"
+			name="ASP.NET projects"
+			insertbefore="AllFiles"
+			extensions="*.xproj"/>
+	</Path>
+
+	<Path name="/SharpDevelop/Workbench/ProjectBindings">
+		<ProjectBinding
+			id="AspNet"
+			projectfileextension=".xproj"
+			class="ICSharpCode.AspNet.AspNetProjectBinding" />
+	</Path>
+
+	<Path name="/SharpDevelop/MSBuildEngine/AdditionalProperties">
+		<Condition name="IsDnxMSBuildTargetMissing" action="Exclude">
+			<String id="VSToolsPath" text="${aspnet:VSToolsPath}" />
+		</Condition>
+	</Path>
 </AddIn>
