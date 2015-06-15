@@ -1,0 +1,84 @@
+﻿<?xml version="1.0"?>
+<Template
+	originator="Matt Ward"
+	created="15/06/2015"
+	lastModified="15/06/2015">
+	
+	<!-- Template Header -->
+	<TemplateConfiguration>
+		<Name>ASP.NET 5.0 Console Project</Name>
+		<Category>C#</Category>
+		<Subcategory>ASP.NET 5</Subcategory>
+		<Icon>C#.Project.DOSProject</Icon>
+		<Description>Creates a console application.</Description>
+		<SupportedTargetFrameworks>v4.5</SupportedTargetFrameworks>
+	</TemplateConfiguration>
+	
+	<Actions>
+		<Open filename="src\${ProjectName}\Program.cs"/>
+	</Actions>
+	
+	<Solution>
+		<SolutionFolder name="src">
+		</SolutionFolder>
+	
+		<SolutionFolder name="Solution Items">
+		</SolutionFolder>
+		
+		<Project language="C#">
+			<ProjectItems>
+			</ProjectItems>
+			
+			<PropertyGroup>
+				<OutputType>Exe</OutputType>
+			</PropertyGroup>
+			<Files>
+				<File name="Program.cs"><![CDATA[${StandardHeader.C#}
+	using System;
+
+	namespace ${StandardNamespace}
+	{
+		class Program
+		{
+			public static void Main(string[] args)
+			{
+				Console.WriteLine("Hello World!");
+				
+				// TODO: Implement Functionality Here
+				
+				Console.Write("Press any key to continue . . . ");
+				Console.ReadKey(true);
+			}
+		}
+	}]]></File>
+			<File name="project.json">{
+	"version": "1.0.0-*",
+	"description": "",
+	"authors": [ "" ],
+	"tags": [ "" ],
+	"projectUrl": "",
+	"licenseUrl": "",
+
+	"dependencies": {
+	},
+
+	"commands": {
+		"${ProjectName}" : "${ProjectName}"
+	},
+
+	"frameworks" : {
+		"dnx451": { },
+		"dnxcore50" : {
+			"dependencies": {
+				"System.Console": "4.0.0-beta-22816",
+				"System.Collections": "4.0.10-beta-22816",
+				"System.Linq": "4.0.0-beta-22816",
+				"System.Threading": "4.0.10-beta-22816"
+      }
+    }
+  }
+}</File>
+			</Files>
+		</Project>
+	</Solution>
+</Template>

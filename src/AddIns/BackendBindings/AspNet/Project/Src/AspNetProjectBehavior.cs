@@ -21,25 +21,15 @@ using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNetProject : CompilableProject
+	public class AspNetProjectBehavior : ProjectBehavior
 	{
-		public AspNetProject(ProjectLoadInformation loadInformation)
-			: base(loadInformation)
-		{
-		}
-
-		public AspNetProject(ProjectCreateInformation info)
-			: base(info)
+		public AspNetProjectBehavior(CompilableProject project, ProjectBehavior next = null)
+			: base(project, next)
 		{
 		}
 		
-		public override string Language {
-			get { return "C#"; }
-		}
-		
-		protected override ProjectBehavior GetOrCreateBehavior()
+		public override void ProjectCreationComplete()
 		{
-			return new AspNetProjectBehavior(this, base.GetOrCreateBehavior());
 		}
 	}
 }

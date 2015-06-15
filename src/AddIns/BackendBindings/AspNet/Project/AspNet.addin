@@ -41,4 +41,8 @@
 			<String id="VSToolsPath" text="${aspnet:VSToolsPath}" />
 		</Condition>
 	</Path>
+
+	<Path name="/SharpDevelop/BackendBindings/Templates">
+		<TemplateFile id="AspNet" path="./Templates" />
+	</Path>
 </AddIn>

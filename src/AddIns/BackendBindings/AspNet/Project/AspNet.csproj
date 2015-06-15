@@ -50,6 +50,7 @@
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Src\AspNetProject.cs" />
+    <Compile Include="Src\AspNetProjectBehavior.cs" />
     <Compile Include="Src\AspNetProjectBinding.cs" />
     <Compile Include="Src\AspNetProjectLoader.cs" />
     <Compile Include="Src\AspNetService.cs" />
@@ -61,6 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AspNet.addin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\ConsoleProject.xpt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -75,6 +79,9 @@
       <Name>ICSharpCode.Core</Name>
       <Private>False</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Templates" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
