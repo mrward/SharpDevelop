@@ -18,10 +18,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Xml;
 
-using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.SharpDevelop.Templates
@@ -29,12 +28,14 @@ namespace ICSharpCode.SharpDevelop.Templates
 	internal class SolutionDescriptor
 	{
 		SolutionFolderDescriptor mainFolder = new SolutionFolderDescriptor("");
+		List<FileDescriptionTemplate> files = new List<FileDescriptionTemplate>();
 		
 		class SolutionFolderDescriptor
 		{
 			internal string name;
 			internal List<ProjectDescriptor> projectDescriptors = new List<ProjectDescriptor>();
 			internal List<SolutionFolderDescriptor> solutionFoldersDescriptors = new List<SolutionFolderDescriptor>();
+			internal List<SolutionFileItemDescriptor> solutionFileItemDescriptors = new List<SolutionFileItemDescriptor>();
 			
 			internal void Read(XmlElement element, IReadOnlyFileSystem fileSystem)
 			{
@@ -47,12 +48,18 @@ namespace ICSharpCode.SharpDevelop.Templates
 						case "SolutionFolder":
 							solutionFoldersDescriptors.Add(new SolutionFolderDescriptor((XmlElement)node, fileSystem));
 							break;
+						case "SolutionFileItems":
+							LoadSolutionFileItems((XmlElement)node);
+							break;
 					}
 				}
 			}
 			
 			internal bool AddContents(ISolutionFolder parentFolder, ProjectTemplateResult templateResult, string defaultLanguage)
 			{
+				if (!CreateSolutionFilesItems(parentFolder))
+					return false;
+				
 				// Create sub projects
 				foreach (SolutionFolderDescriptor folderDescriptor in solutionFoldersDescriptors) {
 					ISolutionFolder folder = parentFolder.CreateFolder(folderDescriptor.name);
@@ -62,6 +69,23 @@ namespace ICSharpCode.SharpDevelop.Templates
 				foreach (ProjectDescriptor projectDescriptor in projectDescriptors) {
 					bool success = projectDescriptor.CreateProject(templateResult, defaultLanguage, parentFolder);
 					if (!success)
+						return false;
+				}
+				
+				return true;
+			}
+			
+			void LoadSolutionFileItems(XmlElement filesElement)
+			{
+				foreach (XmlElement fileElement in filesElement.ChildNodes.OfType<XmlElement>()) {
+					solutionFileItemDescriptors.Add(new SolutionFileItemDescriptor(fileElement));
+				}
+			}
+			
+			bool CreateSolutionFilesItems(ISolutionFolder parentFolder)
+			{
+				foreach (SolutionFileItemDescriptor descriptor in solutionFileItemDescriptors) {
+					if (!descriptor.CreateSolutionFileItem(parentFolder))
 						return false;
 				}
 				return true;
@@ -102,6 +126,7 @@ namespace ICSharpCode.SharpDevelop.Templates
 		
 		internal bool AddContents(ISolutionFolder parentFolder, ProjectTemplateResult templateResult, string defaultLanguage)
 		{
+			CreateFiles(templateResult);
 			return mainFolder.AddContents(parentFolder, templateResult, defaultLanguage);
 		}
 		
@@ -112,9 +137,29 @@ namespace ICSharpCode.SharpDevelop.Templates
 			if (element["Options"] != null && element["Options"]["StartupProject"] != null) {
 				solutionDescriptor.startupProject = element["Options"]["StartupProject"].InnerText;
 			}
+			if (element["Files"] != null) {
+				solutionDescriptor.files = LoadFiles(element["Files"], fileSystem).ToList();
+			}
 			
 			solutionDescriptor.mainFolder.Read(element, fileSystem);
 			return solutionDescriptor;
+		}
+		
+		static IEnumerable<FileDescriptionTemplate> LoadFiles(XmlElement filesElement, IReadOnlyFileSystem fileSystem)
+		{
+			foreach (XmlElement fileElement in filesElement.ChildNodes.OfType<XmlElement>()) {
+				yield return new FileDescriptionTemplate(fileElement, fileSystem);
+			}
+		}
+		
+		void CreateFiles(ProjectTemplateResult templateResult)
+		{
+			var generator = new TemplateFileGenerator(files, templateResult.Options.Solution.Directory) {
+				ProjectName = templateResult.Options.ProjectName,
+				SolutionName = templateResult.Options.SolutionName,
+				UserDefinedProjectName = templateResult.Options.ProjectName
+			};
+			generator.GenerateFiles();
 		}
 	}
 }
