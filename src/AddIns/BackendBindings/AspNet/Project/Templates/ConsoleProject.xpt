@@ -23,7 +23,19 @@
 		</SolutionFolder>
 	
 		<SolutionFolder name="Solution Items">
+			<SolutionFileItems>
+				<SolutionFileItem name="global.json" />
+			</SolutionFileItems>
 		</SolutionFolder>
+		
+		<Files>
+			<File name="global.json">{
+	"projects": [ "src", "test" ],
+	"sdk": {
+		"version": "1.0.0-beta4"
+	}
+}</File>
+		</Files>
 		
 		<Project language="AspNet" directory="src\${ProjectName}">
 			<ProjectItems>
