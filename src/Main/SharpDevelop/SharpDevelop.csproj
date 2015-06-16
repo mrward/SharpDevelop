@@ -182,6 +182,7 @@
     <Compile Include="Templates\File\FileDescriptionTemplate.cs" />
     <Compile Include="Templates\File\FileTemplateImpl.cs" />
     <Compile Include="Templates\File\ScriptRunner.cs" />
+    <Compile Include="Templates\File\TemplateFileGenerator.cs" />
     <Compile Include="Templates\Project\ProjectDescriptor.cs" />
     <Compile Include="Templates\Project\ProjectTemplateImpl.cs" />
     <Compile Include="Templates\Project\SolutionDescriptor.cs" />

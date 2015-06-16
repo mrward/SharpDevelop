@@ -359,72 +359,12 @@ namespace ICSharpCode.SharpDevelop.Templates
 					}
 				}
 				
-				//Show prompt if any of the files exist
-				StringBuilder existingFileNames = new StringBuilder();
-				foreach (FileDescriptionTemplate file in files)
-				{
-					string fileName = Path.Combine(projectBasePath, StringParser.Parse(file.Name, new StringTagPair("ProjectName", info.ProjectName)));
-					
-					if (File.Exists(fileName))
-					{
-						if (existingFileNames.Length > 0)
-							existingFileNames.Append(", ");
-						existingFileNames.Append(Path.GetFileName(fileName));
-					}
-				}
-				
-				bool overwriteFiles = true;
-				if (existingFileNames.Length > 0)
-				{
-					if (!MessageService.AskQuestion(
-						StringParser.Parse("${res:ICSharpCode.SharpDevelop.Internal.Templates.ProjectDescriptor.OverwriteQuestion}",
-						                   new StringTagPair("fileNames", existingFileNames.ToString())),
-						"${res:ICSharpCode.SharpDevelop.Internal.Templates.ProjectDescriptor.OverwriteQuestion.InfoName}"))
-					{
-						overwriteFiles = false;
-					}
-				}
-				
-				
-				
-				#region Copy files to target directory
-				foreach (FileDescriptionTemplate file in files)
-				{
-					string fileName = Path.Combine(projectBasePath, StringParser.Parse(file.Name, new StringTagPair("ProjectName", info.ProjectName)));
-					if (File.Exists(fileName) && !overwriteFiles)
-					{
-						continue;
-					}
-					
-					try
-					{
-						if (!Directory.Exists(Path.GetDirectoryName(fileName))) {
-							Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-						}
-						if (!String.IsNullOrEmpty(file.BinaryFileName)) {
-							// Binary content
-							File.Copy(file.BinaryFileName, fileName, true);
-						} else {
-							// Textual content
-							StreamWriter sr = new StreamWriter(File.Create(fileName), SD.FileService.DefaultFileEncoding);
-							string fileContent = StringParser.Parse(file.Content,
-							                                        new StringTagPair("ProjectName", projectCreateOptions.ProjectName),
-							                                        new StringTagPair("SolutionName", projectCreateOptions.SolutionName),
-							                                        new StringTagPair("FileName", fileName));
-							fileContent = StringParser.Parse(fileContent);
-							if (SD.EditorControlService.GlobalOptions.IndentationString != "\t") {
-								fileContent = fileContent.Replace("\t", SD.EditorControlService.GlobalOptions.IndentationString);
-							}
-							sr.Write(fileContent);
-							sr.Close();
-						}
-					}
-					catch (Exception ex)
-					{
-						MessageService.ShowException(ex, "Exception writing " + fileName);
-					}
-				}
-				#endregion
+				var generator = new TemplateFileGenerator(files, projectBasePath) {
+					ProjectName = info.ProjectName,
+					UserDefinedProjectName = projectCreateOptions.ProjectName,
+					SolutionName = projectCreateOptions.SolutionName
+				};
+				generator.GenerateFiles();
 				
 				// Create Project
 				info.InitializeTypeSystem = false;
