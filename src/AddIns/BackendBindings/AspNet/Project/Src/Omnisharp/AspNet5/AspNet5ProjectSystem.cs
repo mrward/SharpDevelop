@@ -14,7 +14,7 @@ using Microsoft.Framework.DesignTimeHost.Models;
 using Microsoft.Framework.DesignTimeHost.Models.IncomingMessages;
 using Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages;
 #if DNX451
-using Microsoft.Framework.FileSystemGlobbing;
+//using Microsoft.Framework.FileSystemGlobbing;
 #endif
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -545,9 +545,10 @@ namespace OmniSharp.AspNet5
 #if DNX451
                 if (_options.AspNet5.Projects != "**/project.json")
                 {
-                    var matcher = new Matcher();
-                    matcher.AddIncludePatterns(_options.AspNet5.Projects.Split(';'));
-                    paths = matcher.GetResultsInFullPath(_env.Path);
+                    throw new System.NotImplementedException();
+//                    var matcher = new Matcher();
+//                    matcher.AddIncludePatterns(_options.AspNet5.Projects.Split(';'));
+//                    paths = matcher.GetResultsInFullPath(_env.Path);
                 }
                 else
                 {
