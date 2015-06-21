@@ -30,7 +30,7 @@
     <DebugType>Full</DebugType>
     <Optimize>False</Optimize>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;DNX451</DefineConstants>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -41,6 +41,32 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build" />
+    <Reference Include="Microsoft.Build.Engine" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Framework.ConfigurationModel">
+      <HintPath>..\packages\Microsoft.Framework.ConfigurationModel.1.0.0-beta4\lib\net45\Microsoft.Framework.ConfigurationModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.ConfigurationModel.Interfaces">
+      <HintPath>..\packages\Microsoft.Framework.ConfigurationModel.Interfaces.1.0.0-beta4\lib\net45\Microsoft.Framework.ConfigurationModel.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.DependencyInjection.Interfaces">
+      <HintPath>..\packages\Microsoft.Framework.DependencyInjection.Interfaces.1.0.0-beta4\lib\net45\Microsoft.Framework.DependencyInjection.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.FileSystemGlobbing">
+      <HintPath>..\packages\Microsoft.Framework.FileSystemGlobbing.1.0.0-beta4\lib\net45\Microsoft.Framework.FileSystemGlobbing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.Logging.Interfaces">
+      <HintPath>..\packages\Microsoft.Framework.Logging.Interfaces.1.0.0-beta4\lib\net45\Microsoft.Framework.Logging.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.OptionsModel">
+      <HintPath>..\packages\Microsoft.Framework.OptionsModel.1.0.0-beta4\lib\net45\Microsoft.Framework.OptionsModel.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
@@ -49,21 +75,99 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Src\AspNet5ProjectSystemFactory.cs" />
     <Compile Include="Src\AspNetProject.cs" />
     <Compile Include="Src\AspNetProjectBehavior.cs" />
     <Compile Include="Src\AspNetProjectBinding.cs" />
     <Compile Include="Src\AspNetProjectLoader.cs" />
-    <Compile Include="Src\AspNetService.cs" />
+    <Compile Include="Src\AspNetProjectService.cs" />
+    <Compile Include="Src\AspNetServices.cs" />
     <Compile Include="Src\AspNetStringTagProvider.cs" />
     <Compile Include="Src\Configuration\AssemblyInfo.cs" />
     <Compile Include="Src\DnxMSBuildTargetsDirectory.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetInstalledConditionEvaluator.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetMissingConditionEvaluator.cs" />
+    <Compile Include="Src\ISolutionExtensions.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\AspNet5Context.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\AspNet5Paths.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\AspNet5ProjectSystem.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\AspNet5RuntimePathResult.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\DesignTimeHostManager.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\FrameworkProject.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\IncomingMessages\InitializeMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\Message.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\CompilationOptionsMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\CompilationSettings.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\DependenciesMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\DependencyDescription.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\DependencyItem.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\DiagnosticsMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\ErrorMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\FrameworkData.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\OutputsMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\ProjectMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\ProjectReference.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\ReferencesMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\SourcesMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\Project.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\AspNet\IApplicationLifetime.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\Hash.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\LanguageNames.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\MetadataReference.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ProjectId.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ProjectInfo.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ProjectReference.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\VersionStamp.cs" />
+    <Compile Include="Src\Omnisharp\Models\AspNet5Project.cs" />
+    <Compile Include="Src\Omnisharp\Models\ErrorMessage.cs" />
+    <Compile Include="Src\Omnisharp\Models\EventTypes.cs" />
+    <Compile Include="Src\Omnisharp\Models\MSBuildDiagnosticsMessage.cs" />
+    <Compile Include="Src\Omnisharp\Models\MSBuildProject.cs" />
+    <Compile Include="Src\Omnisharp\Models\MSBuildProjectDiagnostics.cs" />
+    <Compile Include="Src\Omnisharp\Models\PackageDependency.cs" />
+    <Compile Include="Src\Omnisharp\Models\ProjectFileInfo.cs" />
+    <Compile Include="Src\Omnisharp\Models\ProjectInformationResponse.cs" />
+    <Compile Include="Src\Omnisharp\Models\UnresolvedDependenciesMessage.cs" />
+    <Compile Include="Src\Omnisharp\MSBuild\MSBuildLogForwarder.cs" />
+    <Compile Include="Src\Omnisharp\Options\AspNet5Options.cs" />
+    <Compile Include="Src\Omnisharp\Options\FormattingOptions.cs" />
+    <Compile Include="Src\Omnisharp\Options\MSBuildOptions.cs" />
+    <Compile Include="Src\Omnisharp\Options\OmniSharpOptions.cs" />
+    <Compile Include="Src\Omnisharp\Roslyn\OmniSharpWorkspace.cs" />
+    <Compile Include="Src\Omnisharp\Services\FileSystemWatcherWrapper.cs" />
+    <Compile Include="Src\Omnisharp\Services\IEventEmitter.cs" />
+    <Compile Include="Src\Omnisharp\Services\IFileSystemWatcher.cs" />
+    <Compile Include="Src\Omnisharp\Services\IMetadataFileReferenceCache.cs" />
+    <Compile Include="Src\Omnisharp\Services\IOmnisharpEnvironment.cs" />
+    <Compile Include="Src\Omnisharp\Services\IProjectSystem.cs" />
+    <Compile Include="Src\Omnisharp\Services\ManualFileSystemWatcher.cs" />
+    <Compile Include="Src\Omnisharp\Services\MetadataFileReferenceCache.cs" />
+    <Compile Include="Src\Omnisharp\Services\TransportType.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\EventEmitter.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\MetadataFileReference.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\Logger.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\LoggerFactory.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\MetadataFileReferenceCache.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\OmnisharpEnvironment.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\OmniSharpOptionsWrapper.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\RoslynSolution.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\SharpDevelopApplicationLifetime.cs" />
+    <Compile Include="Src\Omnisharp\SharpDevelop\Workspace.cs" />
+    <Compile Include="Src\Omnisharp\Utilities\PlatformHelper.cs" />
+    <Compile Include="Src\Omnisharp\Utilities\ProcessingQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AspNet.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Licenses\Apache-2.0-LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Licenses\Microsoft-AspNet-LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Licenses\omnisharp-license.md" />
+    <None Include="packages.config" />
     <None Include="Templates\ConsoleProject.xpt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -81,6 +185,21 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Licenses" />
+    <Folder Include="Src\Omnisharp" />
+    <Folder Include="Src\Omnisharp\AspNet5" />
+    <Folder Include="Src\Omnisharp\AspNet5\IncomingMessages" />
+    <Folder Include="Src\Omnisharp\AspNet5\OutgoingMessages" />
+    <Folder Include="Src\Omnisharp\Microsoft" />
+    <Folder Include="Src\Omnisharp\Microsoft\AspNet" />
+    <Folder Include="Src\Omnisharp\Microsoft\Roslyn" />
+    <Folder Include="Src\Omnisharp\Models" />
+    <Folder Include="Src\Omnisharp\MSBuild" />
+    <Folder Include="Src\Omnisharp\SharpDevelop" />
+    <Folder Include="Src\Omnisharp\Roslyn" />
+    <Folder Include="Src\Omnisharp\Options" />
+    <Folder Include="Src\Omnisharp\Utilities" />
+    <Folder Include="Src\Omnisharp\Services" />
     <Folder Include="Templates" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -34,7 +34,7 @@ namespace ICSharpCode.AspNet
 		
 		public AspNetProject Load(ProjectLoadInformation info)
 		{
-			if (!AspNetService.DnxMSBuildTargetsAreInstalled)
+			if (!AspNetServices.DnxMSBuildTargetsAreInstalled)
 				RemoveVSToolsPathFromMSBuildProperties();
 				
 			return new AspNetProject(info);

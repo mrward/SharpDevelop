@@ -18,14 +18,25 @@
 
 using System;
 using ICSharpCode.Core;
+using Microsoft.Framework.Logging;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class Logger : Microsoft.Framework.Logging.ILogger
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			LoggingService.Debug(formatter.Invoke(state, exception));
+		}
+		
+		public bool IsEnabled(LogLevel logLevel)
+		{
+			return true;
+		}
+		
+		public IDisposable BeginScope(object state)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

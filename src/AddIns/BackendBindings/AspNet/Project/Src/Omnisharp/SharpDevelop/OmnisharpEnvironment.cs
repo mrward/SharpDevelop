@@ -17,15 +17,45 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using System.Diagnostics;
+using Microsoft.Framework.Logging;
+using OmniSharp.Services;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class OmnisharpEnvironment : IOmnisharpEnvironment
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public OmnisharpEnvironment(string solutionDirectory)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			SolutionFilePath = solutionDirectory;
+		}
+		
+		public LogLevel TraceType {
+			get { return LogLevel.Debug; }
+		}
+
+		public int Port {
+			get { return 8888; }
+		}
+
+		public int HostPID {
+			get { return Process.GetCurrentProcess().Id; }
+		}
+
+		public string Path {
+			get { return SolutionFilePath; }
+		}
+
+		public string SolutionFilePath { get; private set; }
+
+		public string ConfigurationPath {
+			get {
+				throw new NotImplementedException();
+			}
+		}
+
+		public TransportType TransportType {
+			get { return TransportType.Http; }
 		}
 	}
 }

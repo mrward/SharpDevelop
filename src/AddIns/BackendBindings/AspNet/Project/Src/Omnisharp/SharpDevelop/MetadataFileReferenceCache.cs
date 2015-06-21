@@ -17,15 +17,16 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using Microsoft.CodeAnalysis;
+using OmniSharp.Services;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class MetadataFileReferenceCache : IMetadataFileReferenceCache
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public MetadataReference GetMetadataReference(string path)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			return new MetadataFileReference(path);
 		}
 	}
 }

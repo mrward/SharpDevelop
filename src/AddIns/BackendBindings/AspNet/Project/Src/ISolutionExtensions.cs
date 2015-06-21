@@ -17,15 +17,16 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using System.Linq;
+using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.AspNet
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public static class ISolutionExtensions
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public static bool HasAspNetProjects(this ISolution solution)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			return solution.Projects.Any(project => project is AspNetProject);
 		}
 	}
 }

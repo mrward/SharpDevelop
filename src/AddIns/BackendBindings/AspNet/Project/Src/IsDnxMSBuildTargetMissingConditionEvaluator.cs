@@ -25,7 +25,7 @@ namespace ICSharpCode.AspNet
 	{
 		public bool IsValid(object parameter, Condition condition)
 		{
-			return !AspNetService.DnxMSBuildTargetsAreInstalled;
+			return !AspNetServices.DnxMSBuildTargetsAreInstalled;
 		}
 	}
 }

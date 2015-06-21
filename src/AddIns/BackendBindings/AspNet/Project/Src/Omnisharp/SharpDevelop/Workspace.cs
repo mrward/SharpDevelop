@@ -17,15 +17,46 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
 
-namespace ICSharpCode.AspNet
+namespace Microsoft.CodeAnalysis
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	/// <summary>
+	/// Dummy Roslyn workspace.
+	/// </summary>
+	public class Workspace
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public Workspace()
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			CurrentSolution = new RoslynSolution();
+		}
+		
+		public RoslynSolution CurrentSolution { get; private set; }
+		
+		protected internal void OnProjectAdded(ProjectInfo projectInfo)
+		{
+			CurrentSolution.AddProject(projectInfo);
+		}
+		
+		protected internal void OnProjectRemoved(ProjectId projectId)
+		{
+			CurrentSolution.RemoveProject(projectId);
+		}
+		
+		protected internal void OnProjectReferenceAdded(ProjectId projectId, ProjectReference projectReference)
+		{
+		}
+		
+		protected internal void OnProjectReferenceRemoved(ProjectId projectId, ProjectReference projectReference)
+		{
+		}
+		
+		protected internal void OnMetadataReferenceAdded(ProjectId projectId, MetadataReference metadataReference)
+		{
+		}
+		
+		protected internal void OnMetadataReferenceRemoved(ProjectId projectId, MetadataReference metadataReference)
+		{
 		}
 	}
 }

@@ -17,25 +17,29 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using Microsoft.Framework.Logging;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public static class AspNetService
+	public class LoggerFactory : ILoggerFactory
 	{
-		static bool? isDnxInstalled;
-		
-		public static bool DnxMSBuildTargetsAreInstalled {
-			get {
-				if (isDnxInstalled == null) {
-					isDnxInstalled = CheckIfDnxIsInstalled();
-				}
-				return isDnxInstalled.Value;
-			}
+		public ILogger CreateLogger(string categoryName)
+		{
+			return new Logger();
 		}
 		
-		static bool CheckIfDnxIsInstalled()
+		public void AddProvider(ILoggerProvider provider)
 		{
-			return new DnxMSBuildTargetsDirectory().TargetFilesExist();
+			throw new NotImplementedException();
+		}
+
+		public LogLevel MinimumLevel {
+			get {
+				throw new NotImplementedException();
+			}
+			set {
+				throw new NotImplementedException();
+			}
 		}
 	}
 }

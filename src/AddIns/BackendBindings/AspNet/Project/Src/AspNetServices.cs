@@ -17,15 +17,30 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
 
 namespace ICSharpCode.AspNet
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public static class AspNetServices
 	{
-		public bool IsValid(object parameter, Condition condition)
+		static bool? isDnxInstalled;
+		static readonly AspNetProjectService projectService = new AspNetProjectService();
+		
+		public static bool DnxMSBuildTargetsAreInstalled {
+			get {
+				if (isDnxInstalled == null) {
+					isDnxInstalled = CheckIfDnxIsInstalled();
+				}
+				return isDnxInstalled.Value;
+			}
+		}
+		
+		static bool CheckIfDnxIsInstalled()
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			return new DnxMSBuildTargetsDirectory().TargetFilesExist();
+		}
+		
+		public static AspNetProjectService ProjectService {
+			get { return projectService; }
 		}
 	}
 }

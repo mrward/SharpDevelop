@@ -17,15 +17,39 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using System.Threading;
+using Microsoft.AspNet.Hosting;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class SharpDevelopApplicationLifetime : IApplicationLifetime, IDisposable
 	{
-		public bool IsValid(object parameter, Condition condition)
+		readonly CancellationTokenSource applicationStoppingSource = new CancellationTokenSource();
+		
+		public void Stopping()
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			applicationStoppingSource.Cancel();
+		}
+		
+		public void Dispose()
+		{
+			applicationStoppingSource.Dispose();
+		}
+		
+		public CancellationToken ApplicationStarted {
+			get {
+				throw new NotImplementedException();
+			}
+		}
+		
+		public CancellationToken ApplicationStopping {
+			get { return applicationStoppingSource.Token; }
+		}
+		
+		public CancellationToken ApplicationStopped {
+			get {
+				throw new NotImplementedException();
+			}
 		}
 	}
 }

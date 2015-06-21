@@ -17,15 +17,39 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using ICSharpCode.SharpDevelop.Project;
+using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
+using Microsoft.AspNet.Hosting;
+using OmniSharp;
+using OmniSharp.AspNet5;
+using OmniSharp.Options;
+using OmniSharp.Services;
 
 namespace ICSharpCode.AspNet
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class AspNet5ProjectSystemFactory
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public AspNet5ProjectSystem CreateProjectSystem(ISolution solution, IApplicationLifetime appLifetime)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			var workspace = new OmnisharpWorkspace();
+			var env = new OmnisharpEnvironment(solution.Directory);
+			var options = new OmniSharpOptionsWrapper();
+			var loggerFactory = new LoggerFactory();
+			var cache = new MetadataFileReferenceCache();
+			var context = new AspNet5Context();
+			var emitter = new EventEmitter();
+			var watcher = new FileSystemWatcherWrapper(env);
+			
+			return new AspNet5ProjectSystem(
+				workspace,
+				env,
+				options,
+				loggerFactory,
+				cache,
+				appLifetime,
+				watcher,
+				emitter,
+				context);
 		}
 	}
 }

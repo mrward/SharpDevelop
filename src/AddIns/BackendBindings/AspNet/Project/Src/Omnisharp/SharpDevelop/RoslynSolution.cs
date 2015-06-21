@@ -17,15 +17,34 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class RoslynSolution
 	{
-		public bool IsValid(object parameter, Condition condition)
+		readonly Dictionary<ProjectId, ProjectInfo> projects = new Dictionary<ProjectId, ProjectInfo>();
+
+		public bool ContainsProject(ProjectId projectId)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			lock (projects) {
+				return projects.ContainsKey(projectId);
+			}
+		}
+
+		public void AddProject(ProjectInfo projectInfo)
+		{
+			lock (projects) {
+				projects.Add(projectInfo.Id, projectInfo);
+			}
+		}
+
+		public void RemoveProject(ProjectId projectId)
+		{
+			lock (projects) {
+				projects.Remove(projectId);
+			}
 		}
 	}
 }

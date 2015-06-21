@@ -17,15 +17,28 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
+using Microsoft.Framework.OptionsModel;
+using OmniSharp.Options;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class OmniSharpOptionsWrapper : IOptions<OmniSharpOptions>
 	{
-		public bool IsValid(object parameter, Condition condition)
+		readonly OmniSharpOptions options;
+		
+		public OmniSharpOptionsWrapper()
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			options = new OmniSharpOptions();
+			options.AspNet5.Projects = "**/project.json";
+		}
+		
+		public OmniSharpOptions GetNamedOptions(string name)
+		{
+			throw new NotImplementedException();
+		}
+
+		public OmniSharpOptions Options {
+			get { return options; }
 		}
 	}
 }

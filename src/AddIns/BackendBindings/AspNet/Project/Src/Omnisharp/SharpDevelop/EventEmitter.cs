@@ -18,14 +18,15 @@
 
 using System;
 using ICSharpCode.Core;
+using OmniSharp.Services;
 
-namespace ICSharpCode.AspNet
+namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 {
-	public class IsDnxMSBuildTargetInstalledConditionEvaluator : IConditionEvaluator
+	public class EventEmitter : IEventEmitter
 	{
-		public bool IsValid(object parameter, Condition condition)
+		public void Emit(string kind, object args)
 		{
-			return AspNetServices.DnxMSBuildTargetsAreInstalled;
+			LoggingService.Debug(string.Format("EventEmitter: Kind,Args: {0},{1}", kind,args));
 		}
 	}
 }
