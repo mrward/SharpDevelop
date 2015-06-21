@@ -62,6 +62,8 @@
     <Compile Include="Src\AspNetProjectBehavior.cs" />
     <Compile Include="Src\AspNetProjectBinding.cs" />
     <Compile Include="Src\AspNetProjectLoader.cs" />
+    <Compile Include="Src\AspNetProjectLocator.cs" />
+    <Compile Include="Src\AspNetProjectReferenceMaintainer.cs" />
     <Compile Include="Src\AspNetProjectService.cs" />
     <Compile Include="Src\AspNetServices.cs" />
     <Compile Include="Src\AspNetStringTagProvider.cs" />

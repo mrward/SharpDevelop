@@ -17,41 +17,51 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
-using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
-using Microsoft.AspNet.Hosting;
-using OmniSharp;
+using Microsoft.CodeAnalysis;
 using OmniSharp.AspNet5;
-using OmniSharp.Options;
-using OmniSharp.Services;
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNet5ProjectSystemFactory
+	public class AspNetProjectLocator
 	{
-		public AspNet5ProjectSystem CreateProjectSystem(
-			ISolution solution,
-			IApplicationLifetime appLifetime,
-			AspNet5Context context)
+		readonly AspNet5Context context;
+		ISolution solution;
+		FrameworkProject frameworkProject;
+		
+		public AspNetProjectLocator(AspNet5Context context)
 		{
-			var workspace = new OmnisharpWorkspace();
-			var env = new OmnisharpEnvironment(solution.Directory);
-			var options = new OmniSharpOptionsWrapper();
-			var loggerFactory = new LoggerFactory();
-			var cache = new MetadataFileReferenceCache();
-			var emitter = new EventEmitter();
-			var watcher = new FileSystemWatcherWrapper(env);
+			this.context = context;
+		}
+		
+		public AspNetProject FindProject(ProjectId projectId)
+		{
+			if (Init(projectId))
+				return solution.FindProjectByProjectJsonFileName(frameworkProject.Project.Path);
+			return null;
+		}
+
+		bool Init(ProjectId projectId)
+		{
+			solution = SD.ProjectService.CurrentSolution;
+			if (solution == null) {
+				return false;
+			}
 			
-			return new AspNet5ProjectSystem(
-				workspace,
-				env,
-				options,
-				loggerFactory,
-				cache,
-				appLifetime,
-				watcher,
-				emitter,
-				context);
+			return context.WorkspaceMapping.TryGetValue(projectId, out frameworkProject);
+		}
+		
+		public AspNetProject FindProjectForCurrentFramework(ProjectId projectId)
+		{
+			if (!Init(projectId))
+				return null;
+			
+			AspNetProject project = solution.FindProjectByProjectJsonFileName(frameworkProject.Project.Path);
+			if (project.IsCurrentFramework(frameworkProject.Framework, frameworkProject.Project.ProjectsByFramework.Keys)) {
+				return project;
+			}
+			return null;
 		}
 	}
 }

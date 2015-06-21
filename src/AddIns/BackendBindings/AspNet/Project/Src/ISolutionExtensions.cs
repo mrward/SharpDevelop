@@ -17,7 +17,9 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.IO;
 using System.Linq;
+using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.AspNet
@@ -27,6 +29,14 @@ namespace ICSharpCode.AspNet
 		public static bool HasAspNetProjects(this ISolution solution)
 		{
 			return solution.Projects.Any(project => project is AspNetProject);
+		}
+		
+		public static AspNetProject FindProjectByProjectJsonFileName(this ISolution solution, string fileName)
+		{
+			var directory = DirectoryName.Create(Path.GetDirectoryName(fileName));
+			return solution.Projects
+				.OfType<AspNetProject>()
+				.FirstOrDefault(project => project.Directory == directory);
 		}
 	}
 }

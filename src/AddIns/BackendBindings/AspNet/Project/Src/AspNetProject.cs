@@ -17,6 +17,11 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using ICSharpCode.Core;
+using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.AspNet
@@ -40,6 +45,55 @@ namespace ICSharpCode.AspNet
 		protected override ProjectBehavior GetOrCreateBehavior()
 		{
 			return new AspNetProjectBehavior(this, base.GetOrCreateBehavior());
+		}
+		
+		public void AddAssemblyReference(string fileName)
+		{
+			ReferenceProjectItem projectItem = AddAssemblyReferenceWithoutFiringEvent(fileName);
+			RaiseProjectItemAdded(projectItem);
+		}
+		
+		ReferenceProjectItem AddAssemblyReferenceWithoutFiringEvent(string fileName)
+		{
+			var projectItem = new ReferenceProjectItem(this) {
+				FileName = new FileName(fileName),
+				Include = Path.GetFileNameWithoutExtension(fileName)
+			};
+			Items.Add(projectItem);
+			return projectItem;
+		}
+		
+		void RaiseProjectItemAdded(ProjectItem projectItem)
+		{
+			IProjectServiceRaiseEvents projectEvents = SD.GetService<IProjectServiceRaiseEvents>();
+			if (projectEvents != null) {
+				projectEvents.RaiseProjectItemAdded(new ProjectItemEventArgs(this, projectItem));
+			}
+		}
+		
+		public bool IsCurrentFramework(string framework, IEnumerable<string> frameworks)
+		{
+			if (CurrentFramework == null) {
+				CurrentFramework = frameworks.FirstOrDefault();
+			}
+			
+			return CurrentFramework == framework;
+		}
+		
+		public string CurrentFramework { get; private set; }
+
+		public void UpdateReferences(IEnumerable<string> references)
+		{
+			Items.RemoveAll(item => item is ReferenceProjectItem);
+			
+			ReferenceProjectItem projectItem = null;
+			foreach (string reference in references) {
+				projectItem = AddAssemblyReferenceWithoutFiringEvent(reference);
+			}
+			
+			if (projectItem != null) {
+				RaiseProjectItemAdded(projectItem);
+			}
 		}
 	}
 }

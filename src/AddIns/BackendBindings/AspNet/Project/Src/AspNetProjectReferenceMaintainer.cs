@@ -17,41 +17,41 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
-using Microsoft.AspNet.Hosting;
-using OmniSharp;
+using Microsoft.CodeAnalysis;
 using OmniSharp.AspNet5;
-using OmniSharp.Options;
-using OmniSharp.Services;
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNet5ProjectSystemFactory
+	public class AspNetProjectReferenceMaintainer
 	{
-		public AspNet5ProjectSystem CreateProjectSystem(
-			ISolution solution,
-			IApplicationLifetime appLifetime,
-			AspNet5Context context)
+		readonly AspNet5Context context;
+		
+		public AspNetProjectReferenceMaintainer(AspNet5Context context)
 		{
-			var workspace = new OmnisharpWorkspace();
-			var env = new OmnisharpEnvironment(solution.Directory);
-			var options = new OmniSharpOptionsWrapper();
-			var loggerFactory = new LoggerFactory();
-			var cache = new MetadataFileReferenceCache();
-			var emitter = new EventEmitter();
-			var watcher = new FileSystemWatcherWrapper(env);
+			this.context = context;
+		}
+
+		public void UpdateReferences(ProjectId projectId, FrameworkProject frameworkProject)
+		{
+			AspNetProject project = FindProject(projectId);
+			if (project != null) {
+				UpdateReferences(project, frameworkProject);
+			}
+		}
+		
+		AspNetProject FindProject(ProjectId projectId)
+		{
+			var locator = new AspNetProjectLocator(context);
+			return locator.FindProject(projectId);
+		}
+		
+		void UpdateReferences(AspNetProject project, FrameworkProject frameworkProject)
+		{
+			if (!project.IsCurrentFramework(frameworkProject.Framework, frameworkProject.Project.ProjectsByFramework.Keys))
+				return;
 			
-			return new AspNet5ProjectSystem(
-				workspace,
-				env,
-				options,
-				loggerFactory,
-				cache,
-				appLifetime,
-				watcher,
-				emitter,
-				context);
+			project.UpdateReferences(frameworkProject.FileReferences.Keys);
 		}
 	}
 }

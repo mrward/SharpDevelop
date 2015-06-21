@@ -17,7 +17,9 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using ICSharpCode.AspNet;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
+using OmniSharp.AspNet5;
 
 namespace Microsoft.CodeAnalysis
 {
@@ -57,6 +59,11 @@ namespace Microsoft.CodeAnalysis
 		
 		protected internal void OnMetadataReferenceRemoved(ProjectId projectId, MetadataReference metadataReference)
 		{
+		}
+		
+		public void ReferencesUpdated(ProjectId projectId, FrameworkProject frameworkProject)
+		{
+			AspNetServices.ProjectService.OnReferencesUpdated(projectId, frameworkProject);
 		}
 	}
 }

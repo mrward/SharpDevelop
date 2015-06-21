@@ -281,6 +281,7 @@ namespace OmniSharp.AspNet5
 //                            _workspace.RemoveMetadataReference(projectId, pair.Value);
 //                            frameworkProject.RawReferences.Remove(pair.Key);
 //                        }
+                        _workspace.ReferencesUpdated(projectId, frameworkProject);
                     }
                     else if (m.MessageType == "Dependencies")
                     {

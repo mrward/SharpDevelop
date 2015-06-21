@@ -21,25 +21,20 @@ using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
+using Microsoft.CodeAnalysis;
 using OmniSharp.AspNet5;
 
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProjectService
 	{
-		AspNet5ProjectSystem projectSystem;
+		AspNet5Context context;
 		SharpDevelopApplicationLifetime applicationLifetime;
 		
 		public AspNetProjectService()
 		{
 			SD.ProjectService.SolutionOpened += SolutionOpened;
 			SD.ProjectService.SolutionClosed += SolutionClosed;
-			//SD.Workbench.MainWindow.Closed += MainWindowClosed;
-		}
-
-		void MainWindowClosed(object sender, EventArgs e)
-		{
-			UnloadProjectSystem();
 		}
 		
 		void SolutionClosed(object sender, SolutionEventArgs e)
@@ -53,6 +48,7 @@ namespace ICSharpCode.AspNet
 				applicationLifetime.Stopping();
 				applicationLifetime.Dispose();
 				applicationLifetime = null;
+				context = null;
 			}
 		}
 		
@@ -70,9 +66,18 @@ namespace ICSharpCode.AspNet
 		void LoadAspNetProjectSystem(ISolution solution)
 		{
 			applicationLifetime = new SharpDevelopApplicationLifetime();
+			context = new AspNet5Context();
 			var factory = new AspNet5ProjectSystemFactory();
-			projectSystem = factory.CreateProjectSystem(solution, applicationLifetime);
+			var projectSystem = factory.CreateProjectSystem(solution, applicationLifetime, context);
 			projectSystem.Initalize();
+		}
+		
+		public void OnReferencesUpdated(ProjectId projectId, FrameworkProject frameworkProject)
+		{
+			SD.MainThread.InvokeAsyncAndForget(() => {
+				var maintainer = new AspNetProjectReferenceMaintainer(context);
+				maintainer.UpdateReferences(projectId, frameworkProject);
+			});
 		}
 	}
 }
