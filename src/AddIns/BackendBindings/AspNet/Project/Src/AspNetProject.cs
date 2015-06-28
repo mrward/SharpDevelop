@@ -95,5 +95,48 @@ namespace ICSharpCode.AspNet
 				RaiseProjectItemAdded(projectItem);
 			}
 		}
+
+		public void LoadFiles()
+		{
+			foreach (string fileName in System.IO.Directory.GetFiles(Directory, "*.*", SearchOption.AllDirectories)) {
+				if (IsSupportedProjectFileItem(fileName)) {
+					Items.Add(CreateFileProjectItem(fileName));
+				}
+			}
+		}
+
+		bool IsSupportedProjectFileItem(string fileName)
+		{
+			string extension = Path.GetExtension(fileName);
+			if (extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			} else if (extension.Equals(".sln", StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			} else if (extension.Equals(".user", StringComparison.OrdinalIgnoreCase)) {
+				return false;
+			}
+			return true;
+		}
+
+		FileProjectItem CreateFileProjectItem(string fileName)
+		{
+			return new FileProjectItem(this, GetDefaultItemType(fileName)) {
+				FileName = new FileName(fileName)
+			};
+		}
+		
+		public override ItemType GetDefaultItemType(string fileName)
+		{
+			if (IsCSharpFile(fileName)) {
+				return ItemType.Compile;
+			}
+			return base.GetDefaultItemType(fileName);
+		}
+		
+		static bool IsCSharpFile(string fileName)
+		{
+			string extension = Path.GetExtension(fileName);
+			return String.Equals(".cs", extension, StringComparison.OrdinalIgnoreCase);
+		}
 	}
 }
