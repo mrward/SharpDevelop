@@ -138,5 +138,9 @@ namespace ICSharpCode.AspNet
 			string extension = Path.GetExtension(fileName);
 			return String.Equals(".cs", extension, StringComparison.OrdinalIgnoreCase);
 		}
+		
+		public override void Save(string fileName)
+		{
+		}
 	}
 }
