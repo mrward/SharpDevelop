@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ICSharpCode.Core;
+using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 
@@ -31,11 +32,15 @@ namespace ICSharpCode.AspNet
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
 		{
+			if (loadInformation.InitializeTypeSystem)
+				InitializeProjectContent(new CSharpProjectContent());
 		}
 
 		public AspNetProject(ProjectCreateInformation info)
 			: base(info)
 		{
+			if (info.InitializeTypeSystem)
+				InitializeProjectContent(new CSharpProjectContent());
 		}
 		
 		public override string Language {
@@ -141,6 +146,11 @@ namespace ICSharpCode.AspNet
 		
 		public override void Save(string fileName)
 		{
+		}
+		
+		protected override object CreateCompilerSettings()
+		{
+			return new CompilerSettings();
 		}
 	}
 }
