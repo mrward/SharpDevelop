@@ -17,12 +17,14 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Diagnostics;
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
 using Microsoft.CodeAnalysis;
 using OmniSharp.AspNet5;
+using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
@@ -78,6 +80,31 @@ namespace ICSharpCode.AspNet
 				var maintainer = new AspNetProjectReferenceMaintainer(context);
 				maintainer.UpdateReferences(projectId, frameworkProject);
 			});
+		}
+		
+		public void OnProjectChanged(AspNet5Project project)
+		{
+			SD.MainThread.InvokeAsyncAndForget(() => UpdateProject(project));
+		}
+		
+		void UpdateProject(AspNet5Project project)
+		{
+			ISolution solution = SD.ProjectService.CurrentSolution;
+			if (solution == null)
+				return;
+			
+			AspNetProject matchedProject = solution.FindProjectByProjectJsonFileName(project.Path);
+			if (matchedProject != null) {
+				matchedProject.Update(project);
+			} else {
+				LoggingService.Info(String.Format("Unable to find project by json file. '{0}'", project.Path));
+			}
+		}
+		
+		public ProcessStartInfo GetProcessStartInfo(DirectoryName directory, string command)
+		{
+			var startInfo = new DnxRuntimeProcessStartInfo(context.RuntimePath);
+			return startInfo.GetProcessStartInfo(directory, command);
 		}
 	}
 }

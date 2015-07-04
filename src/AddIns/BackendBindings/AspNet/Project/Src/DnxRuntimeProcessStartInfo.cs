@@ -17,29 +17,37 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using ICSharpCode.Core;
-using OmniSharp.Models;
-using OmniSharp.Services;
+using System.Diagnostics;
+using System.IO;
 
-namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
+namespace ICSharpCode.AspNet
 {
-	public class EventEmitter : IEventEmitter
+	public class DnxRuntimeProcessStartInfo
 	{
-		public void Emit(string kind, object args)
+		string runtimePath;
+		
+		public DnxRuntimeProcessStartInfo(string runtimePath)
 		{
-			LoggingService.Debug(string.Format("EventEmitter: Kind,Args: {0},{1}", kind,args));
-			if (kind == EventTypes.ProjectChanged) {
-				OnProjectChanged(args);
-			}
+			this.runtimePath = runtimePath;
 		}
-
-		void OnProjectChanged(object args)
+		
+		public ProcessStartInfo GetProcessStartInfo(string directory, string command)
 		{
-			var response = args as ProjectInformationResponse;
-			if (response == null)
-				return;
-			
-			AspNetServices.ProjectService.OnProjectChanged(response.AspNet5Project);
+			return new ProcessStartInfo {
+				Arguments = GetArguments(command),
+				FileName = GetRuntimePath(),
+				WorkingDirectory = directory,
+			};
+		}
+		
+		string GetRuntimePath()
+		{
+			return Path.Combine(runtimePath, "bin", "dnx.exe");
+		}
+		
+		string GetArguments(string command)
+		{
+			return String.Format(". {0}", command);
 		}
 	}
 }

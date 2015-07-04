@@ -20,15 +20,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ICSharpCode.Core;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
+using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProject : CompilableProject
 	{
+		AspNet5Project project;
+		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
 		{
@@ -151,6 +155,24 @@ namespace ICSharpCode.AspNet
 		protected override object CreateCompilerSettings()
 		{
 			return new CompilerSettings();
+		}
+		
+		public void Update(AspNet5Project project)
+		{
+			this.project = project;
+		}
+		
+		public string GetCurrentCommand()
+		{
+			if (project == null)
+				return null;
+			
+			return project.Commands.Keys.FirstOrDefault();
+		}
+		
+		public override Task<bool> BuildAsync(ProjectBuildOptions options, IBuildFeedbackSink feedbackSink, IProgressMonitor progressMonitor)
+		{
+			return Task.FromResult(true);
 		}
 	}
 }

@@ -17,19 +17,28 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Diagnostics;
 using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProjectBehavior : ProjectBehavior
 	{
-		public AspNetProjectBehavior(CompilableProject project, ProjectBehavior next = null)
+		readonly AspNetProject project;
+		
+		public AspNetProjectBehavior(AspNetProject project, ProjectBehavior next = null)
 			: base(project, next)
 		{
+			this.project = project;
 		}
 		
 		public override void ProjectCreationComplete()
 		{
+		}
+		
+		public override ProcessStartInfo CreateStartInfo()
+		{
+			return AspNetServices.ProjectService.GetProcessStartInfo(project.Directory, project.GetCurrentCommand());
 		}
 	}
 }
