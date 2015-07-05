@@ -47,6 +47,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			hlm.RegisterHighlighting("CSS", new[] { ".css" }, "CSS-Mode.xshd");
 			hlm.RegisterHighlighting("C++", new[] { ".c", ".h", ".cc", ".cpp" , ".hpp" }, "CPP-Mode.xshd");
 			hlm.RegisterHighlighting("Java", new[] { ".java" }, "Java-Mode.xshd");
+			hlm.RegisterHighlighting("Json", new[] { ".json" }, "Json.xshd");
 			hlm.RegisterHighlighting("Patch", new[] { ".patch", ".diff" }, "Patch-Mode.xshd");
 			hlm.RegisterHighlighting("PowerShell", new[] { ".ps1", ".psm1", ".psd1" }, "PowerShell.xshd");
 			hlm.RegisterHighlighting("PHP", new[] { ".php" }, "PHP-Mode.xshd");

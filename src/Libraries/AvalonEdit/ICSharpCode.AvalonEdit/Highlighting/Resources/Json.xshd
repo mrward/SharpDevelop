@@ -1,0 +1,76 @@
+﻿<SyntaxDefinition name="Json" extensions=".json" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+	<Color name="ObjectName" foreground="DarkRed" exampleText='{ "color": "red" }' />
+	<Color name="ObjectValue" foreground="Blue" exampleText='p { "color": "red" }' />
+	<Color name="CurlyBraces" foreground="Black" exampleText="{ }" />
+	<Color name="Colon" foreground="Black" exampleText=":" />
+	<Color name="Keyword" foreground="DarkCyan" exampleText='{ "color": null, "valid": false }' />
+	<RuleSet ignoreCase="true">
+		<Span
+			multiline="true"
+			ruleSet="Object">
+			<Begin color="CurlyBraces">\{</Begin>
+			<End color="CurlyBraces">\}</End>
+		</Span>
+	</RuleSet>
+
+	<RuleSet name="Object">
+		<Span
+			ruleSet="Value"
+			multiline="true">
+			<Begin color="Colon">\:</Begin>
+			<End color="CurlyBraces">\,|\}</End>
+		</Span>
+		<Span color="ObjectName">
+			<Begin>"</Begin>
+			<End>"</End>
+			<RuleSet>
+				<!-- span for escape sequences -->
+				<Span begin="\\" end="."/>
+			</RuleSet>
+		</Span>
+		<Span
+			color="ObjectName"
+			multiline="true">
+			<Begin>'</Begin>
+			<End>'</End>
+			<RuleSet>
+				<Span begin="\\" end="." />
+			</RuleSet>
+		</Span>
+	</RuleSet>
+
+	<RuleSet name="Value">
+		<Span
+			ruleSet="Value"
+			multiline="true">
+			<Begin>\[</Begin>
+			<End>\]</End>
+		</Span>
+		<Span
+			ruleSet="Object"
+			multiline="true">
+			<Begin>\{</Begin>
+			<End>\}</End>
+		</Span>
+		<Span color="ObjectValue">
+			<Begin>"</Begin>
+			<End>"</End>
+			<RuleSet>
+				<!-- span for escape sequences -->
+				<Span begin="\\" end="."/>
+			</RuleSet>
+		</Span>
+		<Span color="ObjectValue" multiline="true">
+			<Begin>'</Begin>
+			<End>'</End>
+			<RuleSet>
+				<Span begin="\\" end="." />
+			</RuleSet>
+		</Span>
+		<Keywords color="Keyword">
+			<Word>false</Word>
+			<Word>null</Word>
+			<Word>true</Word>
+		</Keywords>
+	</RuleSet>
+</SyntaxDefinition>
