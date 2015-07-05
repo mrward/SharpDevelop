@@ -25,6 +25,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Debugger.Interop.CorDebug;
+using Debugger.Interop.MetaData;
 using Debugger.MetaData;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
@@ -155,18 +156,40 @@ namespace Debugger
 			string name = corModule.GetName();
 			if (corModule.IsDynamic() == 1 || corModule.IsInMemory() == 1) {
 				var defaultUnresolvedAssembly = new DefaultUnresolvedAssembly(name);
-				var defaultUnresolvedTypeDefinition = new DefaultUnresolvedTypeDefinition("UnknownDynamicType");
-				var defaultUnresolvedMethod = new DefaultUnresolvedMethod(defaultUnresolvedTypeDefinition, "UnknownMethod");
-				var defaultUnresolvedField = new DefaultUnresolvedField(defaultUnresolvedTypeDefinition, "UnknownField");
-				defaultUnresolvedTypeDefinition.Members.Add(defaultUnresolvedMethod);
-				defaultUnresolvedTypeDefinition.Members.Add(defaultUnresolvedField);
-				defaultUnresolvedAssembly.AddTypeDefinition(defaultUnresolvedTypeDefinition);
-				weakTable.Add(defaultUnresolvedAssembly, new ModuleMetadataInfo(module, null));
+				if (corModule.IsInMemory() == 1) {
+					LoadInMemoryModule(defaultUnresolvedAssembly, module, corModule);
+				} else {
+					var defaultUnresolvedTypeDefinition = new DefaultUnresolvedTypeDefinition("UnknownDynamicType");
+					var defaultUnresolvedMethod = new DefaultUnresolvedMethod(defaultUnresolvedTypeDefinition, "UnknownMethod");
+					var defaultUnresolvedField = new DefaultUnresolvedField(defaultUnresolvedTypeDefinition, "UnknownField");
+					defaultUnresolvedTypeDefinition.Members.Add(defaultUnresolvedMethod);
+					defaultUnresolvedTypeDefinition.Members.Add(defaultUnresolvedField);
+					defaultUnresolvedAssembly.AddTypeDefinition(defaultUnresolvedTypeDefinition);
+					weakTable.Add(defaultUnresolvedAssembly, new ModuleMetadataInfo(module, null));
+				}
 				return Task.FromResult<IUnresolvedAssembly>(defaultUnresolvedAssembly);
 			}
 			
 			//return Task.FromResult(LoadModule(module, name));
 			return Task.Run(() => LoadModule(module, name));
+		}
+		
+		static void LoadInMemoryModule(DefaultUnresolvedAssembly defaultUnresolvedAssembly, Module module, ICorDebugModule corModule)
+		{
+			var metadataInfo = new ModuleMetadataInfo(module, null);
+			var metadata = new MetaDataImport(corModule);
+			foreach (TypeDefProps typeDefProps in metadata.EnumTypeDefProps()) {
+				var typeDef = new DefaultUnresolvedTypeDefinition(typeDefProps.Name);
+				foreach (MethodProps methodProps in metadata.EnumMethodProps(typeDefProps.Token)) {
+					var method = new DefaultUnresolvedMethod(typeDef, methodProps.Name);
+					typeDef.Members.Add(method);
+					var memberRef = new Mono.Cecil.MethodDefinition(methodProps.Name, Mono.Cecil.MethodAttributes.Public, new Mono.Cecil.TypeReference("a", "b", null, null));
+					memberRef.MetadataToken = new Mono.Cecil.MetadataToken(methodProps.Token);
+					metadataInfo.AddMember(method, memberRef);
+				}
+				defaultUnresolvedAssembly.AddTypeDefinition(typeDef);
+			}
+			weakTable.Add(defaultUnresolvedAssembly, metadataInfo);
 		}
 		
 		static IUnresolvedAssembly LoadModule(Module module, string fileName)
@@ -535,7 +558,7 @@ namespace Debugger
 		public static IMethod Import(this ICompilation compilation, ICorDebugFunction corFunction)
 		{
 			Module module = compilation.GetAppDomain().Process.GetModule(corFunction.GetModule());
-			if (module.IsDynamic || module.IsInMemory) {
+			if (module.IsDynamic) {
 				return module.Assembly.GetTypeDefinition("", "UnknownDynamicType").Methods.First();
 			}
 			var info = GetInfo(module.Assembly);
