@@ -27,11 +27,15 @@ using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 using OmniSharp.Models;
 
+using DependenciesMessage = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages.DependenciesMessage;
+using FrameworkData = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages.FrameworkData;
+
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProject : CompilableProject
 	{
 		AspNet5Project project;
+		Dictionary<FrameworkData, DependenciesMessage> dependencies = new Dictionary<FrameworkData, DependenciesMessage>();
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
@@ -173,6 +177,33 @@ namespace ICSharpCode.AspNet
 		public override Task<bool> BuildAsync(ProjectBuildOptions options, IBuildFeedbackSink feedbackSink, IProgressMonitor progressMonitor)
 		{
 			return Task.FromResult(true);
+		}
+
+		public void UpdateDependencies(DependenciesMessage message)
+		{
+			dependencies[message.Framework] = message;
+			OnDependenciesChanged();
+		}
+
+		public event EventHandler DependenciesChanged;
+
+		protected virtual void OnDependenciesChanged()
+		{
+			var handler = DependenciesChanged;
+			if (handler != null)
+				handler (this, new EventArgs());
+		}
+
+		public bool HasDependencies()
+		{
+			return dependencies.Any();
+		}
+
+		public IEnumerable<DependenciesMessage> GetDependencies()
+		{
+			foreach (DependenciesMessage message in dependencies.Values) {
+				yield return message;
+			}
 		}
 	}
 }

@@ -45,4 +45,11 @@
 	<Path name="/SharpDevelop/BackendBindings/Templates">
 		<TemplateFile id="AspNet" path="./Templates" />
 	</Path>
+
+	<Path name="/SharpDevelop/Views/ProjectBrowser/NodeBuilders">
+		<Class
+			id="AspNetProjectBuilder"
+			insertbefore="DefaultBuilder"
+			class="ICSharpCode.AspNet.AspNetProjectBuilder"/>
+	</Path>
 </AddIn>

@@ -51,6 +51,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -61,14 +62,19 @@
     <Compile Include="Src\AspNetProject.cs" />
     <Compile Include="Src\AspNetProjectBehavior.cs" />
     <Compile Include="Src\AspNetProjectBinding.cs" />
+    <Compile Include="Src\AspNetProjectBuilder.cs" />
+    <Compile Include="Src\DependenciesFolderNode.cs" />
     <Compile Include="Src\AspNetProjectLoader.cs" />
     <Compile Include="Src\AspNetProjectLocator.cs" />
+    <Compile Include="Src\AspNetProjectNode.cs" />
     <Compile Include="Src\AspNetProjectReferenceMaintainer.cs" />
     <Compile Include="Src\AspNetProjectService.cs" />
     <Compile Include="Src\AspNetServices.cs" />
     <Compile Include="Src\AspNetStringTagProvider.cs" />
     <Compile Include="Src\Configuration\AssemblyInfo.cs" />
+    <Compile Include="Src\DependencyNode.cs" />
     <Compile Include="Src\DnxMSBuildTargetsDirectory.cs" />
+    <Compile Include="Src\FrameworkNode.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetInstalledConditionEvaluator.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetMissingConditionEvaluator.cs" />
     <Compile Include="Src\ISolutionExtensions.cs" />

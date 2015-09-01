@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.AspNet;
 using Microsoft.CodeAnalysis;
 //using Microsoft.CodeAnalysis.Host.Mef;
 //using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Models;
 //using OmniSharp.Roslyn;
+using DependenciesMessage = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages.DependenciesMessage;
+using OmniSharp.AspNet5;
 
 namespace OmniSharp
 {
@@ -99,5 +102,10 @@ namespace OmniSharp
 //        {
 //            return true;
 //        }
+
+        public void DependenciesUpdated(Project project, DependenciesMessage message)
+        {
+            AspNetServices.ProjectService.DependenciesUpdated(project, message);
+        }
     }
 }

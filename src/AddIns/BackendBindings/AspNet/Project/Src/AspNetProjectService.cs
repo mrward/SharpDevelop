@@ -23,6 +23,7 @@ using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
 using Microsoft.CodeAnalysis;
+using Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages;
 using OmniSharp.AspNet5;
 using OmniSharp.Models;
 
@@ -105,6 +106,25 @@ namespace ICSharpCode.AspNet
 		{
 			var startInfo = new DnxRuntimeProcessStartInfo(context.RuntimePath);
 			return startInfo.GetProcessStartInfo(directory, command);
+		}
+		
+		public void DependenciesUpdated (OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		{
+			SD.MainThread.InvokeAsyncAndForget(() => UpdateDependencies(project, message));
+		}
+
+		void UpdateDependencies(OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		{
+			ISolution solution = SD.ProjectService.CurrentSolution;
+			if (solution == null)
+				return;
+			
+			AspNetProject matchedProject = solution.FindProjectByProjectJsonFileName(project.Path);
+			if (matchedProject != null) {
+				matchedProject.UpdateDependencies(message);
+			} else {
+				LoggingService.WarnFormatted("Unable to find project by json file. '{0}'", project.Path);
+			}
 		}
 	}
 }
