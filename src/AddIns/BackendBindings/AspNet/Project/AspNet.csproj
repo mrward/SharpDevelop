@@ -163,6 +163,11 @@
     <None Include="AspNet.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Icons\nuget-16.png">
+      <LogicalName>nuget-16.png</LogicalName>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Icons\readme.txt" />
     <None Include="Licenses\Apache-2.0-LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -198,6 +203,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Icons" />
     <Folder Include="Licenses" />
     <Folder Include="Src\Omnisharp" />
     <Folder Include="Src\Omnisharp\AspNet5" />

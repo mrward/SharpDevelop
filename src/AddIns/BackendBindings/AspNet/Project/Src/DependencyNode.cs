@@ -36,10 +36,20 @@ namespace ICSharpCode.AspNet
 			
 			Text = GetLabel();
 			Tag = new DependencyNodeDescriptor(this);
-			SetIcon("Icons.16x16.Reference");
+			
+			SetIcon();
 			
 			var node = new CustomNode();
 			node.AddTo(this);
+		}
+		
+		void SetIcon()
+		{
+			if (Type == "Package") {
+				SetIcon(@"file:${AddInPath:ICSharpCode.AspNet}\Icons\nuget-16.png");
+			} else {
+				SetIcon("Icons.16x16.Reference");
+			}
 		}
 
 		public string NodeName {
