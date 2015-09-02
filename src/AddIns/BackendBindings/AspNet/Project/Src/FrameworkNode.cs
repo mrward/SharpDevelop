@@ -35,6 +35,7 @@ namespace ICSharpCode.AspNet
 			rootDependency = message.Dependencies[message.RootDependency];
 			
 			Text = NodeName;
+			SetIcon("Icons.16x16.Assembly");
 			
 			var node = new CustomNode();
 			node.AddTo(this);
