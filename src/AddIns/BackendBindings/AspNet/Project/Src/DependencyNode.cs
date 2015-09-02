@@ -46,12 +46,19 @@ namespace ICSharpCode.AspNet
 		void SetIcon()
 		{
 			if (Type == "Package") {
-				SetIcon(@"file:${AddInPath:ICSharpCode.AspNet}\Icons\nuget-16.png");
+				SetFileIcon("nuget-16.png");
+			} else if (Unresolved) {
+				SetFileIcon("nuget-warning-16.png");
 			} else {
 				SetIcon("Icons.16x16.Reference");
 			}
 		}
-
+		
+		void SetFileIcon(string iconFileName)
+		{
+			SetIcon(@"file:${AddInPath:ICSharpCode.AspNet}\Icons\" + iconFileName);
+		}
+		
 		public string NodeName {
 			get { return dependency.Name; }
 		}
@@ -110,6 +117,10 @@ namespace ICSharpCode.AspNet
 					yield return new DependencyNode(message, matchedDependency);
 				}
 			}
+		}
+
+		public bool Unresolved {
+			get { return dependency.Type == "Unresolved"; }
 		}
 	}
 }
