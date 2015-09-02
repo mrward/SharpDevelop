@@ -35,6 +35,7 @@ namespace ICSharpCode.AspNet
 			this.dependency = dependency;
 			
 			Text = GetLabel();
+			Tag = new DependencyNodeDescriptor(this);
 			SetIcon("Icons.16x16.Reference");
 			
 			var node = new CustomNode();
@@ -49,6 +50,18 @@ namespace ICSharpCode.AspNet
 			get { return NodeName; }
 		}
 
+		public string Version {
+			get { return dependency.Version; }
+		}
+
+		public string Type {
+			get { return dependency.Type; }
+		}
+
+		public string Path {
+			get { return dependency.Path; }
+		}
+		
 		public string GetLabel()
 		{
 			return String.Format("{0} ({1})", dependency.Name, dependency.Version);
