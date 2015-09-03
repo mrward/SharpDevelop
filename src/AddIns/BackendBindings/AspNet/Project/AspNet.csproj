@@ -101,6 +101,7 @@
     <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\ProjectReference.cs" />
     <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\ReferencesMessage.cs" />
     <Compile Include="Src\Omnisharp\AspNet5\OutgoingMessages\SourcesMessage.cs" />
+    <Compile Include="Src\Omnisharp\AspNet5\PackagesRestoreTool.cs" />
     <Compile Include="Src\Omnisharp\AspNet5\Project.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\AspNet\Hosting\IApplicationLifetime.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\AspNet\Logging\FormattedLogValues.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="Src\Omnisharp\Models\MSBuildProject.cs" />
     <Compile Include="Src\Omnisharp\Models\MSBuildProjectDiagnostics.cs" />
     <Compile Include="Src\Omnisharp\Models\PackageDependency.cs" />
+    <Compile Include="Src\Omnisharp\Models\PackageRestoreMessage.cs" />
     <Compile Include="Src\Omnisharp\Models\ProjectFileInfo.cs" />
     <Compile Include="Src\Omnisharp\Models\ProjectInformationResponse.cs" />
     <Compile Include="Src\Omnisharp\Models\UnresolvedDependenciesMessage.cs" />
@@ -157,6 +159,7 @@
     <Compile Include="Src\Omnisharp\SharpDevelop\SharpDevelopApplicationLifetime.cs" />
     <Compile Include="Src\Omnisharp\SharpDevelop\Workspace.cs" />
     <Compile Include="Src\Omnisharp\Utilities\PlatformHelper.cs" />
+    <Compile Include="Src\Omnisharp\Utilities\ProcessExtensions.cs" />
     <Compile Include="Src\Omnisharp\Utilities\ProcessingQueue.cs" />
   </ItemGroup>
   <ItemGroup>

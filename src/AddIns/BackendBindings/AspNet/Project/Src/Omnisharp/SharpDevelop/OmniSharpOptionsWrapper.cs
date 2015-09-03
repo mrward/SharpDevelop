@@ -30,6 +30,7 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 		{
 			options = new OmniSharpOptions();
 			options.AspNet5.Projects = "**/project.json";
+			options.AspNet5.EnablePackageRestore = true;
 		}
 		
 		public OmniSharpOptions GetNamedOptions(string name)

@@ -30,6 +30,10 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 			LoggingService.Debug(string.Format("EventEmitter: Kind,Args: {0},{1}", kind,args));
 			if (kind == EventTypes.ProjectChanged) {
 				OnProjectChanged(args);
+			} else if (kind == EventTypes.PackageRestoreStarted) {
+				OnPackageRestoreStarted(args);
+			} else if (kind == EventTypes.PackageRestoreFinished) {
+				OnPackageRestoreFinished(args);
 			}
 		}
 
@@ -40,6 +44,20 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 				return;
 			
 			AspNetServices.ProjectService.OnProjectChanged(response.AspNet5Project);
+		}
+		
+		void OnPackageRestoreStarted(object args)
+		{
+			var restoreMessage = args as PackageRestoreMessage;
+			if (restoreMessage == null)
+				return;
+		}
+
+		void OnPackageRestoreFinished(object args)
+		{
+			var restoreMessage = args as PackageRestoreMessage;
+			if (restoreMessage == null)
+				return;
 		}
 	}
 }

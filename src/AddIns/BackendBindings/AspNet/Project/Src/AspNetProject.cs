@@ -35,7 +35,7 @@ namespace ICSharpCode.AspNet
 	public class AspNetProject : CompilableProject
 	{
 		AspNet5Project project;
-		Dictionary<FrameworkData, DependenciesMessage> dependencies = new Dictionary<FrameworkData, DependenciesMessage>();
+		Dictionary<string, DependenciesMessage> dependencies = new Dictionary<string, DependenciesMessage>();
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
@@ -181,7 +181,7 @@ namespace ICSharpCode.AspNet
 
 		public void UpdateDependencies(DependenciesMessage message)
 		{
-			dependencies[message.Framework] = message;
+			dependencies[message.Framework.FrameworkName] = message;
 			OnDependenciesChanged();
 		}
 

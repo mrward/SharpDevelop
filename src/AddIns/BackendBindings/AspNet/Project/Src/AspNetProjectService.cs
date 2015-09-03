@@ -32,6 +32,7 @@ namespace ICSharpCode.AspNet
 	public class AspNetProjectService
 	{
 		AspNet5Context context;
+		AspNet5ProjectSystem projectSystem;
 		SharpDevelopApplicationLifetime applicationLifetime;
 		
 		public AspNetProjectService()
@@ -51,6 +52,8 @@ namespace ICSharpCode.AspNet
 				applicationLifetime.Stopping();
 				applicationLifetime.Dispose();
 				applicationLifetime = null;
+				projectSystem.Dispose ();
+				projectSystem = null;
 				context = null;
 			}
 		}
@@ -71,7 +74,7 @@ namespace ICSharpCode.AspNet
 			applicationLifetime = new SharpDevelopApplicationLifetime();
 			context = new AspNet5Context();
 			var factory = new AspNet5ProjectSystemFactory();
-			var projectSystem = factory.CreateProjectSystem(solution, applicationLifetime, context);
+			projectSystem = factory.CreateProjectSystem(solution, applicationLifetime, context);
 			projectSystem.Initalize();
 		}
 		
@@ -90,15 +93,9 @@ namespace ICSharpCode.AspNet
 		
 		void UpdateProject(AspNet5Project project)
 		{
-			ISolution solution = SD.ProjectService.CurrentSolution;
-			if (solution == null)
-				return;
-			
-			AspNetProject matchedProject = solution.FindProjectByProjectJsonFileName(project.Path);
+			AspNetProject matchedProject = FindProjectByProjectJsonFileName(project.Path);
 			if (matchedProject != null) {
 				matchedProject.Update(project);
-			} else {
-				LoggingService.Info(String.Format("Unable to find project by json file. '{0}'", project.Path));
 			}
 		}
 		
@@ -113,17 +110,26 @@ namespace ICSharpCode.AspNet
 			SD.MainThread.InvokeAsyncAndForget(() => UpdateDependencies(project, message));
 		}
 
-		void UpdateDependencies(OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		static AspNetProject FindProjectByProjectJsonFileName(string fileName)
 		{
 			ISolution solution = SD.ProjectService.CurrentSolution;
 			if (solution == null)
-				return;
+				return null;
+
+			AspNetProject project = solution.FindProjectByProjectJsonFileName(fileName);
+			if (project != null) {
+				return project;
+			}
 			
-			AspNetProject matchedProject = solution.FindProjectByProjectJsonFileName(project.Path);
+			LoggingService.WarnFormatted("Unable to find project by json file. '{0}'", fileName);
+			return null;
+		}
+
+		void UpdateDependencies(OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		{
+			AspNetProject matchedProject = FindProjectByProjectJsonFileName(project.Path);
 			if (matchedProject != null) {
 				matchedProject.UpdateDependencies(message);
-			} else {
-				LoggingService.WarnFormatted("Unable to find project by json file. '{0}'", project.Path);
 			}
 		}
 	}
