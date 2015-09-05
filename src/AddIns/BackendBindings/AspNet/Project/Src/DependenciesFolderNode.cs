@@ -46,6 +46,8 @@ namespace ICSharpCode.AspNet
 			node.AddTo(this);
 			
 			project.DependenciesChanged += ProjectDependenciesChanged;
+			project.PackageRestoreStarted += PackageRestoreStarted;
+			project.PackageRestoreFinished += PackageRestoreFinished;
 		}
 		
 		public override string CompareString {
@@ -87,11 +89,23 @@ namespace ICSharpCode.AspNet
 		public override void Dispose ()
 		{
 			project.DependenciesChanged -= ProjectDependenciesChanged;
+			project.PackageRestoreStarted -= PackageRestoreStarted;
+			project.PackageRestoreFinished -= PackageRestoreFinished;
 		}
 
 		void ProjectDependenciesChanged(object sender, EventArgs e)
 		{
 			Refresh();
+		}
+
+		void PackageRestoreStarted(object sender, EventArgs e)
+		{
+			Text = "Dependencies (Restoring...)";
+		}
+		
+		void PackageRestoreFinished(object sender, EventArgs e)
+		{
+			Text = "Dependencies";
 		}
 	}
 }

@@ -51,6 +51,8 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 			var restoreMessage = args as PackageRestoreMessage;
 			if (restoreMessage == null)
 				return;
+			
+			AspNetServices.ProjectService.PackageRestoreStarted(restoreMessage.FileName);
 		}
 
 		void OnPackageRestoreFinished(object args)
@@ -58,6 +60,8 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 			var restoreMessage = args as PackageRestoreMessage;
 			if (restoreMessage == null)
 				return;
+			
+			AspNetServices.ProjectService.PackageRestoreFinished(restoreMessage.FileName);
 		}
 	}
 }

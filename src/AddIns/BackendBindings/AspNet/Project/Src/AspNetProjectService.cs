@@ -105,7 +105,7 @@ namespace ICSharpCode.AspNet
 			return startInfo.GetProcessStartInfo(directory, command);
 		}
 		
-		public void DependenciesUpdated (OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		public void DependenciesUpdated(OmniSharp.AspNet5.Project project, DependenciesMessage message)
 		{
 			SD.MainThread.InvokeAsyncAndForget(() => UpdateDependencies(project, message));
 		}
@@ -130,6 +130,32 @@ namespace ICSharpCode.AspNet
 			AspNetProject matchedProject = FindProjectByProjectJsonFileName(project.Path);
 			if (matchedProject != null) {
 				matchedProject.UpdateDependencies(message);
+			}
+		}
+		
+		public void PackageRestoreStarted(string projectJsonFileName)
+		{
+			SD.MainThread.InvokeAsyncAndForget(() => OnPackageRestoreStarted(projectJsonFileName));
+		}
+
+		void OnPackageRestoreStarted(string projectJsonFileName)
+		{
+			AspNetProject matchedProject = FindProjectByProjectJsonFileName(projectJsonFileName);
+			if (matchedProject != null) {
+				matchedProject.OnPackageRestoreStarted();
+			}
+		}
+
+		public void PackageRestoreFinished(string projectJsonFileName)
+		{
+			SD.MainThread.InvokeAsyncAndForget(() => OnPackageRestoreFinished(projectJsonFileName));
+		}
+
+		void OnPackageRestoreFinished(string projectJsonFileName)
+		{
+			AspNetProject matchedProject = FindProjectByProjectJsonFileName(projectJsonFileName);
+			if (matchedProject != null) {
+				matchedProject.OnPackageRestoreFinished();
 			}
 		}
 	}
