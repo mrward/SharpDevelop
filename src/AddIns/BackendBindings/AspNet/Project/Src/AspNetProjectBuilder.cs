@@ -34,9 +34,6 @@ namespace ICSharpCode.AspNet
 			var projectNode = new AspNetProjectNode(project);
 			projectNode.InsertSorted(motherNode);
 			
-			var referenceNode = new ReferenceFolder(project);
-			referenceNode.AddTo(projectNode);
-			
 			var dependenciesNode = new DependenciesFolderNode(project);
 			dependenciesNode.AddTo(projectNode);
 			return projectNode;

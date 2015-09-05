@@ -42,22 +42,21 @@ namespace ICSharpCode.AspNet
 			OpenedImage = "ProjectBrowser.ReferenceFolder.Open";
 			ClosedImage = "ProjectBrowser.ReferenceFolder.Closed";
 			
-			var node = new CustomNode();
-			node.AddTo(this);
+			AddDummyNode();
 			
 			project.DependenciesChanged += ProjectDependenciesChanged;
 			project.PackageRestoreStarted += PackageRestoreStarted;
 			project.PackageRestoreFinished += PackageRestoreFinished;
 		}
-		
+
+		void AddDummyNode()
+		{
+			var node = new CustomNode();
+			node.AddTo(this);
+		}
+
 		public override string CompareString {
 			get { return compareString; }
-		}
-		
-		public override void Refresh()
-		{
-			AddNodes();
-			base.Refresh();
 		}
 		
 		protected override void Initialize()
@@ -95,7 +94,11 @@ namespace ICSharpCode.AspNet
 
 		void ProjectDependenciesChanged(object sender, EventArgs e)
 		{
-			Refresh();
+			Collapse();
+			Nodes.Clear();
+			AddDummyNode();
+			
+			isInitialized = false;
 		}
 
 		void PackageRestoreStarted(object sender, EventArgs e)

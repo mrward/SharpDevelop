@@ -39,8 +39,10 @@ namespace ICSharpCode.AspNet
 			
 			SetIcon();
 			
-			var node = new CustomNode();
-			node.AddTo(this);
+			if (dependency.Dependencies.Any()) {
+				var node = new CustomNode();
+				node.AddTo(this);
+			}
 		}
 		
 		void SetIcon()
@@ -82,12 +84,6 @@ namespace ICSharpCode.AspNet
 		public string GetLabel()
 		{
 			return String.Format("{0} ({1})", dependency.Name, dependency.Version);
-		}
-		
-		public override void Refresh()
-		{
-			AddNodes();
-			base.Refresh();
 		}
 		
 		protected override void Initialize()
