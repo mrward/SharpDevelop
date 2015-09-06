@@ -63,6 +63,7 @@
     <Compile Include="Src\AspNetProjectBehavior.cs" />
     <Compile Include="Src\AspNetProjectBinding.cs" />
     <Compile Include="Src\AspNetProjectBuilder.cs" />
+    <Compile Include="Src\DefaultAspNetMSBuildProject.cs" />
     <Compile Include="Src\DependenciesFolderNode.cs" />
     <Compile Include="Src\AspNetProjectLoader.cs" />
     <Compile Include="Src\AspNetProjectLocator.cs" />

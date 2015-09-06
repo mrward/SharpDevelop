@@ -32,7 +32,7 @@ namespace ICSharpCode.AspNet
 		
 		public IProject CreateProject(ProjectCreateInformation info)
 		{
-			return new AspNetProject(info);
+			return new DefaultAspNetMSBuildProject(info);
 		}
 		
 		public bool HandlingMissingProject {
