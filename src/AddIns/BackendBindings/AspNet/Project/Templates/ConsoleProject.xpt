@@ -6,7 +6,7 @@
 	
 	<!-- Template Header -->
 	<TemplateConfiguration>
-		<Name>ASP.NET 5 Console Application</Name>
+		<Name>Console Application</Name>
 		<Category>C#</Category>
 		<Subcategory>ASP.NET 5</Subcategory>
 		<Icon>C#.Project.DOSProject</Icon>
