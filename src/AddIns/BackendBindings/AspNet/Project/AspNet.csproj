@@ -186,6 +186,9 @@
     <None Include="Templates\ConsoleProject.xpt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Templates\EmptyWebProject.xpt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Templates\LibraryProject.xpt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

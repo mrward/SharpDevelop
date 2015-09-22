@@ -1,0 +1,106 @@
+﻿<?xml version="1.0"?>
+<Template
+	originator="Matt Ward"
+	created="22/09/2015"
+	lastModified="22/09/2015">
+	
+	<!-- Template Header -->
+	<TemplateConfiguration>
+		<Name>Web Application</Name>
+		<Category>C#</Category>
+		<Subcategory>ASP.NET 5</Subcategory>
+		<Icon>C#.Project.WebProject</Icon>
+		<Description>Creates a web application.</Description>
+		<SupportedTargetFrameworks>v4.5</SupportedTargetFrameworks>
+	</TemplateConfiguration>
+	
+	<Actions>
+		<Open filename="src\${ProjectName}\Startup.cs"/>
+	</Actions>
+	
+	<Solution name="${ProjectName}" directory=".">
+	
+		<SolutionFolder name="Solution Items">
+			<SolutionFileItems>
+				<SolutionFileItem name="global.json" />
+			</SolutionFileItems>
+		</SolutionFolder>
+		
+		<Files>
+			<File name="global.json">{
+	"projects": [ "src", "test" ],
+	"sdk": {
+		"version": "1.0.0-beta4"
+	}
+}</File>
+		</Files>
+		
+		<SolutionFolder name="src">
+			<Project language="AspNet" directory="src\${ProjectName}">
+				<ProjectItems>
+				</ProjectItems>
+				
+				<PropertyGroup>
+				</PropertyGroup>
+				<Files>
+					<File name="Startup.cs"><![CDATA[${StandardHeader.C#}
+
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
+
+namespace ${StandardNamespace}
+{
+	public class Startup
+	{
+		public void ConfigureServices(IServiceCollection services)
+		{
+		}
+
+		public void Configure(IApplicationBuilder app)
+		{
+			app.Run(async (context) => {
+				await context.Response.WriteAsync("Hello World!");
+			});
+		}
+	}
+}]]></File>
+				<File name="project.json">{
+	"webroot": "wwwroot",
+	"version": "1.0.0-*",
+
+	"dependencies": {
+		"Microsoft.AspNet.Server.IIS": "1.0.0-beta4",
+		"Microsoft.AspNet.Server.WebListener": "1.0.0-beta4"
+	},
+
+	"commands": {
+		"web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5000"
+	},
+
+	"frameworks": {
+		"dnx451": { },
+		"dnxcore50": { }
+	},
+
+	"publishExclude": [
+		"node_modules",
+		"bower_components",
+		"**.xproj",
+		"**.user",
+		"**.userprefs",
+		"**.vspscc"
+	],
+	"exclude": [
+		"wwwroot",
+		"node_modules",
+		"bower_components"
+	]
+}</File>
+				</Files>
+			</Project>
+		</SolutionFolder>
+	</Solution>
+</Template>
