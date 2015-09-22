@@ -42,6 +42,7 @@ namespace ICSharpCode.SharpDevelop.Templates
 		public string UserDefinedProjectName { get; set; }
 		public string SolutionName { get; set; }
 		public string BasePath { get; private set; }
+		public bool? OverwriteFiles { get; set; }
 		
 		public void GenerateFiles()
 		{
@@ -57,8 +58,8 @@ namespace ICSharpCode.SharpDevelop.Templates
 				}
 			}
 			
-			bool overwriteFiles = true;
-			if (existingFileNames.Length > 0) {
+			bool overwriteFiles = OverwriteFiles.GetValueOrDefault(true);
+			if (existingFileNames.Length > 0 && !OverwriteFiles.HasValue) {
 				if (!MessageService.AskQuestion(
 					StringParser.Parse("${res:ICSharpCode.SharpDevelop.Internal.Templates.ProjectDescriptor.OverwriteQuestion}",
 					                   new StringTagPair("fileNames", existingFileNames.ToString())),

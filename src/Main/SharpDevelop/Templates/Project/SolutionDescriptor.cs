@@ -55,6 +55,18 @@ namespace ICSharpCode.SharpDevelop.Templates
 				}
 			}
 			
+			ISolutionFolder GetOrCreateFolder(ISolutionFolder parentFolder, string folderName)
+			{
+				SolutionFolder existingFolder = parentFolder.Items
+					.OfType<SolutionFolder>()
+					.FirstOrDefault(item => item.Name == folderName);
+				
+				if (existingFolder != null)
+					return existingFolder;
+				
+				return parentFolder.CreateFolder(folderName);
+			}
+			
 			internal bool AddContents(ISolutionFolder parentFolder, ProjectTemplateResult templateResult, string defaultLanguage)
 			{
 				if (!CreateSolutionFilesItems(parentFolder))
@@ -62,7 +74,7 @@ namespace ICSharpCode.SharpDevelop.Templates
 				
 				// Create sub projects
 				foreach (SolutionFolderDescriptor folderDescriptor in solutionFoldersDescriptors) {
-					ISolutionFolder folder = parentFolder.CreateFolder(folderDescriptor.name);
+					ISolutionFolder folder = GetOrCreateFolder(parentFolder, folderDescriptor.name);
 					if (!folderDescriptor.AddContents(folder, templateResult, defaultLanguage))
 						return false;
 				}
@@ -157,7 +169,8 @@ namespace ICSharpCode.SharpDevelop.Templates
 			var generator = new TemplateFileGenerator(files, templateResult.Options.Solution.Directory) {
 				ProjectName = templateResult.Options.ProjectName,
 				SolutionName = templateResult.Options.SolutionName,
-				UserDefinedProjectName = templateResult.Options.ProjectName
+				UserDefinedProjectName = templateResult.Options.ProjectName,
+				OverwriteFiles = false
 			};
 			generator.GenerateFiles();
 		}

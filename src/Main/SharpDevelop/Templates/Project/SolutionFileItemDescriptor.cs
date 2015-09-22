@@ -17,6 +17,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Linq;
 using System.Xml;
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Project;
@@ -35,7 +36,9 @@ namespace ICSharpCode.SharpDevelop.Templates
 		internal bool CreateSolutionFileItem(ISolutionFolder parentFolder)
 		{
 			FileName fileName = parentFolder.ParentSolution.Directory.CombineFile(name);
-			parentFolder.AddFile(fileName);
+			if (parentFolder.Items.OfType<SolutionFileItem>().All(item => item.FileName != fileName)) {
+				parentFolder.AddFile(fileName);
+			}
 			
 			return true;
 		}
