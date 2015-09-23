@@ -15,11 +15,14 @@
 	</TemplateConfiguration>
 	
 	<Actions>
-		<Open filename="src\${ProjectName}\Program.cs"/>
+		<Open filename="Program.cs"/>
 	</Actions>
 	
 	<Solution name="${ProjectName}" directory=".">
-	
+		<Options>
+			<FixedProjectDirectory>src\${ProjectName}</FixedProjectDirectory>
+		</Options>
+		
 		<SolutionFolder name="Solution Items">
 			<SolutionFileItems>
 				<SolutionFileItem name="global.json" />
@@ -36,7 +39,7 @@
 		</Files>
 		
 		<SolutionFolder name="src">
-			<Project language="AspNet" directory="src\${ProjectName}">
+			<Project language="AspNet">
 				<ProjectItems>
 				</ProjectItems>
 				
