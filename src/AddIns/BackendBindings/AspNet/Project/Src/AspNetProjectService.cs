@@ -17,6 +17,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop;
@@ -34,7 +35,8 @@ namespace ICSharpCode.AspNet
 		AspNet5Context context;
 		AspNet5ProjectSystem projectSystem;
 		SharpDevelopApplicationLifetime applicationLifetime;
-		
+		ISolution solution;
+
 		public AspNetProjectService()
 		{
 			SD.ProjectService.SolutionOpened += SolutionOpened;
@@ -55,6 +57,9 @@ namespace ICSharpCode.AspNet
 				projectSystem.Dispose ();
 				projectSystem = null;
 				context = null;
+				
+				solution.Projects.CollectionChanged -= ProjectsChanged;
+				solution = null;
 			}
 		}
 		
@@ -63,6 +68,7 @@ namespace ICSharpCode.AspNet
 			try {
 				if (e.Solution.HasAspNetProjects()) {
 					LoadAspNetProjectSystem(e.Solution);
+					solution.Projects.CollectionChanged += ProjectsChanged;
 				}
 			} catch (Exception ex) {
 				MessageService.ShowError(ex.Message);
@@ -71,6 +77,7 @@ namespace ICSharpCode.AspNet
 		
 		void LoadAspNetProjectSystem(ISolution solution)
 		{
+			this.solution = solution;
 			applicationLifetime = new SharpDevelopApplicationLifetime();
 			context = new AspNet5Context();
 			var factory = new AspNet5ProjectSystemFactory();
@@ -157,6 +164,18 @@ namespace ICSharpCode.AspNet
 			if (matchedProject != null) {
 				matchedProject.OnPackageRestoreFinished();
 			}
+		}
+		
+		void ProjectsChanged(IReadOnlyCollection<IProject> removedItems, IReadOnlyCollection<IProject> addedItems)
+		{
+			SD.MainThread.InvokeAsyncAndForget(ReloadProjectSystem);
+		}
+		
+		void ReloadProjectSystem()
+		{
+			ISolution currentSolution = solution;
+			UnloadProjectSystem();
+			LoadAspNetProjectSystem(currentSolution);
 		}
 	}
 }
