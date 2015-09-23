@@ -87,5 +87,11 @@ namespace ICSharpCode.SharpDevelop.Templates
 		public virtual void RunOpenActions(ProjectTemplateResult result)
 		{
 		}
+		
+		public bool HasFixedProjectDirectory {
+			get { return !String.IsNullOrEmpty(FixedProjectDirectory); }
+		}
+		
+		public abstract string FixedProjectDirectory { get; }
 	}
 }

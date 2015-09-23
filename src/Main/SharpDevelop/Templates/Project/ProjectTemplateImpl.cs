@@ -295,5 +295,14 @@ namespace ICSharpCode.SharpDevelop.Templates
 				action(result);
 			}
 		}
+		
+		public override string FixedProjectDirectory {
+			get {
+				if (solutionDescriptor != null) {
+					return solutionDescriptor.FixedProjectDirectory;
+				}
+				return null;
+			}
+		}
 	}
 }

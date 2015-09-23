@@ -116,11 +116,18 @@ namespace ICSharpCode.SharpDevelop.Templates
 		
 		string name;
 		string startupProject    = null;
+		string fixedProjectDirectory = null;
 		
 		#region public properties
 		public string StartupProject {
 			get {
 				return startupProject;
+			}
+		}
+		
+		public string FixedProjectDirectory {
+			get {
+				return fixedProjectDirectory;
 			}
 		}
 
@@ -146,8 +153,13 @@ namespace ICSharpCode.SharpDevelop.Templates
 		{
 			SolutionDescriptor solutionDescriptor = new SolutionDescriptor(element.Attributes["name"].InnerText);
 			
-			if (element["Options"] != null && element["Options"]["StartupProject"] != null) {
-				solutionDescriptor.startupProject = element["Options"]["StartupProject"].InnerText;
+			if (element["Options"] != null) {
+				if (element["Options"]["StartupProject"] != null) {
+					solutionDescriptor.startupProject = element["Options"]["StartupProject"].InnerText;
+				}
+				if (element["Options"]["FixedProjectDirectory"] != null) {
+					solutionDescriptor.fixedProjectDirectory = element["Options"]["FixedProjectDirectory"].InnerText;
+				} 
 			}
 			if (element["Files"] != null) {
 				solutionDescriptor.files = LoadFiles(element["Files"], fileSystem).ToList();

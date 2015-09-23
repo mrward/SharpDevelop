@@ -199,7 +199,10 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 		
 		string NewProjectDirectory {
 			get {
-				if (createDirectoryForSolutionCheckBox.Checked) {
+				string fixedProjectDirectory = GetFixedProjectDirectory();
+				if (!String.IsNullOrEmpty(fixedProjectDirectory)) {
+					return fixedProjectDirectory;
+				} else if (createDirectoryForSolutionCheckBox.Checked) {
 					return Path.Combine(NewSolutionDirectory, nameTextBox.Text.Trim());
 				} else {
 					return NewSolutionDirectory;
@@ -213,6 +216,25 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 				string name = createDirectoryForSolutionCheckBox.Checked ? solutionNameTextBox.Text : nameTextBox.Text;
 				return Path.Combine(location.Trim(), name.Trim());
 			}
+		}
+		
+		string GetFixedProjectDirectory()
+		{
+			if (templateListView.SelectedItems.Count == 0)
+				return null;
+			
+			var templateItem = (TemplateItem)templateListView.SelectedItems[0];
+			if (!templateItem.Template.HasFixedProjectDirectory)
+				return null;
+			
+			string relativePath = StringParser.Parse(
+				templateItem.Template.FixedProjectDirectory,
+				new StringTagPair("ProjectName", nameTextBox.Text.Trim()));
+			
+			if (createNewSolution)
+				return Path.Combine(locationTextBox.Text.Trim(), solutionNameTextBox.Text.Trim(), relativePath);
+			
+			return SolutionFolder.ParentSolution.Directory.CombineDirectory(relativePath);
 		}
 		
 		void PathChanged(object sender, EventArgs e)
@@ -362,11 +384,23 @@ namespace ICSharpCode.SharpDevelop.Project.Dialogs
 		void SelectedIndexChange(object sender, EventArgs e)
 		{
 			if (templateListView.SelectedItems.Count == 1) {
-				descriptionLabel.Text = StringParser.Parse(((TemplateItem)templateListView.SelectedItems[0]).Template.Description);
+				var templateItem = (TemplateItem)templateListView.SelectedItems[0];
+				descriptionLabel.Text = StringParser.Parse(templateItem.Template.Description);
 				openButton.Enabled = true;
+				
+				bool fixedProjectDirectory = templateItem.Template.HasFixedProjectDirectory;
+				if (createNewSolution) {
+					createDirectoryForSolutionCheckBox.Enabled = !fixedProjectDirectory;
+				} else {
+					locationTextBox.Enabled = !fixedProjectDirectory;
+					browseButton.Enabled = !fixedProjectDirectory;
+				}
 			} else {
 				descriptionLabel.Text = String.Empty;
 				openButton.Enabled = false;
+				createDirectoryForSolutionCheckBox.Enabled = true;
+				locationTextBox.Enabled = true;
+				browseButton.Enabled = true;
 			}
 		}
 		
