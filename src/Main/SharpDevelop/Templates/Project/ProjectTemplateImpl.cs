@@ -276,12 +276,13 @@ namespace ICSharpCode.SharpDevelop.Templates
 		{
 			var result = new ProjectTemplateResult(options);
 			StandardHeader.SetHeaders();
+			ISolutionFolder solutionFolder = GetSolutionFolder(options);
 			if (solutionDescriptor != null) {
-				if (!solutionDescriptor.AddContents(options.SolutionFolder, result, languagename))
+				if (!solutionDescriptor.AddContents(solutionFolder, result, languagename))
 					return null;
 			}
 			if (projectDescriptor != null) {
-				bool success = projectDescriptor.CreateProject(result, languagename, options.SolutionFolder);
+				bool success = projectDescriptor.CreateProject(result, languagename, solutionFolder);
 				if (!success) {
 					return null;
 				}
@@ -303,6 +304,14 @@ namespace ICSharpCode.SharpDevelop.Templates
 				}
 				return null;
 			}
+		}
+		
+		ISolutionFolder GetSolutionFolder(ProjectTemplateOptions options)
+		{
+			if (HasFixedProjectDirectory) {
+				return options.Solution;
+			}
+			return options.SolutionFolder;
 		}
 	}
 }
