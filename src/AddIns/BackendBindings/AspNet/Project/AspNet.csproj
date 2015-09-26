@@ -76,6 +76,7 @@
     <Compile Include="Src\DependencyNode.cs" />
     <Compile Include="Src\DependencyNodeDescriptor.cs" />
     <Compile Include="Src\DnxMSBuildTargetsDirectory.cs" />
+    <Compile Include="Src\DnxRuntime.cs" />
     <Compile Include="Src\FrameworkNode.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetInstalledConditionEvaluator.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetMissingConditionEvaluator.cs" />

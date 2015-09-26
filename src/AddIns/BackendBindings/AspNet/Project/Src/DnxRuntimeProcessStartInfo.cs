@@ -24,11 +24,11 @@ namespace ICSharpCode.AspNet
 {
 	public class DnxRuntimeProcessStartInfo
 	{
-		string runtimePath;
+		DnxRuntime runtime;
 		
 		public DnxRuntimeProcessStartInfo(string runtimePath)
 		{
-			this.runtimePath = runtimePath;
+			runtime = new DnxRuntime(runtimePath);
 		}
 		
 		public ProcessStartInfo GetProcessStartInfo(string directory, string command)
@@ -42,11 +42,14 @@ namespace ICSharpCode.AspNet
 		
 		string GetRuntimePath()
 		{
-			return Path.Combine(runtimePath, "bin", "dnx.exe");
+			return Path.Combine(runtime.Path, "bin", "dnx.exe");
 		}
 		
 		string GetArguments(string command)
 		{
+			if (runtime.UsesCurrentDirectoryByDefault) {
+				return command;
+			}
 			return String.Format(". {0}", command);
 		}
 	}
