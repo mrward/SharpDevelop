@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.AspNet;
 using Microsoft.CodeAnalysis;
 //using Microsoft.CodeAnalysis.Host.Mef;
 //using Microsoft.CodeAnalysis.Text;
-using OmniSharp.Models;
 //using OmniSharp.Roslyn;
 using DependenciesMessage = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages.DependenciesMessage;
-using OmniSharp.AspNet5;
+using ICSharpCode.AspNet;
+using OmniSharp.Dnx;
 
 namespace OmniSharp
 {
@@ -17,7 +16,11 @@ namespace OmniSharp
 //
 //        public BufferManager BufferManager { get; private set; }
 //
-//        public OmnisharpWorkspace() : base(MefHostServices.DefaultHost, "Custom")
+//        public OmnisharpWorkspace() : this(MefHostServices.DefaultHost)
+//        {
+//        }
+
+//        public OmnisharpWorkspace(MefHostServices hostServices) : base(hostServices, "Custom")
 //        {
 //            BufferManager = new BufferManager(this);
 //        }
@@ -82,7 +85,7 @@ namespace OmniSharp
 //            var documentIds = CurrentSolution.GetDocumentIdsWithFilePath(filePath);
 //            return documentIds.FirstOrDefault();
 //        }
-//        
+//
 //        public IEnumerable<Document> GetDocuments(string filePath)
 //        {
 //            return CurrentSolution.GetDocumentIdsWithFilePath(filePath).Select(id => CurrentSolution.GetDocument(id));
@@ -91,7 +94,7 @@ namespace OmniSharp
 //        public Document GetDocument(string filePath)
 //        {
 //            var documentId = GetDocumentId(filePath);
-//            if(documentId == null)
+//            if (documentId == null)
 //            {
 //                return null;
 //            }

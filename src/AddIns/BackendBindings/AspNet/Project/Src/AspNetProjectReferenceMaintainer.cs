@@ -19,15 +19,15 @@
 using System;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
 using Microsoft.CodeAnalysis;
-using OmniSharp.AspNet5;
+using OmniSharp.Dnx;
 
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProjectReferenceMaintainer
 	{
-		readonly AspNet5Context context;
+		readonly DnxContext context;
 		
-		public AspNetProjectReferenceMaintainer(AspNet5Context context)
+		public AspNetProjectReferenceMaintainer(DnxContext context)
 		{
 			this.context = context;
 		}

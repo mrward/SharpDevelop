@@ -34,7 +34,7 @@ namespace ICSharpCode.AspNet
 {
 	public class AspNetProject : CompilableProject
 	{
-		AspNet5Project project;
+		DnxProject project;
 		Dictionary<string, DependenciesMessage> dependencies = new Dictionary<string, DependenciesMessage>();
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
@@ -161,7 +161,7 @@ namespace ICSharpCode.AspNet
 			return new CompilerSettings();
 		}
 		
-		public void Update(AspNet5Project project)
+		public void Update(DnxProject project)
 		{
 			this.project = project;
 		}

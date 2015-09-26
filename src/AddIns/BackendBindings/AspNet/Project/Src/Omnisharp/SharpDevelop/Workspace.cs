@@ -19,7 +19,7 @@
 using System;
 using ICSharpCode.AspNet;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
-using OmniSharp.AspNet5;
+using OmniSharp.Dnx;
 
 namespace Microsoft.CodeAnalysis
 {

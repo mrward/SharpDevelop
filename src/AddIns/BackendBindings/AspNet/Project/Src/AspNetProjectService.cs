@@ -25,15 +25,15 @@ using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
 using Microsoft.CodeAnalysis;
 using Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages;
-using OmniSharp.AspNet5;
+using OmniSharp.Dnx;
 using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProjectService
 	{
-		AspNet5Context context;
-		AspNet5ProjectSystem projectSystem;
+		DnxContext context;
+		DnxProjectSystem projectSystem;
 		SharpDevelopApplicationLifetime applicationLifetime;
 		ISolution solution;
 
@@ -79,8 +79,8 @@ namespace ICSharpCode.AspNet
 		{
 			this.solution = solution;
 			applicationLifetime = new SharpDevelopApplicationLifetime();
-			context = new AspNet5Context();
-			var factory = new AspNet5ProjectSystemFactory();
+			context = new DnxContext();
+			var factory = new DnxProjectSystemFactory();
 			projectSystem = factory.CreateProjectSystem(solution, applicationLifetime, context);
 			projectSystem.Initalize();
 		}
@@ -93,12 +93,12 @@ namespace ICSharpCode.AspNet
 			});
 		}
 		
-		public void OnProjectChanged(AspNet5Project project)
+		public void OnProjectChanged(DnxProject project)
 		{
 			SD.MainThread.InvokeAsyncAndForget(() => UpdateProject(project));
 		}
 		
-		void UpdateProject(AspNet5Project project)
+		void UpdateProject(DnxProject project)
 		{
 			AspNetProject matchedProject = FindProjectByProjectJsonFileName(project.Path);
 			if (matchedProject != null) {
@@ -112,7 +112,7 @@ namespace ICSharpCode.AspNet
 			return startInfo.GetProcessStartInfo(directory, command);
 		}
 		
-		public void DependenciesUpdated(OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		public void DependenciesUpdated(OmniSharp.Dnx.Project project, DependenciesMessage message)
 		{
 			SD.MainThread.InvokeAsyncAndForget(() => UpdateDependencies(project, message));
 		}
@@ -132,7 +132,7 @@ namespace ICSharpCode.AspNet
 			return null;
 		}
 
-		void UpdateDependencies(OmniSharp.AspNet5.Project project, DependenciesMessage message)
+		void UpdateDependencies(OmniSharp.Dnx.Project project, DependenciesMessage message)
 		{
 			AspNetProject matchedProject = FindProjectByProjectJsonFileName(project.Path);
 			if (matchedProject != null) {

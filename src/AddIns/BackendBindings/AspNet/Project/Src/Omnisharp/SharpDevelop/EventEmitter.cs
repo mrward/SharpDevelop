@@ -43,7 +43,7 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 			if (response == null)
 				return;
 			
-			AspNetServices.ProjectService.OnProjectChanged(response.AspNet5Project);
+			AspNetServices.ProjectService.OnProjectChanged(response.DnxProject);
 		}
 		
 		void OnPackageRestoreStarted(object args)

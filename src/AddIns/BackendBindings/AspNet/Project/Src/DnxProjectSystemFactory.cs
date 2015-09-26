@@ -21,18 +21,17 @@ using ICSharpCode.SharpDevelop.Project;
 using ICSharpCode.AspNet.Omnisharp.SharpDevelop;
 using Microsoft.AspNet.Hosting;
 using OmniSharp;
-using OmniSharp.AspNet5;
-using OmniSharp.Options;
+using OmniSharp.Dnx;
 using OmniSharp.Services;
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNet5ProjectSystemFactory
+	public class DnxProjectSystemFactory
 	{
-		public AspNet5ProjectSystem CreateProjectSystem(
+		public DnxProjectSystem CreateProjectSystem(
 			ISolution solution,
 			IApplicationLifetime appLifetime,
-			AspNet5Context context)
+			DnxContext context)
 		{
 			var workspace = new OmnisharpWorkspace();
 			var env = new OmnisharpEnvironment(solution.Directory);
@@ -42,7 +41,7 @@ namespace ICSharpCode.AspNet
 			var emitter = new EventEmitter();
 			var watcher = new FileSystemWatcherWrapper(env);
 			
-			return new AspNet5ProjectSystem(
+			return new DnxProjectSystem(
 				workspace,
 				env,
 				options,

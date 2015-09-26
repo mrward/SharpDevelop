@@ -20,17 +20,17 @@ using System;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 using Microsoft.CodeAnalysis;
-using OmniSharp.AspNet5;
+using OmniSharp.Dnx;
 
 namespace ICSharpCode.AspNet
 {
 	public class AspNetProjectLocator
 	{
-		readonly AspNet5Context context;
+		readonly DnxContext context;
 		ISolution solution;
 		FrameworkProject frameworkProject;
 		
-		public AspNetProjectLocator(AspNet5Context context)
+		public AspNetProjectLocator(DnxContext context)
 		{
 			this.context = context;
 		}
