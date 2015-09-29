@@ -28,6 +28,7 @@
 using System;
 using System.Linq;
 using ICSharpCode.Core;
+using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
@@ -67,6 +68,13 @@ namespace ICSharpCode.AspNet
 				return false;
 
 			return !preBeta7Versions.Any(version => runtimeName.Contains (version));
+		}
+
+		public FileName GetRuntimePath(DnxFramework framework)
+		{
+			string runtime = framework.GetDnxRuntime ();
+			string modifiedFileName = Path.GetFileName().Replace ("-clr-", "-" + runtime + "-");
+			return Path.GetParentDirectory().CombineFile (modifiedFileName);
 		}
 	}
 }

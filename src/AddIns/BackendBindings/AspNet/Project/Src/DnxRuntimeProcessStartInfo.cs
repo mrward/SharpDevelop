@@ -19,30 +19,31 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
 	public class DnxRuntimeProcessStartInfo
 	{
-		DnxRuntime runtime;
+		readonly DnxRuntime runtime;
 		
 		public DnxRuntimeProcessStartInfo(string runtimePath)
 		{
 			runtime = new DnxRuntime(runtimePath);
 		}
 		
-		public ProcessStartInfo GetProcessStartInfo(string directory, string command)
+		public ProcessStartInfo GetProcessStartInfo(AspNetProject project)
 		{
 			return new ProcessStartInfo {
-				Arguments = GetArguments(command),
-				FileName = GetRuntimePath(),
-				WorkingDirectory = directory,
+				Arguments = GetArguments(project.GetCurrentCommand()),
+				FileName = GetRuntimePath(project),
+				WorkingDirectory = project.Directory
 			};
 		}
 		
-		string GetRuntimePath()
+		string GetRuntimePath(AspNetProject project)
 		{
-			return Path.Combine(runtime.Path, "bin", "dnx.exe");
+			return Path.Combine(GetDnxRuntimePath(project), "bin", "dnx.exe");
 		}
 		
 		string GetArguments(string command)
@@ -51,6 +52,16 @@ namespace ICSharpCode.AspNet
 				return command;
 			}
 			return String.Format(". {0}", command);
+		}
+
+		string GetDnxRuntimePath(AspNetProject project)
+		{
+			DnxFramework framework = project.DefaultFramework;
+			if (framework == null) {
+				return runtime.Path;
+			}
+			
+			return runtime.GetRuntimePath(framework);
 		}
 	}
 }

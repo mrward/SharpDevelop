@@ -70,6 +70,7 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Src\DnxFrameworkExtensions.cs" />
     <Compile Include="Src\DnxProjectSystemFactory.cs" />
     <Compile Include="Src\AspNetProject.cs" />
     <Compile Include="Src\AspNetProjectBehavior.cs" />

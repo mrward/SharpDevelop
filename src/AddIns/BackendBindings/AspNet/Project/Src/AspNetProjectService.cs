@@ -106,10 +106,10 @@ namespace ICSharpCode.AspNet
 			}
 		}
 		
-		public ProcessStartInfo GetProcessStartInfo(DirectoryName directory, string command)
+		public ProcessStartInfo GetProcessStartInfo(AspNetProject project)
 		{
 			var startInfo = new DnxRuntimeProcessStartInfo(context.RuntimePath);
-			return startInfo.GetProcessStartInfo(directory, command);
+			return startInfo.GetProcessStartInfo(project);
 		}
 		
 		public void DependenciesUpdated(OmniSharp.Dnx.Project project, DependenciesMessage message)

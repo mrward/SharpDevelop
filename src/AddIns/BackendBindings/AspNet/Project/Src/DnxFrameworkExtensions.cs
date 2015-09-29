@@ -17,28 +17,18 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Diagnostics;
-using ICSharpCode.SharpDevelop.Project;
+using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNetProjectBehavior : ProjectBehavior
+	public static class DnxFrameworkExtensions
 	{
-		readonly AspNetProject project;
-		
-		public AspNetProjectBehavior(AspNetProject project, ProjectBehavior next = null)
-			: base(project, next)
+		public static string GetDnxRuntime(this DnxFramework framework)
 		{
-			this.project = project;
-		}
-		
-		public override void ProjectCreationComplete()
-		{
-		}
-		
-		public override ProcessStartInfo CreateStartInfo()
-		{
-			return AspNetServices.ProjectService.GetProcessStartInfo(project);
+			if (framework.Name.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase)) {
+				return "coreclr";
+			}
+			return "clr";
 		}
 	}
 }
