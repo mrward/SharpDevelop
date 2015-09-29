@@ -18,6 +18,9 @@
 			<ConditionEvaluator
 				name="IsDnxMSBuildTargetMissing"
 				class="ICSharpCode.AspNet.IsDnxMSBuildTargetMissingConditionEvaluator"/>
+			<ConditionEvaluator
+				name="HasDnxStartupProject"
+				class="ICSharpCode.AspNet.HasDnxStartupProjectConditionEvaluator"/>
 		</Import>
 	</Runtime>
 
@@ -52,5 +55,31 @@
 			id="AspNetProjectBuilder"
 			insertbefore="DefaultBuilder"
 			class="ICSharpCode.AspNet.AspNetProjectBuilder"/>
+	</Path>
+
+	<Path name="/SharpDevelop/Workbench/MainMenu/Debug">
+		<Condition name="HasDnxStartupProject">
+			<MenuItem id="DnxDebugSeparator" type="Separator" insertbefore="ToggleBreakpointSeparator" />
+			<MenuItem
+				id="SetDnxCommand"
+				label="Set DNX Command"
+				insertbefore="ToggleBreakpointSeparator"
+				type="Menu">
+				<MenuItem
+					id="DnxCommandBuilder"
+					type="Builder"
+					class="ICSharpCode.AspNet.SetDnxCommandMenuBuilder" />
+			</MenuItem>
+			<MenuItem
+				id="SetDnxRuntime"
+				label="Set DNX Runtime"
+				insertbefore="ToggleBreakpointSeparator"
+				type="Menu">
+				<MenuItem
+					id="DnxRuntimeBuilder"
+					type="Builder"
+					class="ICSharpCode.AspNet.SetDnxRuntimeMenuBuilder" />
+			</MenuItem>
+		</Condition>
 	</Path>
 </AddIn>

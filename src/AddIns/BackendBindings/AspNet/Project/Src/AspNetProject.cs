@@ -36,6 +36,7 @@ namespace ICSharpCode.AspNet
 	{
 		DnxProject project;
 		Dictionary<string, DependenciesMessage> dependencies = new Dictionary<string, DependenciesMessage>();
+		string currentCommand;
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
@@ -168,10 +169,25 @@ namespace ICSharpCode.AspNet
 		
 		public string GetCurrentCommand()
 		{
-			if (project == null)
+			if (project == null || project.Commands == null)
 				return null;
 			
-			return project.Commands.Keys.FirstOrDefault();
+			ValidateCurrentCommand();
+			
+			if (currentCommand == null)
+				return project.Commands.Keys.FirstOrDefault();
+			
+			return currentCommand;
+		}
+		
+		void ValidateCurrentCommand()
+		{
+			if (currentCommand == null)
+				return;
+			
+			if (!project.Commands.ContainsKey(currentCommand)) {
+				currentCommand = null;
+			}
 		}
 		
 		public override Task<bool> BuildAsync(ProjectBuildOptions options, IBuildFeedbackSink feedbackSink, IProgressMonitor progressMonitor)
@@ -222,6 +238,29 @@ namespace ICSharpCode.AspNet
 			var handler = PackageRestoreFinished;
 			if (handler != null)
 				handler (this, new EventArgs());
+		}
+
+		public IEnumerable<string> GetCommands()
+		{
+			if (project == null || project.Commands == null)
+				return Enumerable.Empty<string>();
+			
+			return project.Commands.Keys.AsEnumerable();
+		}
+		
+		public DnxFramework DefaultFramework { get; set; }
+		
+		public IEnumerable<DnxFramework> GetFrameworks()
+		{
+			if (project == null || project.Frameworks == null)
+				return Enumerable.Empty<DnxFramework>();
+			
+			return project.Frameworks;
+		}
+
+		public void UseCommand(string command)
+		{
+			currentCommand = command;
 		}
 	}
 }

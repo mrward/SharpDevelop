@@ -177,5 +177,13 @@ namespace ICSharpCode.AspNet
 			UnloadProjectSystem();
 			LoadAspNetProjectSystem(currentSolution);
 		}
+
+		public AspNetProject GetStartupDnxProject()
+		{
+			if (solution == null)
+				return null;
+			
+			return solution.StartupProject as AspNetProject;
+		}
 	}
 }

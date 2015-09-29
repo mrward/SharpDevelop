@@ -49,10 +49,22 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
@@ -80,6 +92,7 @@
     <Compile Include="Src\FrameworkNode.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetInstalledConditionEvaluator.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetMissingConditionEvaluator.cs" />
+    <Compile Include="Src\HasDnxStartupProjectConditionEvaluator.cs" />
     <Compile Include="Src\ISolutionExtensions.cs" />
     <Compile Include="Src\DnxRuntimeProcessStartInfo.cs" />
     <Compile Include="Src\Omnisharp\Dnx\DnxContext.cs" />
@@ -164,6 +177,10 @@
     <Compile Include="Src\Omnisharp\Utilities\PlatformHelper.cs" />
     <Compile Include="Src\Omnisharp\Utilities\ProcessExtensions.cs" />
     <Compile Include="Src\Omnisharp\Utilities\ProcessingQueue.cs" />
+    <Compile Include="Src\ProjectCommandInfo.cs" />
+    <Compile Include="Src\ProjectFrameworkInfo.cs" />
+    <Compile Include="Src\SetDnxCommandMenuBuilder.cs" />
+    <Compile Include="Src\SetDnxRuntimeMenuBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AspNet.addin">
