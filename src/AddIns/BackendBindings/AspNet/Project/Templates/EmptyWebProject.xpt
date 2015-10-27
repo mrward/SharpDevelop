@@ -33,7 +33,7 @@
 			<File name="global.json">{
 	"projects": [ "src", "test" ],
 	"sdk": {
-		"version": "1.0.0-beta7"
+		"version": "1.0.0-beta8"
 	}
 }</File>
 		</Files>
@@ -75,12 +75,12 @@ namespace ${StandardNamespace}
 	"version": "1.0.0-*",
 
 	"dependencies": {
-		"Microsoft.AspNet.Server.IIS": "1.0.0-beta7",
-		"Microsoft.AspNet.Server.WebListener": "1.0.0-beta7"
+		"Microsoft.AspNet.IISPlatformHandler": "1.0.0-beta8",
+		"Microsoft.AspNet.Server.Kestrel": "1.0.0-beta8"
 	},
 
 	"commands": {
-		"web": "Microsoft.AspNet.Hosting --config hosting.ini"
+		"web": "Microsoft.AspNet.Server.Kestrel"
 	},
 
 	"frameworks": {
@@ -89,8 +89,6 @@ namespace ${StandardNamespace}
 	},
 
 	"publishExclude": [
-		"node_modules",
-		"bower_components",
 		"**.xproj",
 		"**.user",
 		"**.userprefs",
@@ -98,13 +96,9 @@ namespace ${StandardNamespace}
 	],
 	"exclude": [
 		"wwwroot",
-		"node_modules",
-		"bower_components"
+		"node_modules"
 	]
 }</File>
-				<File name="hosting.ini">server=Microsoft.AspNet.Server.WebListener
-server.urls=http://localhost:5000
-</File>
 				</Files>
 			</Project>
 		</SolutionFolder>
