@@ -1,0 +1,26 @@
+﻿<optionpanels:ProjectOptionPanel
+	x:Class="ICSharpCode.AspNet.DnxRuntimeOptionsPanel"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:optionpanels="clr-namespace:ICSharpCode.SharpDevelop.Gui.OptionPanels;assembly=ICSharpCode.SharpDevelop"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<StackPanel>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
+			
+			<Label
+				Margin="4, 4, 0, 0"
+				Content="DNX Runtime Version:"/>
+			<ComboBox
+				Margin="4, 8, 0, 0"
+				Grid.Column="1"
+				ItemsSource="{Binding DnxRuntimeVersions}"
+				SelectedItem="{Binding SelectedDnxRuntimeVersion}"/>
+		</Grid>
+	</StackPanel>
+</optionpanels:ProjectOptionPanel>

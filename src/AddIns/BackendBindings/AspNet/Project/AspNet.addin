@@ -21,6 +21,9 @@
 			<ConditionEvaluator
 				name="HasDnxStartupProject"
 				class="ICSharpCode.AspNet.HasDnxStartupProjectConditionEvaluator"/>
+			<ConditionEvaluator
+				name="IsDnxProjectSelected"
+				class="ICSharpCode.AspNet.IsDnxProjectSelectedConditionEvaluator"/>
 		</Import>
 	</Runtime>
 
@@ -80,6 +83,15 @@
 					type="Builder"
 					class="ICSharpCode.AspNet.SetDnxRuntimeMenuBuilder" />
 			</MenuItem>
+		</Condition>
+	</Path>
+
+	<Path path="/SharpDevelop/BackendBindings/ProjectOptions/C#">
+		<Condition name="IsDnxProjectSelected">
+			<OptionPanel
+				id="DnxRuntime"
+				label="DNX Runtime"
+				class="ICSharpCode.AspNet.DnxRuntimeOptionsPanel" />
 		</Condition>
 	</Path>
 </AddIn>

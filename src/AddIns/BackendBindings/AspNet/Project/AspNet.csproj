@@ -90,10 +90,16 @@
     <Compile Include="Src\DependencyNodeDescriptor.cs" />
     <Compile Include="Src\DnxMSBuildTargetsDirectory.cs" />
     <Compile Include="Src\DnxRuntime.cs" />
+    <Compile Include="Src\DnxRuntimeOptionsPanel.xaml.cs">
+      <DependentUpon>DnxRuntimeOptionsPanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Src\FrameworkNode.cs" />
+    <Compile Include="Src\GlobalJsonFile.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetInstalledConditionEvaluator.cs" />
     <Compile Include="Src\IsDnxMSBuildTargetMissingConditionEvaluator.cs" />
     <Compile Include="Src\HasDnxStartupProjectConditionEvaluator.cs" />
+    <Compile Include="Src\IsDnxProjectSelectedConditionEvaluator.cs" />
     <Compile Include="Src\ISolutionExtensions.cs" />
     <Compile Include="Src\DnxRuntimeProcessStartInfo.cs" />
     <Compile Include="Src\Omnisharp\Dnx\DnxContext.cs" />
@@ -256,6 +262,9 @@
     <Folder Include="Src\Omnisharp\Utilities" />
     <Folder Include="Src\Omnisharp\Services" />
     <Folder Include="Templates" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Src\DnxRuntimeOptionsPanel.xaml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
