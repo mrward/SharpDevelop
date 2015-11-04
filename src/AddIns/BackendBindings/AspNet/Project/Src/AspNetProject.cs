@@ -36,7 +36,9 @@ namespace ICSharpCode.AspNet
 	{
 		DnxProject project;
 		Dictionary<string, DependenciesMessage> dependencies = new Dictionary<string, DependenciesMessage>();
+		Dictionary<string, List<string>> references = new Dictionary<string, List<string>>();
 		string currentCommand;
+		DnxFramework defaultFramework;
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
@@ -85,23 +87,21 @@ namespace ICSharpCode.AspNet
 			}
 		}
 		
-		public bool IsCurrentFramework(string framework, IEnumerable<string> frameworks)
-		{
-			if (CurrentFramework == null) {
-				CurrentFramework = frameworks.FirstOrDefault();
-			}
-			
-			return CurrentFramework == framework;
-		}
-		
 		public string CurrentFramework { get; private set; }
 		
 		public void UpdateReferences(OmniSharp.Dnx.FrameworkProject frameworkProject)
 		{
-			if (!IsCurrentFramework(frameworkProject.Framework, frameworkProject.Project.ProjectsByFramework.Keys))
+			if (CurrentFramework == null) {
+				CurrentFramework = frameworkProject.Project.ProjectsByFramework.Keys.FirstOrDefault();
+			}
+			
+			List<string> fileReferences = frameworkProject.FileReferences.Keys.ToList ();
+			references[frameworkProject.Framework] = fileReferences;
+		
+			if (CurrentFramework != frameworkProject.Framework)
 				return;
-
-			UpdateReferences (frameworkProject.FileReferences.Keys);
+			
+			UpdateReferences(fileReferences);
 		}
 
 		void UpdateReferences(IEnumerable<string> references)
@@ -256,7 +256,16 @@ namespace ICSharpCode.AspNet
 			return project.Commands.Keys.AsEnumerable();
 		}
 		
-		public DnxFramework DefaultFramework { get; set; }
+		public DnxFramework DefaultFramework {
+			get { return defaultFramework; }
+			set {
+				defaultFramework = value;
+				if (!IsCurrentFramework(value)) {
+					UpdateCurrentFramework(value);
+					UpdateReferences();
+				}
+			}
+		}
 		
 		public IEnumerable<DnxFramework> GetFrameworks()
 		{
@@ -269,6 +278,35 @@ namespace ICSharpCode.AspNet
 		public void UseCommand(string command)
 		{
 			currentCommand = command;
+		}
+		
+		void UpdateReferences()
+		{
+			List<string> fileReferences = null;
+			if (!references.TryGetValue(CurrentFramework, out fileReferences)) {
+				LoggingService.WarnFormatted("Unable to find references for framework '{0}'.", CurrentFramework);
+				return;
+			}
+			
+			UpdateReferences(fileReferences);
+		}
+		
+		bool IsCurrentFramework(DnxFramework framework)
+		{
+			if (framework == null) {
+				return CurrentFramework == references.Keys.FirstOrDefault();
+			}
+			
+			return framework.Name == CurrentFramework;
+		}
+		
+		void UpdateCurrentFramework(DnxFramework framework)
+		{
+			if (framework == null) {
+				CurrentFramework = references.Keys.FirstOrDefault();
+			} else {
+				CurrentFramework = framework.Name;
+			}
 		}
 	}
 }
