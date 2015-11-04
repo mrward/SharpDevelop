@@ -51,17 +51,5 @@ namespace ICSharpCode.AspNet
 			
 			return context.WorkspaceMapping.TryGetValue(projectId, out frameworkProject);
 		}
-		
-		public AspNetProject FindProjectForCurrentFramework(ProjectId projectId)
-		{
-			if (!Init(projectId))
-				return null;
-			
-			AspNetProject project = solution.FindProjectByProjectJsonFileName(frameworkProject.Project.Path);
-			if (project.IsCurrentFramework(frameworkProject.Framework, frameworkProject.Project.ProjectsByFramework.Keys)) {
-				return project;
-			}
-			return null;
-		}
 	}
 }
