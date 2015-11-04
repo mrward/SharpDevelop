@@ -88,8 +88,11 @@ namespace ICSharpCode.AspNet
 		public void OnReferencesUpdated(ProjectId projectId, FrameworkProject frameworkProject)
 		{
 			SD.MainThread.InvokeAsyncAndForget(() => {
-				var maintainer = new AspNetProjectReferenceMaintainer(context);
-				maintainer.UpdateReferences(projectId, frameworkProject);
+				var locator = new AspNetProjectLocator(context);
+				AspNetProject project = locator.FindProject(projectId);
+				if (project != null) {
+					project.UpdateReferences(frameworkProject);
+				}
 			});
 		}
 		

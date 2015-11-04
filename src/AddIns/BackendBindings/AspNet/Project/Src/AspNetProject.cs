@@ -95,8 +95,16 @@ namespace ICSharpCode.AspNet
 		}
 		
 		public string CurrentFramework { get; private set; }
+		
+		public void UpdateReferences(OmniSharp.Dnx.FrameworkProject frameworkProject)
+		{
+			if (!IsCurrentFramework(frameworkProject.Framework, frameworkProject.Project.ProjectsByFramework.Keys))
+				return;
 
-		public void UpdateReferences(IEnumerable<string> references)
+			UpdateReferences (frameworkProject.FileReferences.Keys);
+		}
+
+		void UpdateReferences(IEnumerable<string> references)
 		{
 			Items.RemoveAll(item => item is ReferenceProjectItem);
 			
