@@ -124,6 +124,9 @@ namespace CSharpBinding
 					CreateCompilerSettings();
 				return compilerSettings;
 			}
+			protected set {
+				compilerSettings = value;
+			}
 		}
 		
 		public Properties GlobalPreferences
