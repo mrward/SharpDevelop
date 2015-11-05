@@ -35,6 +35,10 @@ namespace ICSharpCode.AspNet
 			this.context = context;
 		}
 		
+		public FrameworkProject FrameworkProject {
+			get { return frameworkProject; }
+		}
+		
 		public AspNetProject FindProject(ProjectId projectId)
 		{
 			if (Init(projectId))

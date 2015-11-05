@@ -188,5 +188,16 @@ namespace ICSharpCode.AspNet
 			
 			return solution.StartupProject as AspNetProject;
 		}
+		
+		public void OnParseOptionsChanged(ProjectId projectId, ParseOptions options)
+		{
+			SD.MainThread.InvokeAsyncAndForget (()  => {
+				var locator = new AspNetProjectLocator(context);
+				AspNetProject project = locator.FindProject(projectId);
+				if (project != null) {
+					project.UpdateParseOptions(locator.FrameworkProject, options);
+				}
+			});
+		}
 	}
 }

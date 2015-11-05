@@ -65,5 +65,10 @@ namespace Microsoft.CodeAnalysis
 		{
 			AspNetServices.ProjectService.OnReferencesUpdated(projectId, frameworkProject);
 		}
+		
+		protected internal void OnParseOptionsChanged(ProjectId projectId, ParseOptions options)
+		{
+			AspNetServices.ProjectService.OnParseOptionsChanged(projectId, options);
+		}
 	}
 }

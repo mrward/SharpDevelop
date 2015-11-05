@@ -136,9 +136,11 @@
     <Compile Include="Src\Omnisharp\Microsoft\AspNet\Logging\LogValuesFormatter.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\AspNet\Logging\TypeNameHelper.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\AspNet\Options\IOptions.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\CSharpParseOptions.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\Roslyn\Hash.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\Roslyn\LanguageNames.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\Roslyn\MetadataReference.cs" />
+    <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ParseOptions.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ProjectId.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ProjectInfo.cs" />
     <Compile Include="Src\Omnisharp\Microsoft\Roslyn\ProjectReference.cs" />
@@ -237,6 +239,11 @@
     <ProjectReference Include="..\..\..\..\Main\Core\Project\ICSharpCode.Core.csproj">
       <Project>{35CEF10F-2D4C-45F2-9DD1-161E0FEC583C}</Project>
       <Name>ICSharpCode.Core</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CSharpBinding\Project\CSharpBinding.csproj">
+      <Project>{1F1AC7CD-D154-45BB-8EAF-804CA8055F5A}</Project>
+      <Name>CSharpBinding</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

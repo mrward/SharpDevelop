@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.CSha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debugger.Core", "..\..\Debugger\Debugger.Core\Debugger.Core.csproj", "{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpBinding", "..\CSharpBinding\Project\CSharpBinding.csproj", "{1F1AC7CD-D154-45BB-8EAF-804CA8055F5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -112,5 +114,9 @@ Global
 		{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D18D788-F7EE-4585-A23B-34DC8EC63CB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F1AC7CD-D154-45BB-8EAF-804CA8055F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F1AC7CD-D154-45BB-8EAF-804CA8055F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F1AC7CD-D154-45BB-8EAF-804CA8055F5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F1AC7CD-D154-45BB-8EAF-804CA8055F5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

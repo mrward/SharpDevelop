@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CSharpBinding;
 using ICSharpCode.Core;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.SharpDevelop;
@@ -32,26 +33,23 @@ using FrameworkData = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNetProject : CompilableProject
+	public class AspNetProject : CSharpProject
 	{
 		DnxProject project;
 		Dictionary<string, DependenciesMessage> dependencies = new Dictionary<string, DependenciesMessage>();
 		Dictionary<string, List<string>> references = new Dictionary<string, List<string>>();
+		Dictionary<string, List<string>> preprocessorSymbols = new Dictionary<string, List<string>>();
 		string currentCommand;
 		DnxFramework defaultFramework;
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
 		{
-			if (loadInformation.InitializeTypeSystem)
-				InitializeProjectContent(new CSharpProjectContent());
 		}
 
 		public AspNetProject(ProjectCreateInformation info)
 			: base(info)
 		{
-			if (info.InitializeTypeSystem)
-				InitializeProjectContent(new CSharpProjectContent());
 		}
 		
 		public override string Language {
@@ -91,9 +89,7 @@ namespace ICSharpCode.AspNet
 		
 		public void UpdateReferences(OmniSharp.Dnx.FrameworkProject frameworkProject)
 		{
-			if (CurrentFramework == null) {
-				CurrentFramework = frameworkProject.Project.ProjectsByFramework.Keys.FirstOrDefault();
-			}
+			EnsureCurrentFrameworkDefined(frameworkProject);
 			
 			List<string> fileReferences = frameworkProject.FileReferences.Keys.ToList ();
 			references[frameworkProject.Framework] = fileReferences;
@@ -102,6 +98,13 @@ namespace ICSharpCode.AspNet
 				return;
 			
 			UpdateReferences(fileReferences);
+		}
+		
+		void EnsureCurrentFrameworkDefined(OmniSharp.Dnx.FrameworkProject frameworkProject)
+		{
+			if (CurrentFramework == null) {
+				CurrentFramework = frameworkProject.Project.ProjectsByFramework.Keys.FirstOrDefault();
+			}
 		}
 
 		void UpdateReferences(IEnumerable<string> references)
@@ -167,7 +170,10 @@ namespace ICSharpCode.AspNet
 		
 		protected override object CreateCompilerSettings()
 		{
-			return new CompilerSettings();
+			var settings = new CompilerSettings();
+			settings.ConditionalSymbols.AddRange(GetPreprocessorSymbols());
+			CompilerSettings = settings;
+			return settings;
 		}
 		
 		public void Update(DnxProject project)
@@ -262,7 +268,8 @@ namespace ICSharpCode.AspNet
 				defaultFramework = value;
 				if (!IsCurrentFramework(value)) {
 					UpdateCurrentFramework(value);
-					UpdateReferences();
+					RefreshReferences();
+					RefreshCompilerSettings();
 				}
 			}
 		}
@@ -280,7 +287,7 @@ namespace ICSharpCode.AspNet
 			currentCommand = command;
 		}
 		
-		void UpdateReferences()
+		void RefreshReferences()
 		{
 			List<string> fileReferences = null;
 			if (!references.TryGetValue(CurrentFramework, out fileReferences)) {
@@ -307,6 +314,38 @@ namespace ICSharpCode.AspNet
 			} else {
 				CurrentFramework = framework.Name;
 			}
+		}
+		
+		public void UpdateParseOptions(OmniSharp.Dnx.FrameworkProject frameworkProject, Microsoft.CodeAnalysis.ParseOptions options)
+		{
+			EnsureCurrentFrameworkDefined(frameworkProject);
+
+			List<string> symbols = options.PreprocessorSymbolNames.ToList();
+			preprocessorSymbols[frameworkProject.Framework] = symbols;
+
+			if (CurrentFramework != frameworkProject.Framework)
+				return;
+
+			RefreshCompilerSettings();
+		}
+		
+		void RefreshCompilerSettings()
+		{
+			OnPropertyChanged(new ProjectPropertyChangedEventArgs("DefineConstants"));
+		}
+
+		IEnumerable<string> GetPreprocessorSymbols()
+		{
+			if (CurrentFramework == null)
+				return Enumerable.Empty<string>();
+			
+			List<string> symbols = null;
+			if (!preprocessorSymbols.TryGetValue(CurrentFramework, out symbols)) {
+				LoggingService.WarnFormatted("Unable to find preprocessor symbols for framework '{0}'.", CurrentFramework);
+				return Enumerable.Empty<string>();
+			}
+			
+			return symbols;
 		}
 	}
 }
