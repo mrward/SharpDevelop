@@ -41,6 +41,7 @@ namespace ICSharpCode.AspNet
 		Dictionary<string, List<string>> preprocessorSymbols = new Dictionary<string, List<string>>();
 		string currentCommand;
 		DnxFramework defaultFramework;
+		string currentConfiguration = "Debug";
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
 			: base(loadInformation)
@@ -346,6 +347,15 @@ namespace ICSharpCode.AspNet
 			}
 			
 			return symbols;
+		}
+		
+		protected override void OnActiveConfigurationChanged(EventArgs e)
+		{
+			if (currentConfiguration != ActiveConfiguration.Configuration) {
+				currentConfiguration = ActiveConfiguration.Configuration;
+				AspNetServices.ProjectService.ChangeConfiguration(currentConfiguration);
+			}
+			base.OnActiveConfigurationChanged(e);
 		}
 	}
 }

@@ -199,5 +199,12 @@ namespace ICSharpCode.AspNet
 				}
 			});
 		}
+		
+		public void ChangeConfiguration(string config)
+		{
+			if (projectSystem != null) {
+				projectSystem.ChangeConfiguration(config);
+			}
+		}
 	}
 }

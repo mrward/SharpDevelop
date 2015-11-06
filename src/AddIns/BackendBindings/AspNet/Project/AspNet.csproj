@@ -107,6 +107,7 @@
     <Compile Include="Src\Omnisharp\Dnx\DnxRuntimePathResult.cs" />
     <Compile Include="Src\Omnisharp\Dnx\DesignTimeHostManager.cs" />
     <Compile Include="Src\Omnisharp\Dnx\FrameworkProject.cs" />
+    <Compile Include="Src\Omnisharp\Dnx\IncomingMessages\ChangeConfiguration.cs" />
     <Compile Include="Src\Omnisharp\Dnx\IncomingMessages\InitializeMessage.cs" />
     <Compile Include="Src\Omnisharp\Dnx\Message.cs" />
     <Compile Include="Src\Omnisharp\Dnx\OutgoingMessages\CompilationOptionsMessage.cs" />
