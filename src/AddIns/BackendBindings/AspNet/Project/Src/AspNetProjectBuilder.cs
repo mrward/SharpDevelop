@@ -17,26 +17,88 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Windows.Forms;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
+using Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages;
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNetProjectBuilder : IProjectNodeBuilder
+	public class AspNetProjectBuilder : IDisposable
 	{
-		public bool CanBuildProjectTree(IProject project)
+		AspNetProject project;
+		IProgressMonitor monitor;
+		IBuildFeedbackSink feedbackSink;
+		ManualResetEventSlim waitEvent = new ManualResetEventSlim();
+		bool cancelled;
+		CancellationTokenRegistration tokenRegistration;
+		DiagnosticsMessage[] messages;
+
+		public AspNetProjectBuilder(AspNetProject project, IProgressMonitor monitor, IBuildFeedbackSink feedbackSink)
 		{
-			return project is AspNetProject;
+			this.project = project;
+			this.monitor = monitor;
+			this.feedbackSink = feedbackSink;
 		}
 
-		public TreeNode AddProjectNode(TreeNode motherNode, IProject project)
+		public string ProjectPath {
+			get { return project.JsonPath; }
+		}
+
+		void CancelRequested()
 		{
-			var projectNode = new AspNetProjectNode(project);
-			projectNode.InsertSorted(motherNode);
+			cancelled = true;
+			waitEvent.Set ();
+		}
+
+		public void Dispose()
+		{
+			IProgressMonitor currentMonitor = monitor;
+			if (currentMonitor != null) {
+				tokenRegistration.Dispose();
+				monitor = null;
+			}
+		}
+		
+		public Task<bool> Build()
+		{
+			tokenRegistration = monitor.CancellationToken.Register(CancelRequested);
+			var task = Task.Run(() => BuildInternal(), monitor.CancellationToken);
+			task.ContinueWith(t => Dispose());
 			
-			var dependenciesNode = new DependenciesFolderNode(project);
-			dependenciesNode.AddTo(projectNode);
-			return projectNode;
+			AspNetServices.ProjectService.GetDiagnostics(this);
+			
+			return task;
+		}
+		
+		public void OnDiagnostics(DiagnosticsMessage[] messages)
+		{
+			this.messages = messages;
+			waitEvent.Set();
+		}
+		
+		bool BuildInternal()
+		{
+			waitEvent.Wait();
+			
+			if (cancelled || messages == null) {
+				return true;
+			}
+			
+			return ReportBuildResult();
+		}
+		
+		bool ReportBuildResult()
+		{
+			foreach (DiagnosticsMessage message in messages) {
+				if (project.CurrentFramework == message.Framework.FrameworkName) {
+					message.ReportBuildResult(feedbackSink);
+					return !message.Errors.Any();
+				}
+			}
+			return true;
 		}
 	}
 }

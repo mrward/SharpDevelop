@@ -55,9 +55,9 @@
 
 	<Path name="/SharpDevelop/Views/ProjectBrowser/NodeBuilders">
 		<Class
-			id="AspNetProjectBuilder"
+			id="AspNetProjectNodeBuilder"
 			insertbefore="DefaultBuilder"
-			class="ICSharpCode.AspNet.AspNetProjectBuilder"/>
+			class="ICSharpCode.AspNet.AspNetProjectNodeBuilder"/>
 	</Path>
 
 	<Path name="/SharpDevelop/Workbench/MainMenu/Debug">

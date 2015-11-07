@@ -70,12 +70,14 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Src\AspNetProjectBuilder.cs" />
+    <Compile Include="Src\DiagnosticsMessageExtension.cs" />
     <Compile Include="Src\DnxFrameworkExtensions.cs" />
     <Compile Include="Src\DnxProjectSystemFactory.cs" />
     <Compile Include="Src\AspNetProject.cs" />
     <Compile Include="Src\AspNetProjectBehavior.cs" />
     <Compile Include="Src\AspNetProjectBinding.cs" />
-    <Compile Include="Src\AspNetProjectBuilder.cs" />
+    <Compile Include="Src\AspNetProjectNodeBuilder.cs" />
     <Compile Include="Src\DefaultAspNetMSBuildProject.cs" />
     <Compile Include="Src\DependenciesFolderNode.cs" />
     <Compile Include="Src\AspNetProjectLoader.cs" />

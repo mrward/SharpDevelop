@@ -17,6 +17,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using ICSharpCode.Core;
@@ -36,6 +37,8 @@ namespace ICSharpCode.AspNet
 		DnxProjectSystem projectSystem;
 		SharpDevelopApplicationLifetime applicationLifetime;
 		ISolution solution;
+		ConcurrentDictionary<string, AspNetProjectBuilder> builders =
+			new ConcurrentDictionary<string, AspNetProjectBuilder>();
 
 		public AspNetProjectService()
 		{
@@ -204,6 +207,22 @@ namespace ICSharpCode.AspNet
 		{
 			if (projectSystem != null) {
 				projectSystem.ChangeConfiguration(config);
+			}
+		}
+		
+		public void GetDiagnostics(AspNetProjectBuilder builder)
+		{
+			builders.TryAdd(builder.ProjectPath, builder);
+			projectSystem.GetDiagnostics(builder.ProjectPath);
+		}
+		
+		public void ReportDiagnostics(OmniSharp.Dnx.Project project, DiagnosticsMessage[] messages)
+		{
+			AspNetProjectBuilder builder = null;
+			if (builders.TryRemove(project.Path, out builder)) {
+				builder.OnDiagnostics(messages);
+			} else {
+				LoggingService.WarnFormatted("Unable to find builder for project '{0}'", project.Path);
 			}
 		}
 	}

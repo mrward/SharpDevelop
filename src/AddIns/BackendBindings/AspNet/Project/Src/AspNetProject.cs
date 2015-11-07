@@ -207,6 +207,10 @@ namespace ICSharpCode.AspNet
 		
 		public override Task<bool> BuildAsync(ProjectBuildOptions options, IBuildFeedbackSink feedbackSink, IProgressMonitor progressMonitor)
 		{
+			if (options.Target == BuildTarget.Build || options.Target == BuildTarget.Rebuild) {
+				var builder = new AspNetProjectBuilder(this, progressMonitor, feedbackSink);
+				return builder.Build();
+			}
 			return Task.FromResult(true);
 		}
 
@@ -356,6 +360,15 @@ namespace ICSharpCode.AspNet
 				AspNetServices.ProjectService.ChangeConfiguration(currentConfiguration);
 			}
 			base.OnActiveConfigurationChanged(e);
+		}
+		
+		public string JsonPath {
+			get {
+				if (project != null) {
+					return project.Path;
+				}
+				return null;
+			}
 		}
 	}
 }

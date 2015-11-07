@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 //using Microsoft.CodeAnalysis.Text;
 //using OmniSharp.Roslyn;
 using DependenciesMessage = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages.DependenciesMessage;
+using DiagnosticsMessage = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages.DiagnosticsMessage;
 using ICSharpCode.AspNet;
 using OmniSharp.Dnx;
 
@@ -109,6 +110,11 @@ namespace OmniSharp
         public void DependenciesUpdated(Project project, DependenciesMessage message)
         {
             AspNetServices.ProjectService.DependenciesUpdated(project, message);
+        }
+
+        public void ReportDiagnostics(Project project, DiagnosticsMessage[] messages)
+        {
+            AspNetServices.ProjectService.ReportDiagnostics(project, messages);
         }
     }
 }
