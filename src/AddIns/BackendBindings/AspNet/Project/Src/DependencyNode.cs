@@ -51,6 +51,8 @@ namespace ICSharpCode.AspNet
 				SetFileIcon("nuget-16.png");
 			} else if (Unresolved) {
 				SetFileIcon("nuget-warning-16.png");
+			} else if (Type == "Project") {
+				SetFileIcon("project-dependency-16.png");
 			} else {
 				SetIcon("Icons.16x16.Reference");
 			}

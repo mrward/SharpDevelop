@@ -204,6 +204,9 @@
     <None Include="Icons\nuget-warning-16.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Icons\project-dependency-16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Icons\readme.txt" />
     <None Include="Licenses\Apache-2.0-LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
