@@ -36,8 +36,10 @@ namespace ICSharpCode.AspNet
 	public class AspNetProject : CSharpProject
 	{
 		DnxProject project;
+		bool addingReferences;
 		Dictionary<string, DependenciesMessage> dependencies = new Dictionary<string, DependenciesMessage>();
-		Dictionary<string, List<string>> references = new Dictionary<string, List<string>>();
+		Dictionary<string, List<string>> savedFileReferences = new Dictionary<string, List<string>>();
+		Dictionary<string, List<string>> savedProjectReferences = new Dictionary<string, List<string>>();
 		Dictionary<string, List<string>> preprocessorSymbols = new Dictionary<string, List<string>>();
 		string currentCommand;
 		DnxFramework defaultFramework;
@@ -62,7 +64,7 @@ namespace ICSharpCode.AspNet
 			return new AspNetProjectBehavior(this, base.GetOrCreateBehavior());
 		}
 		
-		public void AddAssemblyReference(string fileName)
+		void AddAssemblyReference(string fileName)
 		{
 			ReferenceProjectItem projectItem = AddAssemblyReferenceWithoutFiringEvent(fileName);
 			RaiseProjectItemAdded(projectItem);
@@ -86,6 +88,25 @@ namespace ICSharpCode.AspNet
 			}
 		}
 		
+		void AddProjectReference(string fileName)
+		{
+			ProjectReferenceProjectItem projectItem = AddProjectReferenceWithoutFiringEvent(fileName);
+			RaiseProjectItemAdded(projectItem);
+		}
+		
+		ProjectReferenceProjectItem AddProjectReferenceWithoutFiringEvent(string fileName)
+		{
+			AspNetProject referencedProject = ParentSolution.FindProjectByProjectJsonFileName(fileName);
+			if (referencedProject != null) {
+				var projectItem = new ProjectReferenceProjectItem(this, referencedProject);
+				Items.Add(projectItem);
+				return projectItem;
+			} else {
+				LoggingService.DebugFormatted("Unable to find project by json filename '{0}'.", fileName);
+			}
+			return null;
+		}
+		
 		public string CurrentFramework { get; private set; }
 		
 		public void UpdateReferences(OmniSharp.Dnx.FrameworkProject frameworkProject)
@@ -93,12 +114,22 @@ namespace ICSharpCode.AspNet
 			EnsureCurrentFrameworkDefined(frameworkProject);
 			
 			List<string> fileReferences = frameworkProject.FileReferences.Keys.ToList ();
-			references[frameworkProject.Framework] = fileReferences;
+			savedFileReferences[frameworkProject.Framework] = fileReferences;
+			
+			List<string> projectReferences = frameworkProject.ProjectReferences.Keys.ToList();
+			savedProjectReferences[frameworkProject.Framework] = projectReferences;
 		
 			if (CurrentFramework != frameworkProject.Framework)
 				return;
 			
-			UpdateReferences(fileReferences);
+			try {
+				addingReferences = true;
+				RemoveExistingReferences();
+				UpdateReferences(fileReferences);
+				UpdateProjectReferences(projectReferences);
+			} finally {
+				addingReferences = false;
+			}
 		}
 		
 		void EnsureCurrentFrameworkDefined(OmniSharp.Dnx.FrameworkProject frameworkProject)
@@ -108,13 +139,29 @@ namespace ICSharpCode.AspNet
 			}
 		}
 
-		void UpdateReferences(IEnumerable<string> references)
+		void RemoveExistingReferences()
 		{
 			Items.RemoveAll(item => item is ReferenceProjectItem);
-			
+		}
+		
+		void UpdateReferences(IEnumerable<string> references)
+		{
 			ReferenceProjectItem projectItem = null;
 			foreach (string reference in references) {
 				projectItem = AddAssemblyReferenceWithoutFiringEvent(reference);
+			}
+			
+			if (projectItem != null) {
+				RaiseProjectItemAdded(projectItem);
+			}
+		}
+		
+		void UpdateProjectReferences(IEnumerable<string> references)
+		{
+			ProjectReferenceProjectItem projectItem = null;
+			
+			foreach (string reference in references) {
+				projectItem = AddProjectReferenceWithoutFiringEvent(reference);
 			}
 			
 			if (projectItem != null) {
@@ -273,8 +320,15 @@ namespace ICSharpCode.AspNet
 				defaultFramework = value;
 				if (!IsCurrentFramework(value)) {
 					UpdateCurrentFramework(value);
-					RefreshReferences();
-					RefreshCompilerSettings();
+					
+					try {
+						addingReferences = true;
+						RefreshReferences();
+						RefreshProjectReferences();
+						RefreshCompilerSettings();
+					} finally {
+						addingReferences = false;
+					}
 				}
 			}
 		}
@@ -295,7 +349,7 @@ namespace ICSharpCode.AspNet
 		void RefreshReferences()
 		{
 			List<string> fileReferences = null;
-			if (!references.TryGetValue(CurrentFramework, out fileReferences)) {
+			if (!savedFileReferences.TryGetValue(CurrentFramework, out fileReferences)) {
 				LoggingService.WarnFormatted("Unable to find references for framework '{0}'.", CurrentFramework);
 				return;
 			}
@@ -303,10 +357,21 @@ namespace ICSharpCode.AspNet
 			UpdateReferences(fileReferences);
 		}
 		
+		void RefreshProjectReferences()
+		{
+			List<string> projectReferences = null;
+			if (!savedProjectReferences.TryGetValue(CurrentFramework, out projectReferences)) {
+				LoggingService.WarnFormatted("Unable to find project for framework '{0}'.", CurrentFramework);
+				return;
+			}
+
+			UpdateProjectReferences(projectReferences);
+		}
+		
 		bool IsCurrentFramework(DnxFramework framework)
 		{
 			if (framework == null) {
-				return CurrentFramework == references.Keys.FirstOrDefault();
+				return CurrentFramework == savedFileReferences.Keys.FirstOrDefault();
 			}
 			
 			return framework.Name == CurrentFramework;
@@ -315,7 +380,7 @@ namespace ICSharpCode.AspNet
 		void UpdateCurrentFramework(DnxFramework framework)
 		{
 			if (framework == null) {
-				CurrentFramework = references.Keys.FirstOrDefault();
+				CurrentFramework = savedFileReferences.Keys.FirstOrDefault();
 			} else {
 				CurrentFramework = framework.Name;
 			}
@@ -368,6 +433,38 @@ namespace ICSharpCode.AspNet
 					return project.Path;
 				}
 				return null;
+			}
+		}
+		
+		public void OnReferenceAddedToProject(ReferenceProjectItem projectItem)
+		{
+			if (addingReferences)
+				return;
+
+			if (projectItem.ItemType == ItemType.ProjectReference) {
+				var jsonFile = ProjectJsonFile.Read(this);
+				if (jsonFile.Exists) {
+					jsonFile.AddProjectReference((ProjectReferenceProjectItem)projectItem);
+					jsonFile.Save();
+				} else {
+					LoggingService.DebugFormatted("Unable to find project.json '{0}'", jsonFile.Path);
+				}
+			}
+		}
+
+		public void OnReferenceRemovedFromProject(ReferenceProjectItem projectItem)
+		{
+			if (addingReferences)
+				return;
+
+			if (projectItem.ItemType == ItemType.ProjectReference) {
+				var jsonFile = ProjectJsonFile.Read(this);
+				if (jsonFile.Exists) {
+					jsonFile.RemoveProjectReference((ProjectReferenceProjectItem)projectItem);
+					jsonFile.Save();
+				} else {
+					LoggingService.DebugFormatted("Unable to find project.json '{0}'", jsonFile.Path);
+				}
 			}
 		}
 	}

@@ -103,6 +103,7 @@
     <Compile Include="Src\IsDnxProjectSelectedConditionEvaluator.cs" />
     <Compile Include="Src\ISolutionExtensions.cs" />
     <Compile Include="Src\DnxRuntimeProcessStartInfo.cs" />
+    <Compile Include="Src\JsonFile.cs" />
     <Compile Include="Src\Omnisharp\Dnx\DnxContext.cs" />
     <Compile Include="Src\Omnisharp\Dnx\DnxPaths.cs" />
     <Compile Include="Src\Omnisharp\Dnx\DnxProjectSystem.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Src\Omnisharp\Utilities\ProcessingQueue.cs" />
     <Compile Include="Src\ProjectCommandInfo.cs" />
     <Compile Include="Src\ProjectFrameworkInfo.cs" />
+    <Compile Include="Src\ProjectJsonFile.cs" />
     <Compile Include="Src\SetDnxCommandMenuBuilder.cs" />
     <Compile Include="Src\SetDnxRuntimeMenuBuilder.cs" />
   </ItemGroup>

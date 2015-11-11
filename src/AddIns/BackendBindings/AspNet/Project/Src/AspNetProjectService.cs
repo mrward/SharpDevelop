@@ -44,8 +44,10 @@ namespace ICSharpCode.AspNet
 		{
 			SD.ProjectService.SolutionOpened += SolutionOpened;
 			SD.ProjectService.SolutionClosed += SolutionClosed;
+			SD.ProjectService.ProjectItemAdded += ProjectItemAdded;
+			SD.ProjectService.ProjectItemRemoved += ProjectItemRemoved;
 		}
-		
+
 		void SolutionClosed(object sender, SolutionEventArgs e)
 		{
 			UnloadProjectSystem();
@@ -223,6 +225,22 @@ namespace ICSharpCode.AspNet
 				builder.OnDiagnostics(messages);
 			} else {
 				LoggingService.WarnFormatted("Unable to find builder for project '{0}'", project.Path);
+			}
+		}
+		
+		void ProjectItemAdded(object sender, ProjectItemEventArgs e)
+		{
+			var project = e.Project as AspNetProject;
+			if (project != null && e.ProjectItem is ReferenceProjectItem) {
+				project.OnReferenceAddedToProject((ReferenceProjectItem)e.ProjectItem);
+			}
+		}
+
+		void ProjectItemRemoved(object sender, ProjectItemEventArgs e)
+		{
+			var project = e.Project as AspNetProject;
+			if (project != null && e.ProjectItem is ReferenceProjectItem) {
+				project.OnReferenceRemovedFromProject((ReferenceProjectItem)e.ProjectItem);
 			}
 		}
 	}
