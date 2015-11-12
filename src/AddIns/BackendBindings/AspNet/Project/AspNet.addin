@@ -94,4 +94,13 @@
 				class="ICSharpCode.AspNet.DnxRuntimeOptionsPanel" />
 		</Condition>
 	</Path>
+
+	<Path name="/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependencyNode">
+		<MenuItem
+			id="Remove"
+			label="${res:Global.RemoveButtonText}"
+			type="Item"
+			icon="Icons.16x16.DeleteIcon"
+			class="ICSharpCode.SharpDevelop.Project.Commands.DeleteProjectBrowserNode" />
+	</Path>
 </AddIn>

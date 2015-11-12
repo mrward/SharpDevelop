@@ -34,6 +34,8 @@ namespace ICSharpCode.AspNet
 			this.message = message;
 			this.dependency = dependency;
 			
+			ContextmenuAddinTreePath = "/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependencyNode";
+			
 			Text = GetLabel();
 			Tag = new DependencyNodeDescriptor(this);
 			
@@ -51,7 +53,7 @@ namespace ICSharpCode.AspNet
 				SetFileIcon("nuget-16.png");
 			} else if (Unresolved) {
 				SetFileIcon("nuget-warning-16.png");
-			} else if (Type == "Project") {
+			} else if (IsProject) {
 				SetFileIcon("project-dependency-16.png");
 			} else {
 				SetIcon("Icons.16x16.Reference");
@@ -119,6 +121,22 @@ namespace ICSharpCode.AspNet
 
 		public bool Unresolved {
 			get { return dependency.Type == "Unresolved"; }
+		}
+		
+		public bool IsProject {
+			get { return Type == "Project"; }
+		}
+		
+		public override bool EnableDelete {
+			get { return IsProject; }
+		}
+		
+		public override void Delete()
+		{
+			var project = (AspNetProject)Project;
+			if (project.RemoveProjectReference(NodeName)) {
+				Remove();
+			}
 		}
 	}
 }

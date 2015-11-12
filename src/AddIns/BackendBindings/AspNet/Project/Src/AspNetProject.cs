@@ -467,5 +467,17 @@ namespace ICSharpCode.AspNet
 				}
 			}
 		}
+
+		public bool RemoveProjectReference(string name)
+		{
+			var matchedProjectReference = Items.OfType<ProjectReferenceProjectItem> ()
+				.FirstOrDefault(projectItem => projectItem.ProjectName == name);
+			
+			if (matchedProjectReference != null) {
+				Items.Remove(matchedProjectReference);
+				return true;
+			}
+			return false;
+		}
 	}
 }
