@@ -193,9 +193,15 @@ namespace ICSharpCode.AspNet
 
 		FileProjectItem CreateFileProjectItem(string fileName)
 		{
-			return new FileProjectItem(this, GetDefaultItemType(fileName)) {
+			var projectItem = new FileProjectItem(this, GetDefaultItemType(fileName)) {
 				FileName = new FileName(fileName)
 			};
+			
+			if (IsProjectJsonLockFile(projectItem.FileName)) {
+				AddProjectJsonDependency(projectItem);
+			}
+			
+			return projectItem;
 		}
 		
 		public override ItemType GetDefaultItemType(string fileName)
@@ -478,6 +484,39 @@ namespace ICSharpCode.AspNet
 				return true;
 			}
 			return false;
+		}
+		
+		static bool IsProjectJsonLockFile(FileName fileName)
+		{
+			return fileName.GetFileName().Equals("project.lock.json", StringComparison.OrdinalIgnoreCase);
+		}
+
+		static bool IsProjectJsonFile(FileName fileName)
+		{
+			return fileName.GetFileName().Equals("project.json", StringComparison.OrdinalIgnoreCase);
+		}
+
+		void AddProjectJsonDependency(FileProjectItem projectItem)
+		{
+			FileName projectJsonFileName = GetProjectJsonFileName();
+			if (projectJsonFileName != null) {
+				projectItem.DependentUpon = projectJsonFileName.GetFileName();
+			}
+		}
+
+		FileName GetProjectJsonFileName()
+		{
+			FileProjectItem projectJsonFile = Items.OfType<FileProjectItem>()
+				.FirstOrDefault (projectItem => IsProjectJsonFile(projectItem.FileName));
+			
+			if (projectJsonFile != null)
+				return projectJsonFile.FileName;
+
+			FileName projectJsonFileName = Directory.CombineFile("project.json");
+			if (File.Exists(projectJsonFileName))
+				return projectJsonFileName;
+
+			return null;
 		}
 	}
 }
