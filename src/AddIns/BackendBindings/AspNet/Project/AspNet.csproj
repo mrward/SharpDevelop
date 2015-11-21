@@ -78,6 +78,12 @@
     <Compile Include="Src\AspNetProjectBuilder.cs" />
     <Compile Include="Src\DiagnosticsMessageExtensions.cs" />
     <Compile Include="Src\DnxFrameworkExtensions.cs" />
+    <Compile Include="Src\DnxGlobalOptionsPanel.xaml.cs">
+      <DependentUpon>DnxGlobalOptionsPanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Src\DnxLoggerService.cs" />
+    <Compile Include="Src\DnxOutputPad.cs" />
     <Compile Include="Src\DnxProjectSystemFactory.cs" />
     <Compile Include="Src\AspNetProject.cs" />
     <Compile Include="Src\AspNetProjectBehavior.cs" />
@@ -234,6 +240,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Libraries\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj">
+      <Project>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</Project>
+      <Name>ICSharpCode.AvalonEdit</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj">
       <Project>{53DCA265-3C3C-42F9-B647-F72BA678122B}</Project>
       <Name>ICSharpCode.NRefactory.CSharp</Name>
@@ -252,6 +263,11 @@
     <ProjectReference Include="..\..\..\..\Main\Core\Project\ICSharpCode.Core.csproj">
       <Project>{35CEF10F-2D4C-45F2-9DD1-161E0FEC583C}</Project>
       <Name>ICSharpCode.Core</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Main\ICSharpCode.Core.Presentation\ICSharpCode.Core.Presentation.csproj">
+      <Project>{7E4A7172-7FF5-48D0-B719-7CD959DD1AC9}</Project>
+      <Name>ICSharpCode.Core.Presentation</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Misc\PackageManagement\Project\PackageManagement.csproj">
@@ -293,6 +309,7 @@
     <Folder Include="Templates" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Src\DnxGlobalOptionsPanel.xaml" />
     <Page Include="Src\DnxRuntimeOptionsPanel.xaml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

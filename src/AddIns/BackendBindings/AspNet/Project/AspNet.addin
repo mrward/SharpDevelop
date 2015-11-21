@@ -104,4 +104,15 @@
 			icon="Icons.16x16.DeleteIcon"
 			class="ICSharpCode.SharpDevelop.Project.Commands.DeleteProjectBrowserNode" />
 	</Path>
+
+	<Path name="/SharpDevelop/Dialogs/OptionsDialog">
+		<OptionPanel
+			id="DNX"
+			label="DNX">
+			<OptionPanel
+				id="DNXOptions"
+				label="${res:Dialog.Options.IDEOptions.General}"
+				class="ICSharpCode.AspNet.DnxGlobalOptionsPanel" />
+		</OptionPanel>
+	</Path>
 </AddIn>

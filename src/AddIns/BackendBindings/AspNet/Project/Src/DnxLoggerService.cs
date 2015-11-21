@@ -17,25 +17,36 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using ICSharpCode.Core;
 using Microsoft.Framework.Logging;
 
-namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
+namespace ICSharpCode.AspNet
 {
-	public class Logger : Microsoft.Framework.Logging.ILogger
+	public static class DnxLoggerService
 	{
-		public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+		const string DnxOutputLogLevelProperty = "MonoDevelop.Dnx.DnxOutputLogLevel";
+		static LogLevel logLevel;
+
+		static DnxLoggerService()
 		{
-			DnxLoggerService.Log(logLevel, eventId, state, exception, formatter);
+			string logLevelText = PropertyService.Get(DnxOutputLogLevelProperty, LogLevel.Warning.ToString());
+			if (!Enum.TryParse (logLevelText, out logLevel))
+				logLevel = LogLevel.Warning;
 		}
-		
-		public bool IsEnabled(LogLevel logLevel)
-		{
-			return true;
+
+		public static LogLevel LogLevel {
+			get { return logLevel; }
+			set {
+				logLevel = value;
+				PropertyService.Set(DnxOutputLogLevelProperty, logLevel.ToString ());
+			}
 		}
-		
-		public IDisposable BeginScope(object state)
+
+		public static void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
 		{
-			throw new NotImplementedException();
+			DnxOutputPad pad = DnxOutputPad.Instance;
+			if (pad != null)
+				pad.Log(logLevel, eventId, state, exception, formatter);
 		}
 	}
 }

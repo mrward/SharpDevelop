@@ -1,0 +1,28 @@
+﻿<gui:OptionPanel
+	x:Class="ICSharpCode.AspNet.DnxGlobalOptionsPanel"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:gui="clr-namespace:ICSharpCode.SharpDevelop.Gui;assembly=ICSharpCode.SharpDevelop"
+	xmlns:aspnet="clr-namespace:ICSharpCode.AspNet"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<StackPanel>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
+			
+			<Label
+				Margin="4, 4, 0, 0"
+				Content="DNX Output Verbosity:"/>
+			<ComboBox
+				Margin="4, 8, 0, 0"
+				Grid.Column="1"
+				ItemsSource="{Binding LogLevels}"
+				SelectedItem="{Binding SelectedLogLevel}"/>
+		</Grid>
+	</StackPanel>
+</gui:OptionPanel>

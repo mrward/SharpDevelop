@@ -17,25 +17,60 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Windows;
+using System.Windows.Controls;
+using ICSharpCode.AvalonEdit;
+using ICSharpCode.Core.Presentation;
+using ICSharpCode.SharpDevelop;
+using ICSharpCode.SharpDevelop.Gui;
+using ICSharpCode.SharpDevelop.Workbench;
 using Microsoft.Framework.Logging;
 
-namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
+namespace ICSharpCode.AspNet
 {
-	public class Logger : Microsoft.Framework.Logging.ILogger
+	public class DnxOutputPad : ILogger
 	{
+		static readonly DnxOutputPad instance = new DnxOutputPad();
+		static MessageViewCategory view = null;
+		
+		static DnxOutputPad()
+		{
+			MessageViewCategory.Create(ref view, "DNXOutput", "DNX Output");
+			instance = new DnxOutputPad();
+		}
+		
+		DnxOutputPad()
+		{
+			
+			SD.ProjectService.SolutionOpened += SolutionOpened;
+		}
+
+		public static DnxOutputPad Instance {
+			get { return instance; }
+		}
+		
+		void SolutionOpened (object sender, EventArgs e)
+		{
+			view.ClearText();
+		}
+
 		public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
 		{
-			DnxLoggerService.Log(logLevel, eventId, state, exception, formatter);
+			if (!IsEnabled (logLevel))
+				return;
+
+			string message = formatter.Invoke(state, exception) + Environment.NewLine;
+			view.AppendText(message);
 		}
-		
+
 		public bool IsEnabled(LogLevel logLevel)
 		{
-			return true;
+			return logLevel >= DnxLoggerService.LogLevel;
 		}
-		
+
 		public IDisposable BeginScope(object state)
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException ();
 		}
 	}
 }

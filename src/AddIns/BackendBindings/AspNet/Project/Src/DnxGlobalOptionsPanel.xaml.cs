@@ -17,25 +17,45 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using ICSharpCode.SharpDevelop.Gui;
 using Microsoft.Framework.Logging;
 
-namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
+namespace ICSharpCode.AspNet
 {
-	public class Logger : Microsoft.Framework.Logging.ILogger
+	public partial class DnxGlobalOptionsPanel : OptionPanel
 	{
-		public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+		readonly List<LogLevel> logLevels = new List<LogLevel> {
+			LogLevel.Debug,
+			LogLevel.Verbose,
+			LogLevel.Information,
+			LogLevel.Warning,
+			LogLevel.Error,
+			LogLevel.Critical
+		};
+		
+		LogLevel selectedLogLevel;
+		
+		public DnxGlobalOptionsPanel()
 		{
-			DnxLoggerService.Log(logLevel, eventId, state, exception, formatter);
+			selectedLogLevel = DnxLoggerService.LogLevel;
+			InitializeComponent();
+			DataContext = this;
 		}
 		
-		public bool IsEnabled(LogLevel logLevel)
+		public IEnumerable<LogLevel> LogLevels {
+			get { return logLevels; }
+		}
+		
+		public LogLevel SelectedLogLevel {
+			get { return selectedLogLevel; }
+			set { selectedLogLevel = value; }
+		}
+		
+		public override bool SaveOptions()
 		{
+			DnxLoggerService.LogLevel = selectedLogLevel;
 			return true;
-		}
-		
-		public IDisposable BeginScope(object state)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }
