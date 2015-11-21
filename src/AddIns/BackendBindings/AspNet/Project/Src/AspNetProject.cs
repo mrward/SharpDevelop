@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using CSharpBinding;
 using ICSharpCode.Core;
 using ICSharpCode.NRefactory.CSharp;
+using ICSharpCode.PackageManagement;
 using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
 using OmniSharp.Models;
@@ -33,7 +34,7 @@ using FrameworkData = Microsoft.Framework.DesignTimeHost.Models.OutgoingMessages
 
 namespace ICSharpCode.AspNet
 {
-	public class AspNetProject : CSharpProject
+	public class AspNetProject : CSharpProject, IPackageManagementProjectFactory
 	{
 		DnxProject project;
 		bool addingReferences;
@@ -517,6 +518,27 @@ namespace ICSharpCode.AspNet
 				return projectJsonFileName;
 
 			return null;
+		}
+
+		public IPackageManagementProject CreateProject(NuGet.IPackageRepository sourceRepository, MSBuildBasedProject project)
+		{
+			return new AspNetPackageManagementProject(sourceRepository, this);
+		}
+
+		public void AddNuGetPackage(NuGet.IPackage package)
+		{
+			AddNuGetPackages(new [] { package });
+		}
+		
+		public void AddNuGetPackages(IEnumerable<NuGet.IPackage> packagesToAdd)
+		{
+			var jsonFile = ProjectJsonFile.Read(this);
+			if (jsonFile.Exists) {
+				jsonFile.AddNuGetPackages(packagesToAdd);
+				jsonFile.Save ();
+			} else {
+				LoggingService.DebugFormatted("Unable to find project.json '{0}'", jsonFile.Path);
+			}
 		}
 	}
 }

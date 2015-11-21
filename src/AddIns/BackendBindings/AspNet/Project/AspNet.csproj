@@ -49,6 +49,10 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Core">
+      <HintPath>..\..\..\Misc\PackageManagement\RequiredLibraries\NuGet.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="PresentationCore">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -70,6 +74,7 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Src\AspNetPackageManagementProject.cs" />
     <Compile Include="Src\AspNetProjectBuilder.cs" />
     <Compile Include="Src\DiagnosticsMessageExtensions.cs" />
     <Compile Include="Src\DnxFrameworkExtensions.cs" />
@@ -247,6 +252,16 @@
     <ProjectReference Include="..\..\..\..\Main\Core\Project\ICSharpCode.Core.csproj">
       <Project>{35CEF10F-2D4C-45F2-9DD1-161E0FEC583C}</Project>
       <Name>ICSharpCode.Core</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Misc\PackageManagement\Project\PackageManagement.csproj">
+      <Project>{AE4AB0FA-6087-4480-AF37-0FA1452B3DA1}</Project>
+      <Name>PackageManagement</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Misc\PackageManagement\SharpDevelop.EnvDTE\SharpDevelop.EnvDTE.vbproj">
+      <Project>{1B753D7F-7C77-4D5E-B928-02982690879C}</Project>
+      <Name>SharpDevelop.EnvDTE</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\CSharpBinding\Project\CSharpBinding.csproj">

@@ -17,9 +17,11 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Project;
 using Newtonsoft.Json.Linq;
+using NuGet;
 
 namespace ICSharpCode.AspNet
 {
@@ -95,6 +97,15 @@ namespace ICSharpCode.AspNet
 			jsonObject.Add("dependencies", dependencies);
 
 			return dependencies;
+		}
+
+		public void AddNuGetPackages (IEnumerable<IPackage> packagesToAdd)
+		{
+			JObject dependencies = GetOrCreateDependencies();
+			foreach (IPackage package in packagesToAdd) {
+				var packageDependency = new JProperty(package.Id, package.Version.ToString());
+				dependencies.Add(packageDependency);
+			}
 		}
 	}
 }

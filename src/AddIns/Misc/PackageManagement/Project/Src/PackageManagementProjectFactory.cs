@@ -36,6 +36,10 @@ namespace ICSharpCode.PackageManagement
 			IPackageRepository sourceRepository,
 			MSBuildBasedProject project)
 		{
+			var customFactory = project as IPackageManagementProjectFactory;
+			if (customFactory != null) {
+				return customFactory.CreateProject(sourceRepository, project);
+			}
 			return new PackageManagementProject(sourceRepository, project, packageManagementEvents, factory);
 		}
 	}
