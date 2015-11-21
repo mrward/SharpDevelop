@@ -33,7 +33,7 @@
 			<File name="global.json">{
 	"projects": [ "src", "test" ],
 	"sdk": {
-		"version": "1.0.0-beta8"
+		"version": "1.0.0-rc1-final"
 	}
 }</File>
 		</Files>
@@ -53,7 +53,7 @@ namespace ${StandardNamespace}
 {
 	public class Program
 	{
-		public void Main(string[] args)
+		public static void Main(string[] args)
 		{
 			Console.WriteLine("Hello World!");
 		}
@@ -61,11 +61,15 @@ namespace ${StandardNamespace}
 }]]></File>
 				<File name="project.json">{
 	"version": "1.0.0-*",
-	"description": "",
+	"description": "${ProjectName} Console Application",
 	"authors": [ "" ],
 	"tags": [ "" ],
 	"projectUrl": "",
 	"licenseUrl": "",
+
+	"compilationOptions": {
+		"emitEntryPoint": true
+	},
 
 	"dependencies": {
 	},
@@ -78,11 +82,11 @@ namespace ${StandardNamespace}
 		"dnx451": { },
 		"dnxcore50" : {
 			"dependencies": {
-				"Microsoft.CSharp": "4.0.1-beta-23409",
-				"System.Collections": "4.0.11-beta-23409",
-				"System.Console": "4.0.0-beta-23409",
-				"System.Linq": "4.0.1-beta-23409",
-				"System.Threading": "4.0.11-beta-23409"
+				"Microsoft.CSharp": "4.0.1-beta-23516",
+				"System.Collections": "4.0.11-beta-23516",
+				"System.Console": "4.0.0-beta-23516",
+				"System.Linq": "4.0.1-beta-23516",
+				"System.Threading": "4.0.11-beta-23516"
 			}
 		}
 	}

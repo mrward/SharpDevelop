@@ -33,7 +33,7 @@
 			<File name="global.json">{
 	"projects": [ "src", "test" ],
 	"sdk": {
-		"version": "1.0.0-beta8"
+		"version": "1.0.0-rc1-final"
 	}
 }</File>
 		</Files>
@@ -51,8 +51,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ${StandardNamespace}
 {
@@ -68,15 +69,23 @@ namespace ${StandardNamespace}
 				await context.Response.WriteAsync("Hello World!");
 			});
 		}
+
+		public static void Main(string[] args)
+		{
+			WebApplication.Run<Startup>(args);
+		}
 	}
 }]]></File>
 				<File name="project.json">{
-	"webroot": "wwwroot",
 	"version": "1.0.0-*",
 
+	"compilationOptions": {
+		"emitEntryPoint": true
+	},
+
 	"dependencies": {
-		"Microsoft.AspNet.IISPlatformHandler": "1.0.0-beta8",
-		"Microsoft.AspNet.Server.Kestrel": "1.0.0-beta8"
+		"Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-final",
+		"Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final"
 	},
 
 	"commands": {
@@ -89,7 +98,6 @@ namespace ${StandardNamespace}
 	},
 
 	"publishExclude": [
-		"**.xproj",
 		"**.user",
 		"**.userprefs",
 		"**.vspscc"
