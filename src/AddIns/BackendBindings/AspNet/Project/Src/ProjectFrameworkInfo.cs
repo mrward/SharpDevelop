@@ -31,10 +31,5 @@ namespace ICSharpCode.AspNet
 		
 		public AspNetProject Project { get; set; }
 		public DnxFramework Framework { get; set; }
-
-		public void UpdateDefaultFramework()
-		{
-			Project.DefaultFramework = Framework;
-		}
 	}
 }

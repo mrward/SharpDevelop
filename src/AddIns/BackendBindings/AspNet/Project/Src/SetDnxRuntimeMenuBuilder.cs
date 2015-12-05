@@ -23,6 +23,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop;
+using ICSharpCode.SharpDevelop.Project;
 using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
@@ -72,7 +73,14 @@ namespace ICSharpCode.AspNet
 		{
 			var menuItem = (MenuItem)sender;
 			var projectInfo = (ProjectFrameworkInfo)menuItem.Tag;
-			projectInfo.UpdateDefaultFramework();
+			
+			ISolution solution = SD.ProjectService.CurrentSolution;
+			if (solution == null)
+				return;
+			
+			foreach (AspNetProject project in solution.GetAspNetProjects()) {
+				project.DefaultFramework = projectInfo.Framework;
+			}
 		}
 	}
 }
