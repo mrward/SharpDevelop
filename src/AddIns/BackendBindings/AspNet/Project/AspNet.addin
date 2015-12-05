@@ -96,6 +96,14 @@
 		</Condition>
 	</Path>
 
+	<Path name="/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependenciesFolderNode">
+		<MenuItem
+			id="Remove"
+			label="Add NuGet Package Dependencies"
+			type="Item"
+			class="ICSharpCode.AspNet.AddNuGetPackageDependenciesCommand" />
+	</Path>
+	
 	<Path name="/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependencyNode">
 		<MenuItem
 			id="Remove"

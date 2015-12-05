@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using ICSharpCode.Core;
+using ICSharpCode.PackageManagement;
 using ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.AspNet
@@ -37,6 +38,8 @@ namespace ICSharpCode.AspNet
 		public DependenciesFolderNode(AspNetProject project)
 		{
 			this.project = project;
+			
+			ContextmenuAddinTreePath = "/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependenciesFolderNode";
 			
 			Text = "Dependencies";
 			OpenedImage = "ProjectBrowser.ReferenceFolder.Open";
@@ -109,6 +112,12 @@ namespace ICSharpCode.AspNet
 		void PackageRestoreFinished(object sender, EventArgs e)
 		{
 			Text = "Dependencies";
+		}
+		
+		public override void ActivateItem()
+		{
+			var command = new ManagePackagesCommand();
+			command.Run();
 		}
 	}
 }

@@ -74,6 +74,7 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Src\Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Src\AddNuGetPackageDependenciesCommand.cs" />
     <Compile Include="Src\AspNetPackageManagementProject.cs" />
     <Compile Include="Src\AspNetProjectBuilder.cs" />
     <Compile Include="Src\DiagnosticsMessageExtensions.cs" />
