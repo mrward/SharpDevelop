@@ -39,6 +39,7 @@ namespace ICSharpCode.AspNet
 			targetFramework = new FrameworkName("DNX", new Version("5.0"));
 		}
 
+		#pragma warning disable 0067
 		public event EventHandler<PackageOperationEventArgs> PackageInstalled;
 
 		public event EventHandler<PackageOperationEventArgs> PackageUninstalled;
@@ -46,6 +47,7 @@ namespace ICSharpCode.AspNet
 		public event EventHandler<PackageOperationEventArgs> PackageReferenceAdded;
 
 		public event EventHandler<PackageOperationEventArgs> PackageReferenceRemoving;
+		#pragma warning restore 0067
 
 		public ICSharpCode.PackageManagement.EnvDTE.Project ConvertToDTEProject()
 		{
