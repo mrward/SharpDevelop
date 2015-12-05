@@ -389,8 +389,22 @@ namespace ICSharpCode.AspNet
 			if (framework == null) {
 				CurrentFramework = savedFileReferences.Keys.FirstOrDefault();
 			} else {
-				CurrentFramework = framework.Name;
+				CurrentFramework = GetBestFrameworkMatch(framework);
 			}
+		}
+		
+		string GetBestFrameworkMatch(DnxFramework framework)
+		{
+			if (savedFileReferences.ContainsKey(framework.Name))
+				return framework.Name;
+
+			string bestFrameworkMatch = savedFileReferences.Keys.FirstOrDefault(key => framework.IsMatch (key));
+			if (bestFrameworkMatch != null)
+				return bestFrameworkMatch;
+
+			LoggingService.WarnFormatted("Unable to find matching framework '{0}' for project '{1}'", framework.Name, Name);
+
+			return savedFileReferences.Keys.FirstOrDefault();
 		}
 		
 		public void UpdateParseOptions(OmniSharp.Dnx.FrameworkProject frameworkProject, Microsoft.CodeAnalysis.ParseOptions options)
