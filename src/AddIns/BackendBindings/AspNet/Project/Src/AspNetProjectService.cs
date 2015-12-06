@@ -46,8 +46,10 @@ namespace ICSharpCode.AspNet
 			SD.ProjectService.SolutionClosed += SolutionClosed;
 			SD.ProjectService.ProjectItemAdded += ProjectItemAdded;
 			SD.ProjectService.ProjectItemRemoved += ProjectItemRemoved;
+			FileUtility.FileLoaded += FileLoaded;
+			FileUtility.FileSaved += FileChanged;
 		}
-
+		
 		void SolutionClosed(object sender, SolutionEventArgs e)
 		{
 			UnloadProjectSystem();
@@ -242,6 +244,36 @@ namespace ICSharpCode.AspNet
 			if (project != null && e.ProjectItem is ReferenceProjectItem) {
 				project.OnReferenceRemovedFromProject((ReferenceProjectItem)e.ProjectItem);
 			}
+		}
+		
+		void FileLoaded(object sender, FileLoadEventArgs e)
+		{
+			if (e.IsReload) {
+				FileChanged(sender, e);
+			}
+		}
+		
+		void FileChanged(object sender, FileNameEventArgs e)
+		{
+			if (solution == null)
+				return;
+
+			if (!solution.HasAspNetProjects())
+				return;
+
+			if (!IsGlobalJsonFileChanged(e.FileName))
+				return;
+
+			LoadAspNetProjectSystem(solution);
+		}
+
+		static bool IsGlobalJsonFileChanged(FileName fileName)
+		{
+			string name = fileName.GetFileName();
+			if (name != null) {
+				return name.Equals("global.json", StringComparison.OrdinalIgnoreCase);
+			}
+			return false;
 		}
 	}
 }

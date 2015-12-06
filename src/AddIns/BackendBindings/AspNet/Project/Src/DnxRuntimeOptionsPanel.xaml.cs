@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop.Gui.OptionPanels;
 using ICSharpCode.SharpDevelop.Project;
 
@@ -87,7 +88,8 @@ namespace ICSharpCode.AspNet
 		
 			globalJsonFile.DnxRuntimeVersion = SelectedDnxRuntimeVersion;
 			if (originalDnxRuntimeVersion != globalJsonFile.DnxRuntimeVersion) {
-				globalJsonFile.Save ();
+				globalJsonFile.Save();
+				FileUtility.RaiseFileSaved(new FileNameEventArgs(globalJsonFile.Path));
 			}
 			
 			IsDirty = false;
