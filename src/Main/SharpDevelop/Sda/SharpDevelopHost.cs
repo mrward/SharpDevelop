@@ -368,6 +368,11 @@ namespace ICSharpCode.SharpDevelop.Sda
 				host.invokeTarget.BeginInvoke(method, new object[] { argument });
 			}
 			
+			private void Invoke(Action<string, bool> method, string argument1, bool argument2)
+			{
+				host.invokeTarget.BeginInvoke(method, new object[] { argument1, argument2 });
+			}
+			
 			internal void BeforeRunWorkbench()
 			{
 				if (InvokeRequired) { Invoke(BeforeRunWorkbench); return; }
@@ -406,10 +411,10 @@ namespace ICSharpCode.SharpDevelop.Sda
 				if (host.SolutionClosed != null) host.SolutionClosed(host, EventArgs.Empty);
 			}
 			
-			internal void FileLoaded(string fileName)
+			internal void FileLoaded(string fileName, bool isReloaded)
 			{
-				if (InvokeRequired) { Invoke(FileLoaded, fileName); return; }
-				if (host.FileLoaded != null) host.FileLoaded(host, new FileEventArgs(fileName));
+				if (InvokeRequired) { Invoke(FileLoaded, fileName, isReloaded); return; }
+				if (host.FileLoaded != null) host.FileLoaded(host, new FileEventArgs(fileName, isReloaded));
 			}
 			
 			internal void FileSaved(string fileName)

@@ -342,7 +342,7 @@ namespace ICSharpCode.SharpDevelop.Workbench
 		
 		public virtual void ReloadFromDisk()
 		{
-			var r = FileUtility.ObservedLoad(ReloadFromDiskInternal, FileName);
+			var r = FileUtility.ObservedLoad(ReloadFromDiskInternal, FileName, isReload: true);
 			if (r == FileOperationResult.Failed) {
 				if (currentView != null && currentView.WorkbenchWindow != null) {
 					currentView.WorkbenchWindow.CloseWindow(true);

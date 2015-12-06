@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+﻿// Copyright (c) 2015 AlphaSierraPapa for the SharpDevelop Team
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
@@ -18,38 +18,22 @@
 
 using System;
 
-namespace ICSharpCode.SharpDevelop.Sda
+namespace ICSharpCode.Core
 {
-	/// <summary>
-	/// EventArgs for the <see cref="SharpDevelopHost.FileLoaded">SharpDevelopHost.FileLoaded</see>
-	/// and <see cref="SharpDevelopHost.FileSaved">SharpDevelopHost.FileSaved</see> events.
-	/// </summary>
-	[Serializable]
-	public class FileEventArgs : EventArgs
+	public class FileLoadEventArgs : FileNameEventArgs
 	{
-		string fileName;
-		
-		/// <summary>
-		/// Gets the file name.
-		/// </summary>
-		public string FileName {
-			get {
-				return fileName;
-			}
-		}
-		
-		/// <summary>
-		/// Creates a new instance of the FileEventArgs class.
-		/// </summary>
-		public FileEventArgs(string fileName, bool isReload = false)
+		public FileLoadEventArgs(FileName fileName, bool isReload = false)
+			: base(fileName)
 		{
-			this.fileName = fileName;
 			IsReload = isReload;
 		}
 		
-		/// <summary>
-		/// Gets whether the file was reloaded.
-		/// </summary>
+		public FileLoadEventArgs(string fileName, bool isReload = false)
+			: base(fileName)
+		{
+			IsReload = isReload;
+		}
+		
 		public bool IsReload { get; private set; }
 	}
 }

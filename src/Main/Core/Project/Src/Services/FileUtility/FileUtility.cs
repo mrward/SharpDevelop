@@ -677,22 +677,22 @@ namespace ICSharpCode.Core
 		}
 		
 		// Observe LOAD functions
-		public static FileOperationResult ObservedLoad(FileOperationDelegate loadFile, FileName fileName, string message, FileErrorPolicy policy)
+		public static FileOperationResult ObservedLoad(FileOperationDelegate loadFile, FileName fileName, string message, FileErrorPolicy policy, bool isReload = false)
 		{
 			try {
 				loadFile();
-				OnFileLoaded(new FileNameEventArgs(fileName));
+				OnFileLoaded(new FileLoadEventArgs(fileName, isReload));
 				return FileOperationResult.OK;
 			} catch (IOException e) {
-				return ObservedLoadHandleException(e, loadFile, fileName, message, policy);
+				return ObservedLoadHandleException(e, loadFile, fileName, message, policy, isReload);
 			}  catch (UnauthorizedAccessException e) {
-				return ObservedLoadHandleException(e, loadFile, fileName, message, policy);
+				return ObservedLoadHandleException(e, loadFile, fileName, message, policy, isReload);
 			} catch (FormatException e) {
-				return ObservedLoadHandleException(e, loadFile, fileName, message, policy);
+				return ObservedLoadHandleException(e, loadFile, fileName, message, policy, isReload);
 			}
 		}
 
-		static FileOperationResult ObservedLoadHandleException(Exception e, FileOperationDelegate loadFile, FileName fileName, string message, FileErrorPolicy policy)
+		static FileOperationResult ObservedLoadHandleException(Exception e, FileOperationDelegate loadFile, FileName fileName, string message, FileErrorPolicy policy, bool isReload)
 		{
 			message = message + Environment.NewLine + Environment.NewLine + e.Message;
 			var messageService = ServiceSingleton.GetRequiredService<IMessageService>();
@@ -703,7 +703,7 @@ namespace ICSharpCode.Core
 				case FileErrorPolicy.ProvideAlternative:
 					ChooseSaveErrorResult r = messageService.ChooseSaveError(fileName, message, "${res:FileUtilityService.ErrorWhileLoading}", e, false);
 					if (r.IsRetry)
-						return ObservedLoad(loadFile, fileName, message, policy);
+						return ObservedLoad(loadFile, fileName, message, policy, isReload);
 					else if (r.IsIgnore)
 						return FileOperationResult.Failed;
 					break;
@@ -711,28 +711,30 @@ namespace ICSharpCode.Core
 			return FileOperationResult.Failed;
 		}
 		
-		public static FileOperationResult ObservedLoad(FileOperationDelegate loadFile, FileName fileName, FileErrorPolicy policy = FileErrorPolicy.Inform)
+		public static FileOperationResult ObservedLoad(FileOperationDelegate loadFile, FileName fileName, FileErrorPolicy policy = FileErrorPolicy.Inform, bool isReload = false)
 		{
 			return ObservedLoad(loadFile,
 			                    fileName,
 			                    ResourceService.GetString("ICSharpCode.Services.FileUtilityService.CantLoadFileStandardText"),
-			                    policy);
+			                    policy,
+			                    isReload);
 		}
 		
-		public static FileOperationResult ObservedLoad(NamedFileOperationDelegate saveFileAs, FileName fileName, string message, FileErrorPolicy policy = FileErrorPolicy.Inform)
+		public static FileOperationResult ObservedLoad(NamedFileOperationDelegate saveFileAs, FileName fileName, string message, FileErrorPolicy policy = FileErrorPolicy.Inform, bool isReload = false)
 		{
-			return ObservedLoad(new FileOperationDelegate(delegate { saveFileAs(fileName); }), fileName, message, policy);
+			return ObservedLoad(new FileOperationDelegate(delegate { saveFileAs(fileName); }), fileName, message, policy, isReload);
 		}
 		
-		public static FileOperationResult ObservedLoad(NamedFileOperationDelegate saveFileAs, FileName fileName, FileErrorPolicy policy = FileErrorPolicy.Inform)
+		public static FileOperationResult ObservedLoad(NamedFileOperationDelegate saveFileAs, FileName fileName, FileErrorPolicy policy = FileErrorPolicy.Inform, bool isReload = false)
 		{
 			return ObservedLoad(saveFileAs,
 			                    fileName,
 			                    ResourceService.GetString("ICSharpCode.Services.FileUtilityService.CantLoadFileStandardText"),
-			                    policy);
+			                    policy,
+			                    isReload);
 		}
 		
-		static void OnFileLoaded(FileNameEventArgs e)
+		static void OnFileLoaded(FileLoadEventArgs e)
 		{
 			if (FileLoaded != null) {
 				FileLoaded(null, e);
@@ -745,8 +747,8 @@ namespace ICSharpCode.Core
 				FileSaved(null, e);
 			}
 		}
-		
-		public static event EventHandler<FileNameEventArgs> FileLoaded;
+
+		public static event EventHandler<FileLoadEventArgs> FileLoaded;
 		public static event EventHandler<FileNameEventArgs> FileSaved;
 	}
 }
