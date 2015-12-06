@@ -28,15 +28,16 @@ namespace ICSharpCode.AspNet
 	{
 		readonly DependenciesMessage message;
 		readonly DependencyDescription dependency;
-
+		readonly FrameworkNode parentNode;
+	
 		public DependencyNode(
 			DependenciesMessage message,
 			DependencyDescription dependency,
-			bool topLevel = false)
+			FrameworkNode parentNode = null)
 		{
 			this.message = message;
 			this.dependency = dependency;
-			IsTopLevel = topLevel;
+			this.parentNode = parentNode;
 			
 			ContextmenuAddinTreePath = "/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependencyNode";
 			
@@ -89,7 +90,9 @@ namespace ICSharpCode.AspNet
 			get { return dependency.Path; }
 		}
 		
-		public bool IsTopLevel { get; private set; }
+		public bool IsTopLevel {
+			get { return parentNode != null; }
+		}
 		
 		public string GetLabel()
 		{
@@ -145,7 +148,7 @@ namespace ICSharpCode.AspNet
 					Remove();
 				}
 			} else if (IsNuGetPackage) {
-				project.RemoveNuGetPackage(NodeName);
+				project.RemoveNuGetPackage(GetParentFrameworkShortName(), NodeName);
 			}
 		}
 		
@@ -156,6 +159,14 @@ namespace ICSharpCode.AspNet
 		bool CanDelete()
 		{
 			return IsTopLevel && (IsProject || IsNuGetPackage);
+		}
+		
+		public string GetParentFrameworkShortName()
+		{
+			if (parentNode != null)
+				return parentNode.FrameworkShortName;
+
+			return null;
 		}
 	}
 }

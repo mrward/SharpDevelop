@@ -49,6 +49,10 @@ namespace ICSharpCode.AspNet
 			get { return NodeName; }
 		}
 		
+		public string FrameworkShortName {
+			get { return message.Framework.ShortName; }
+		}
+		
 		public override void Refresh()
 		{
 			AddNodes();
@@ -79,7 +83,7 @@ namespace ICSharpCode.AspNet
 			foreach (DependencyItem item in rootDependency.Dependencies) {
 				var matchedDependency = message.Dependencies[item.Name];
 				if (matchedDependency != null) {
-					yield return new DependencyNode(message, matchedDependency, true);
+					yield return new DependencyNode(message, matchedDependency, this);
 				}
 			}
 		}
