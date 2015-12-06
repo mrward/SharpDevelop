@@ -106,5 +106,17 @@ namespace ICSharpCode.AspNet
 				InsertSorted(dependencies, packageDependency);
 			}
 		}
+		
+		
+		public void RemoveNuGetPackage(string packageId)
+		{
+			JObject dependencies = GetDependencies();
+			if (dependencies == null) {
+				LoggingService.Debug("Unable to find dependencies in project.json");
+				return;
+			}
+
+			dependencies.Remove(packageId);
+		}
 	}
 }

@@ -29,10 +29,14 @@ namespace ICSharpCode.AspNet
 		readonly DependenciesMessage message;
 		readonly DependencyDescription dependency;
 
-		public DependencyNode(DependenciesMessage message, DependencyDescription dependency)
+		public DependencyNode(
+			DependenciesMessage message,
+			DependencyDescription dependency,
+			bool topLevel = false)
 		{
 			this.message = message;
 			this.dependency = dependency;
+			IsTopLevel = topLevel;
 			
 			ContextmenuAddinTreePath = "/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependencyNode";
 			
@@ -49,7 +53,7 @@ namespace ICSharpCode.AspNet
 		
 		void SetIcon()
 		{
-			if (Type == "Package") {
+			if (IsNuGetPackage) {
 				SetFileIcon("nuget-16.png");
 			} else if (Unresolved) {
 				SetFileIcon("nuget-warning-16.png");
@@ -84,6 +88,8 @@ namespace ICSharpCode.AspNet
 		public string Path {
 			get { return dependency.Path; }
 		}
+		
+		public bool IsTopLevel { get; private set; }
 		
 		public string GetLabel()
 		{
@@ -128,15 +134,28 @@ namespace ICSharpCode.AspNet
 		}
 		
 		public override bool EnableDelete {
-			get { return IsProject; }
+			get { return CanDelete(); }
 		}
 		
 		public override void Delete()
 		{
 			var project = (AspNetProject)Project;
-			if (project.RemoveProjectReference(NodeName)) {
-				Remove();
+			if (IsProject) {
+				if (project.RemoveProjectReference(NodeName)) {
+					Remove();
+				}
+			} else if (IsNuGetPackage) {
+				project.RemoveNuGetPackage(NodeName);
 			}
+		}
+		
+		public bool IsNuGetPackage {
+			get { return Type == "Package"; }
+		}
+
+		bool CanDelete()
+		{
+			return IsTopLevel && (IsProject || IsNuGetPackage);
 		}
 	}
 }

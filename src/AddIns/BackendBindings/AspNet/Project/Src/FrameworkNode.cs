@@ -79,7 +79,7 @@ namespace ICSharpCode.AspNet
 			foreach (DependencyItem item in rootDependency.Dependencies) {
 				var matchedDependency = message.Dependencies[item.Name];
 				if (matchedDependency != null) {
-					yield return new DependencyNode(message, matchedDependency);
+					yield return new DependencyNode(message, matchedDependency, true);
 				}
 			}
 		}
