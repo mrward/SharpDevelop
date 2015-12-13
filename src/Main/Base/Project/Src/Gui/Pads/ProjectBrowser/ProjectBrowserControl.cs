@@ -97,6 +97,7 @@ namespace ICSharpCode.SharpDevelop.Project
 		{
 			InitializeComponent();
 			treeView.CanClearSelection = false;
+			treeView.ShowNodeToolTips = true;
 			treeView.BeforeSelect   += TreeViewBeforeSelect;
 			treeView.AfterExpand    += TreeViewAfterExpand;
 			FileService.FileRenamed += FileServiceFileRenamed;
