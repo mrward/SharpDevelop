@@ -37,6 +37,7 @@ namespace ICSharpCode.AspNet
 		DnxProjectSystem projectSystem;
 		SharpDevelopApplicationLifetime applicationLifetime;
 		ISolution solution;
+		string initializeError = String.Empty;
 		ConcurrentDictionary<string, AspNetProjectBuilder> builders =
 			new ConcurrentDictionary<string, AspNetProjectBuilder>();
 
@@ -61,12 +62,24 @@ namespace ICSharpCode.AspNet
 				applicationLifetime.Stopping();
 				applicationLifetime.Dispose();
 				applicationLifetime = null;
-				projectSystem.Dispose ();
-				projectSystem = null;
+				if (projectSystem != null) {
+					projectSystem.Dispose ();
+					projectSystem = null;
+				}
 				context = null;
-				
 				solution.Projects.CollectionChanged -= ProjectsChanged;
 				solution = null;
+			}
+		}
+
+		void TryLoadAspNetProjectSystem(ISolution solution)
+		{
+			try {
+				LoadAspNetProjectSystem(solution);
+			} catch (Exception ex) {
+				LoggingService.WarnFormatted("DNX project system initialize failed. {0}", ex);
+				UnloadProjectSystem();
+				initializeError = "Unable to initialize DNX project system. " + ex.Message;
 			}
 		}
 		
@@ -74,11 +87,13 @@ namespace ICSharpCode.AspNet
 		{
 			try {
 				if (e.Solution.HasAspNetProjects()) {
+					e.Solution.Projects.CollectionChanged += ProjectsChanged;
 					LoadAspNetProjectSystem(e.Solution);
-					solution.Projects.CollectionChanged += ProjectsChanged;
 				}
 			} catch (Exception ex) {
-				MessageService.ShowError(ex.Message);
+				LoggingService.WarnFormatted("DNX project system initialize failed. {0}", ex);
+				UnloadProjectSystem();
+				initializeError = "Unable to initialize DNX project system. " + ex.Message;
 			}
 		}
 		
@@ -90,6 +105,29 @@ namespace ICSharpCode.AspNet
 			var factory = new DnxProjectSystemFactory();
 			projectSystem = factory.CreateProjectSystem(solution, applicationLifetime, context);
 			projectSystem.Initalize();
+			
+			if (context.RuntimePath == null) {
+				string error = GetRuntimeError(projectSystem);
+				throw new ApplicationException(error);
+			}
+		}
+		
+		static string GetRuntimeError(DnxProjectSystem projectSystem)
+		{
+			if (projectSystem.DnxPaths != null &&
+				projectSystem.DnxPaths.RuntimePath != null &&
+				projectSystem.DnxPaths.RuntimePath.Error != null) {
+				return projectSystem.DnxPaths.RuntimePath.Error.Text;
+			}
+			return "Unable to find DNX runtime.";
+ 		}
+		
+		public bool HasCurrentDnxRuntime {
+			get { return context != null; }
+		}
+
+		public string CurrentRuntimeError {
+			get { return initializeError; }
 		}
 		
 		public void OnReferencesUpdated(ProjectId projectId, FrameworkProject frameworkProject)
@@ -185,7 +223,7 @@ namespace ICSharpCode.AspNet
 		{
 			ISolution currentSolution = solution;
 			UnloadProjectSystem();
-			LoadAspNetProjectSystem(currentSolution);
+			TryLoadAspNetProjectSystem(currentSolution);
 		}
 
 		public AspNetProject GetStartupDnxProject()
@@ -264,7 +302,7 @@ namespace ICSharpCode.AspNet
 			if (!IsGlobalJsonFileChanged(e.FileName))
 				return;
 
-			LoadAspNetProjectSystem(solution);
+			TryLoadAspNetProjectSystem(solution);
 		}
 
 		static bool IsGlobalJsonFileChanged(FileName fileName)

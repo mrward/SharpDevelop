@@ -64,6 +64,11 @@ namespace ICSharpCode.AspNet
 		
 		public Task<bool> Build()
 		{
+			if (!AspNetServices.ProjectService.HasCurrentDnxRuntime) {
+				ReportDnxRuntimeError();
+				return Task.FromResult(false);
+			}
+			
 			tokenRegistration = monitor.CancellationToken.Register(CancelRequested);
 			var task = Task.Run(() => BuildInternal(), monitor.CancellationToken);
 			task.ContinueWith(t => Dispose());
@@ -99,6 +104,14 @@ namespace ICSharpCode.AspNet
 				}
 			}
 			return true;
+		}
+		
+		void ReportDnxRuntimeError ()
+		{
+			var buildError = new BuildError {
+				ErrorText = AspNetServices.ProjectService.CurrentRuntimeError
+			};
+			feedbackSink.ReportError(buildError);
 		}
 	}
 }

@@ -42,16 +42,29 @@ namespace ICSharpCode.AspNet
 			ContextmenuAddinTreePath = "/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependenciesFolderNode";
 			
 			Text = "Dependencies";
-			OpenedImage = "ProjectBrowser.ReferenceFolder.Open";
-			ClosedImage = "ProjectBrowser.ReferenceFolder.Closed";
+			SetIcons();
 			
-			AddDummyNode();
+			if (AspNetServices.ProjectService.HasCurrentDnxRuntime)
+				AddDummyNode();
 			
 			project.DependenciesChanged += ProjectDependenciesChanged;
 			project.PackageRestoreStarted += PackageRestoreStarted;
 			project.PackageRestoreFinished += PackageRestoreFinished;
 		}
 
+		void SetIcons()
+		{
+			OpenedImage = "ProjectBrowser.ReferenceFolder.Open";
+			ClosedImage = "ProjectBrowser.ReferenceFolder.Closed";
+			
+			if (!AspNetServices.ProjectService.HasCurrentDnxRuntime) {
+				SetIcon(@"file:${AddInPath:ICSharpCode.AspNet}\Icons\ReferenceFolder.Warning.Closed.png");
+				ToolTipText = AspNetServices.ProjectService.CurrentRuntimeError;
+				OpenedImage = null;
+				ClosedImage = null;
+			}
+		}
+		
 		void AddDummyNode()
 		{
 			var node = new CustomNode();
