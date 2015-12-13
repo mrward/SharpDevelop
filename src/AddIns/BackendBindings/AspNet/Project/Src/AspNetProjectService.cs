@@ -58,6 +58,7 @@ namespace ICSharpCode.AspNet
 		
 		void UnloadProjectSystem()
 		{
+			initializeError = String.Empty;
 			if (applicationLifetime != null) {
 				applicationLifetime.Stopping();
 				applicationLifetime.Dispose();
@@ -71,34 +72,41 @@ namespace ICSharpCode.AspNet
 				solution = null;
 			}
 		}
-
-		void TryLoadAspNetProjectSystem(ISolution solution)
-		{
-			try {
-				LoadAspNetProjectSystem(solution);
-			} catch (Exception ex) {
-				LoggingService.WarnFormatted("DNX project system initialize failed. {0}", ex);
-				UnloadProjectSystem();
-				initializeError = "Unable to initialize DNX project system. " + ex.Message;
-			}
-		}
 		
 		void SolutionOpened(object sender, SolutionEventArgs e)
 		{
+			OnSolutionOpened(e.Solution);
+		}
+
+		void OnSolutionOpened(ISolution solution)
+		{
 			try {
-				if (e.Solution.HasAspNetProjects()) {
-					e.Solution.Projects.CollectionChanged += ProjectsChanged;
-					LoadAspNetProjectSystem(e.Solution);
+				if (solution.HasAspNetProjects()) {
+					solution.Projects.CollectionChanged += ProjectsChanged;
+					LoadAspNetProjectSystem(solution);
 				}
 			} catch (Exception ex) {
 				LoggingService.WarnFormatted("DNX project system initialize failed. {0}", ex);
 				UnloadProjectSystem();
 				initializeError = "Unable to initialize DNX project system. " + ex.Message;
+				OnProjectSystemFailed();
+			}
+		}
+
+		public event EventHandler ProjectSystemLoadFailed;
+
+		void OnProjectSystemFailed ()
+		{
+			var handler = ProjectSystemLoadFailed;
+			if (handler != null) {
+				handler (this, new EventArgs ());
 			}
 		}
 		
 		void LoadAspNetProjectSystem(ISolution solution)
 		{
+			UnloadProjectSystem();
+			
 			this.solution = solution;
 			applicationLifetime = new SharpDevelopApplicationLifetime();
 			context = new DnxContext();
@@ -124,6 +132,10 @@ namespace ICSharpCode.AspNet
 		
 		public bool HasCurrentDnxRuntime {
 			get { return context != null; }
+		}
+		
+		public bool HasCurrentRuntimeError {
+			get { return !String.IsNullOrEmpty(initializeError); }
 		}
 
 		public string CurrentRuntimeError {
@@ -223,7 +235,7 @@ namespace ICSharpCode.AspNet
 		{
 			ISolution currentSolution = solution;
 			UnloadProjectSystem();
-			TryLoadAspNetProjectSystem(currentSolution);
+			OnSolutionOpened(currentSolution);
 		}
 
 		public AspNetProject GetStartupDnxProject()
@@ -293,16 +305,17 @@ namespace ICSharpCode.AspNet
 		
 		void FileChanged(object sender, FileNameEventArgs e)
 		{
-			if (solution == null)
+			ISolution currentSolution = SD.ProjectService.CurrentSolution;
+			if (currentSolution == null)
 				return;
 
-			if (!solution.HasAspNetProjects())
+			if (!currentSolution.HasAspNetProjects())
 				return;
 
 			if (!IsGlobalJsonFileChanged(e.FileName))
 				return;
 
-			TryLoadAspNetProjectSystem(solution);
+			OnSolutionOpened(currentSolution);
 		}
 
 		static bool IsGlobalJsonFileChanged(FileName fileName)

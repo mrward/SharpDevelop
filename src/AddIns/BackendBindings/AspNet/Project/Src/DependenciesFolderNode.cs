@@ -44,20 +44,22 @@ namespace ICSharpCode.AspNet
 			Text = "Dependencies";
 			SetIcons();
 			
-			if (AspNetServices.ProjectService.HasCurrentDnxRuntime)
+			if (!AspNetServices.ProjectService.HasCurrentRuntimeError)
 				AddDummyNode();
 			
 			project.DependenciesChanged += ProjectDependenciesChanged;
 			project.PackageRestoreStarted += PackageRestoreStarted;
 			project.PackageRestoreFinished += PackageRestoreFinished;
+			AspNetServices.ProjectService.ProjectSystemLoadFailed += ProjectSystemLoadFailed;
 		}
 
 		void SetIcons()
 		{
 			OpenedImage = "ProjectBrowser.ReferenceFolder.Open";
 			ClosedImage = "ProjectBrowser.ReferenceFolder.Closed";
+			ToolTipText = null;
 			
-			if (!AspNetServices.ProjectService.HasCurrentDnxRuntime) {
+			if (AspNetServices.ProjectService.HasCurrentRuntimeError) {
 				SetIcon(@"file:${AddInPath:ICSharpCode.AspNet}\Icons\ReferenceFolder.Warning.Closed.png");
 				ToolTipText = AspNetServices.ProjectService.CurrentRuntimeError;
 				OpenedImage = null;
@@ -106,6 +108,7 @@ namespace ICSharpCode.AspNet
 			project.DependenciesChanged -= ProjectDependenciesChanged;
 			project.PackageRestoreStarted -= PackageRestoreStarted;
 			project.PackageRestoreFinished -= PackageRestoreFinished;
+			AspNetServices.ProjectService.ProjectSystemLoadFailed -= ProjectSystemLoadFailed;
 		}
 
 		void ProjectDependenciesChanged(object sender, EventArgs e)
@@ -115,6 +118,8 @@ namespace ICSharpCode.AspNet
 			AddDummyNode();
 			
 			isInitialized = false;
+			
+			SetIcons();
 		}
 
 		void PackageRestoreStarted(object sender, EventArgs e)
@@ -131,6 +136,11 @@ namespace ICSharpCode.AspNet
 		{
 			var command = new ManagePackagesCommand();
 			command.Run();
+		}
+		
+		void ProjectSystemLoadFailed(object sender, EventArgs e)
+		{
+			ProjectDependenciesChanged(sender, e);
 		}
 	}
 }
