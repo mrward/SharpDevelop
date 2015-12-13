@@ -204,6 +204,7 @@
     <Compile Include="Src\ProjectCommandInfo.cs" />
     <Compile Include="Src\ProjectFrameworkInfo.cs" />
     <Compile Include="Src\ProjectJsonFile.cs" />
+    <Compile Include="Src\SelectTextEditorActiveFrameworkMenuBuilder.cs" />
     <Compile Include="Src\SetDnxCommandMenuBuilder.cs" />
     <Compile Include="Src\SetDnxRuntimeMenuBuilder.cs" />
   </ItemGroup>

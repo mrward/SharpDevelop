@@ -56,7 +56,7 @@ namespace ICSharpCode.AspNet
 
 		string GetDnxRuntimePath(AspNetProject project)
 		{
-			DnxFramework framework = project.DefaultFramework;
+			DnxFramework framework = project.DefaultRuntimeFramework;
 			if (framework == null) {
 				return runtime.Path;
 			}

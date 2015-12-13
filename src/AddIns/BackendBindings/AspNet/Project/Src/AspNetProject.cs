@@ -43,7 +43,6 @@ namespace ICSharpCode.AspNet
 		Dictionary<string, List<string>> savedProjectReferences = new Dictionary<string, List<string>>();
 		Dictionary<string, List<string>> preprocessorSymbols = new Dictionary<string, List<string>>();
 		string currentCommand;
-		DnxFramework defaultFramework;
 		string currentConfiguration = "Debug";
 		
 		public AspNetProject(ProjectLoadInformation loadInformation)
@@ -321,24 +320,7 @@ namespace ICSharpCode.AspNet
 			return project.Commands.Keys.AsEnumerable();
 		}
 		
-		public DnxFramework DefaultFramework {
-			get { return defaultFramework; }
-			set {
-				defaultFramework = value;
-				if (!IsCurrentFramework(value)) {
-					UpdateCurrentFramework(value);
-					
-					try {
-						addingReferences = true;
-						RefreshReferences();
-						RefreshProjectReferences();
-						RefreshCompilerSettings();
-					} finally {
-						addingReferences = false;
-					}
-				}
-			}
-		}
+		public DnxFramework DefaultRuntimeFramework { get; set; }
 		
 		public IEnumerable<DnxFramework> GetFrameworks()
 		{
@@ -389,22 +371,8 @@ namespace ICSharpCode.AspNet
 			if (framework == null) {
 				CurrentFramework = savedFileReferences.Keys.FirstOrDefault();
 			} else {
-				CurrentFramework = GetBestFrameworkMatch(framework);
+				CurrentFramework = framework.Name;
 			}
-		}
-		
-		string GetBestFrameworkMatch(DnxFramework framework)
-		{
-			if (savedFileReferences.ContainsKey(framework.Name))
-				return framework.Name;
-
-			string bestFrameworkMatch = savedFileReferences.Keys.FirstOrDefault(key => framework.IsMatch (key));
-			if (bestFrameworkMatch != null)
-				return bestFrameworkMatch;
-
-			LoggingService.WarnFormatted("Unable to find matching framework '{0}' for project '{1}'", framework.Name, Name);
-
-			return savedFileReferences.Keys.FirstOrDefault();
 		}
 		
 		public void UpdateParseOptions(OmniSharp.Dnx.FrameworkProject frameworkProject, Microsoft.CodeAnalysis.ParseOptions options)
@@ -564,6 +532,22 @@ namespace ICSharpCode.AspNet
 				FileUtility.RaiseFileSaved(new FileNameEventArgs(jsonFile.Path));
 			} else {
 				LoggingService.DebugFormatted("Unable to find project.json '{0}'", jsonFile.Path);
+			}
+		}
+		
+		public void UpdateReferences(DnxFramework framework)
+		{
+			if (!IsCurrentFramework(framework)) {
+				UpdateCurrentFramework(framework);
+				
+				try {
+					addingReferences = true;
+					RefreshReferences();
+					RefreshProjectReferences();
+					RefreshCompilerSettings();
+				} finally {
+					addingReferences = false;
+				}
 			}
 		}
 	}

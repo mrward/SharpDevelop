@@ -123,4 +123,20 @@
 				class="ICSharpCode.AspNet.DnxGlobalOptionsPanel" />
 		</OptionPanel>
 	</Path>
+
+	<Path name="/SharpDevelop/ViewContent/TextEditor/ContextMenu">
+		<Condition name="HasDnxStartupProject">
+			<MenuItem id="DnxDebugSeparator" type="Separator" insertbefore="ToggleBreakpointSeparator" />
+			<MenuItem
+				id="SetTextEditorActiveRuntimeCommand"
+				label="Active DNX Framework"
+				insertbefore="ToggleBreakpointSeparator"
+				type="Menu">
+				<MenuItem
+					id="DnxCommandBuilder"
+					type="Builder"
+					class="ICSharpCode.AspNet.SelectTextEditorActiveFrameworkMenuBuilder" />
+			</MenuItem>
+		</Condition>
+	</Path>
 </AddIn>

@@ -30,15 +30,5 @@ namespace ICSharpCode.AspNet
 			}
 			return "clr";
 		}
-		
-		public static bool IsMatch(this DnxFramework framework, string name)
-		{
-			if (framework.Name.StartsWith("DNX,") && name.StartsWith(".NETFramework,")) {
-				return true;
-			} else if (framework.Name.StartsWith("DNXCore,") && name.StartsWith(".NETPlatform,")) {
-				return true;
-			}
-			return false;
-		}
 	}
 }

@@ -23,16 +23,15 @@ using System.Windows;
 using System.Windows.Controls;
 using ICSharpCode.Core;
 using ICSharpCode.SharpDevelop;
-using ICSharpCode.SharpDevelop.Project;
 using OmniSharp.Models;
 
 namespace ICSharpCode.AspNet
 {
-	public class SetDnxRuntimeMenuBuilder : IMenuItemBuilder
+	public class SelectTextEditorActiveFrameworkMenuBuilder : IMenuItemBuilder
 	{
 		public IEnumerable<object> BuildItems(Codon codon, object parameter)
 		{
-			AspNetProject project = AspNetServices.ProjectService.GetStartupDnxProject();
+			var project = SD.ProjectService.CurrentProject as AspNetProject;
 			if (project == null)
 				return Enumerable.Empty<object>();
 			
@@ -41,8 +40,6 @@ namespace ICSharpCode.AspNet
 		
 		IEnumerable<object>BuildItems(AspNetProject project)
 		{
-			yield return CreateMenu(project, null);
-			
 			foreach (DnxFramework framework in project.GetFrameworks()) {
 				yield return CreateMenu(project, framework);
 			}
@@ -51,8 +48,8 @@ namespace ICSharpCode.AspNet
 		MenuItem CreateMenu(AspNetProject project, DnxFramework framework)
 		{
 			var menuItem = new MenuItem {
-				Header = GetFrameworkName(framework),
-				IsChecked = project.DefaultRuntimeFramework == framework,
+				Header = framework.FriendlyName,
+				IsChecked = project.CurrentFramework == framework.Name,
 				Tag = new ProjectFrameworkInfo(project, framework)
 			};
 			
@@ -61,26 +58,11 @@ namespace ICSharpCode.AspNet
 			return menuItem;
 		}
 		
-		static string GetFrameworkName(DnxFramework framework)
-		{
-			if (framework == null)
-				return "Default";
-			
-			return framework.FriendlyName;
-		}
-		
 		static void MenuItemClick(object sender, RoutedEventArgs e)
 		{
 			var menuItem = (MenuItem)sender;
 			var projectInfo = (ProjectFrameworkInfo)menuItem.Tag;
-			
-			ISolution solution = SD.ProjectService.CurrentSolution;
-			if (solution == null)
-				return;
-			
-			foreach (AspNetProject project in solution.GetAspNetProjects()) {
-				project.DefaultRuntimeFramework = projectInfo.Framework;
-			}
+			projectInfo.Project.UpdateReferences(projectInfo.Framework);
 		}
 	}
 }
