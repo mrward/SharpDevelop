@@ -326,5 +326,22 @@ namespace ICSharpCode.AspNet
 			}
 			return false;
 		}
+		
+		static readonly string DnxRestoreProperty = "DnxRestoreDependencies";
+
+		public bool RestoreDependencies {
+			get { return PropertyService.Get(DnxRestoreProperty, true); }
+			set {
+				PropertyService.Set(DnxRestoreProperty, value);
+				OnRestoreDependenciesChanged(value);
+			}
+		}
+
+		void OnRestoreDependenciesChanged(bool value)
+		{
+			if (projectSystem != null) {
+				projectSystem.Options.Dnx.EnablePackageRestore = value;
+			}
+		}
 	}
 }

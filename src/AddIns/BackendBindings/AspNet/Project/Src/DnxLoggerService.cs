@@ -24,7 +24,7 @@ namespace ICSharpCode.AspNet
 {
 	public static class DnxLoggerService
 	{
-		const string DnxOutputLogLevelProperty = "MonoDevelop.Dnx.DnxOutputLogLevel";
+		const string DnxOutputLogLevelProperty = "DnxOutputLogLevel";
 		static LogLevel logLevel;
 
 		static DnxLoggerService()

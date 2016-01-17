@@ -9,20 +9,50 @@
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"/>
-				<ColumnDefinition Width="Auto"/>
-			</Grid.ColumnDefinitions>
 			
-			<Label
-				Margin="4, 4, 0, 0"
-				Content="DNX Output Verbosity:"/>
-			<ComboBox
-				Margin="4, 8, 0, 0"
-				Grid.Column="1"
-				ItemsSource="{Binding LogLevels}"
-				SelectedItem="{Binding SelectedLogLevel}"/>
+			<GroupBox
+				Header="DNX _Restore">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					
+					<CheckBox
+						Margin="4, 8, 0, 0"
+						Grid.Column="1"
+						Content="_Automatically restore dependencies."
+						IsChecked="{Binding RestoreDependencies}"/>
+				</Grid>
+			</GroupBox>
+			
+			<GroupBox
+				Header="DNX _Output"
+				Grid.Row="1">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					
+					<Label
+						Margin="4, 4, 0, 0"
+						Content="_Verbosity:"
+						Grid.Row="3"/>
+					<ComboBox
+						Margin="4, 8, 0, 0"
+						Grid.Column="1"
+						ItemsSource="{Binding LogLevels}"
+						SelectedItem="{Binding SelectedLogLevel}"/>
+				</Grid>
+			</GroupBox>
 		</Grid>
 	</StackPanel>
 </gui:OptionPanel>

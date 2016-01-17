@@ -30,7 +30,7 @@ namespace ICSharpCode.AspNet.Omnisharp.SharpDevelop
 		{
 			options = new OmniSharpOptions();
 			options.Dnx.Projects = "**/project.json";
-			options.Dnx.EnablePackageRestore = true;
+			options.Dnx.EnablePackageRestore = AspNetServices.ProjectService.RestoreDependencies;
 			options.Dnx.PackageRestoreTimeout = 180;
 		}
 		

@@ -25,6 +25,8 @@ namespace ICSharpCode.AspNet
 {
 	public partial class DnxGlobalOptionsPanel : OptionPanel
 	{
+		readonly bool originalRestoreDependenciesSetting = AspNetServices.ProjectService.RestoreDependencies;
+		
 		readonly List<LogLevel> logLevels = new List<LogLevel> {
 			LogLevel.Debug,
 			LogLevel.Verbose,
@@ -34,11 +36,11 @@ namespace ICSharpCode.AspNet
 			LogLevel.Critical
 		};
 		
-		LogLevel selectedLogLevel;
-		
 		public DnxGlobalOptionsPanel()
 		{
-			selectedLogLevel = DnxLoggerService.LogLevel;
+			SelectedLogLevel = DnxLoggerService.LogLevel;
+			RestoreDependencies = originalRestoreDependenciesSetting;
+			
 			InitializeComponent();
 			DataContext = this;
 		}
@@ -47,14 +49,17 @@ namespace ICSharpCode.AspNet
 			get { return logLevels; }
 		}
 		
-		public LogLevel SelectedLogLevel {
-			get { return selectedLogLevel; }
-			set { selectedLogLevel = value; }
-		}
+		public LogLevel SelectedLogLevel { get; set; }
+		
+		public bool RestoreDependencies { get; set; }
 		
 		public override bool SaveOptions()
 		{
-			DnxLoggerService.LogLevel = selectedLogLevel;
+ 			if (RestoreDependencies != originalRestoreDependenciesSetting) {
+ 				AspNetServices.ProjectService.RestoreDependencies = RestoreDependencies;
+ 			}
+			
+			DnxLoggerService.LogLevel = SelectedLogLevel;
 			return true;
 		}
 	}
