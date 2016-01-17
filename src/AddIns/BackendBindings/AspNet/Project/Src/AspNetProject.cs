@@ -171,6 +171,10 @@ namespace ICSharpCode.AspNet
 
 		public void LoadFiles()
 		{
+			foreach (string directoryName in System.IO.Directory.GetDirectories(Directory, "*.*", SearchOption.AllDirectories)) {
+				Items.Add(CreateDirectoryProjectItem(directoryName));
+			}
+		
 			foreach (string fileName in System.IO.Directory.GetFiles(Directory, "*.*", SearchOption.AllDirectories)) {
 				if (IsSupportedProjectFileItem(fileName)) {
 					Items.Add(CreateFileProjectItem(fileName));
@@ -190,7 +194,14 @@ namespace ICSharpCode.AspNet
 			}
 			return true;
 		}
-
+		
+		FileProjectItem CreateDirectoryProjectItem(string directory)
+		{
+			return new FileProjectItem(this, ItemType.Folder) {
+				FileName = new FileName(directory)
+			};
+		}
+		
 		FileProjectItem CreateFileProjectItem(string fileName)
 		{
 			var projectItem = new FileProjectItem(this, GetDefaultItemType(fileName)) {
