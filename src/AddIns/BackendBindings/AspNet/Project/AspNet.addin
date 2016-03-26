@@ -98,10 +98,15 @@
 
 	<Path name="/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependenciesFolderNode">
 		<MenuItem
-			id="Remove"
+			id="AddNuGetPackageDependencies"
 			label="Add NuGet Package Dependencies"
 			type="Item"
 			class="ICSharpCode.AspNet.AddNuGetPackageDependenciesCommand" />
+		<MenuItem
+			id="RestoreDependencies"
+			label="Restore"
+			type="Item"
+			class="ICSharpCode.AspNet.RestoreDependenciesCommand" />
 	</Path>
 	
 	<Path name="/SharpDevelop/Pads/ProjectBrowser/ContextMenu/DependencyNode">
