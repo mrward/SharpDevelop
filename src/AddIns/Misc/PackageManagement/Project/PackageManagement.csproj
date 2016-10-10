@@ -7,12 +7,16 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ICSharpCode.PackageManagement</RootNamespace>
     <AssemblyName>PackageManagement</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <NoStdLib>False</NoStdLib>
     <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <OutputPath>..\..\..\..\..\bin\</OutputPath>
+    <TargetFrameworkProfile />
+    <NoWin32Manifest>False</NoWin32Manifest>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
     <RegisterForComInterop>False</RegisterForComInterop>
@@ -27,6 +31,7 @@
     <Optimize>False</Optimize>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>false</DebugSymbols>
@@ -60,11 +65,15 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -81,24 +90,23 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Configuration\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\..\Main\SharpDevelop\Services\PropertyService.cs">
+      <Link>Src\PropertyService.cs</Link>
+    </Compile>
     <Compile Include="Configuration\AssemblyInfo.cs" />
     <Compile Include="Src\AcceptLicensesEventArgs.cs" />
-    <Compile Include="Src\ClassCodeGenerator.cs" />
-    <Compile Include="Src\ClassKindUpdater.cs" />
     <Compile Include="Src\ConfigSettingsFileSystem.cs" />
     <Compile Include="Src\DependentFile.cs" />
     <Compile Include="Src\Design\DesignTimeSelectProjectsViewModel.cs" />
     <Compile Include="Src\Design\FakePackageOperation.cs" />
     <Compile Include="Src\Design\FakeProjectBuilder.cs" />
+    <Compile Include="Src\Design\FakeReinstallPackageAction.cs" />
     <Compile Include="Src\Design\FakeSelectedProject.cs" />
     <Compile Include="Src\DocumentLoader.cs" />
-    <Compile Include="Src\DocumentNamespaceCreator.cs" />
-    <Compile Include="Src\DomRegionExtensions.cs" />
+    <Compile Include="Src\DocumentView.cs" />
     <Compile Include="Src\EnvDTE\CodeAttribute.cs" />
     <Compile Include="Src\EnvDTE\CodeAttribute2.cs" />
     <Compile Include="Src\EnvDTE\CodeAttributeArgument.cs" />
-    <Compile Include="Src\EnvDTE\CodeAttributeArguments.cs" />
-    <Compile Include="Src\EnvDTE\CodeAttributes.cs" />
     <Compile Include="Src\EnvDTE\CodeClass.cs" />
     <Compile Include="Src\EnvDTE\CodeClass2.cs" />
     <Compile Include="Src\EnvDTE\CodeDelegate.cs" />
@@ -107,22 +115,17 @@
     <Compile Include="Src\EnvDTE\CodeElementsList.cs" />
     <Compile Include="Src\EnvDTE\CodeFunction.cs" />
     <Compile Include="Src\EnvDTE\CodeFunction2.cs" />
-    <Compile Include="Src\EnvDTE\CodeGetterFunction.cs" />
-    <Compile Include="Src\EnvDTE\CodeGetterOrSetterFunction.cs" />
     <Compile Include="Src\EnvDTE\CodeImport.cs" />
     <Compile Include="Src\EnvDTE\CodeInterface.cs" />
+    <Compile Include="Src\EnvDTE\CodeModelContext.cs" />
     <Compile Include="Src\EnvDTE\CodeParameter2.cs" />
-    <Compile Include="Src\EnvDTE\CodeParameters.cs" />
     <Compile Include="Src\EnvDTE\CodeModel.cs" />
     <Compile Include="Src\EnvDTE\CodeNamespace.cs" />
     <Compile Include="Src\EnvDTE\CodeParameter.cs" />
     <Compile Include="Src\EnvDTE\CodeProperty.cs" />
     <Compile Include="Src\EnvDTE\CodeProperty2.cs" />
-    <Compile Include="Src\EnvDTE\CodeSetterFunction.cs" />
     <Compile Include="Src\EnvDTE\CodeStruct.cs" />
     <Compile Include="Src\EnvDTE\CodeType.cs" />
-    <Compile Include="Src\EnvDTE\CodeTypeBaseTypes.cs" />
-    <Compile Include="Src\EnvDTE\CodeTypeMembers.cs" />
     <Compile Include="Src\EnvDTE\CodeTypeRef.cs" />
     <Compile Include="Src\EnvDTE\CodeTypeRef2.cs" />
     <Compile Include="Src\EnvDTE\CodeVariable.cs" />
@@ -134,15 +137,12 @@
     <Compile Include="Src\EnvDTE\FileCodeModel2.cs" />
     <Compile Include="Src\EnvDTE\FileCodeModelCodeElements.cs" />
     <Compile Include="Src\EnvDTE\FileCodeModelCodeNamespace.cs" />
-    <Compile Include="Src\EnvDTE\FileCodeModelCodeNamespaceMembers.cs" />
     <Compile Include="Src\EnvDTE\FileProjectItemExtensions.cs" />
     <Compile Include="Src\EnvDTE\FileProjectItems.cs" />
-    <Compile Include="Src\EnvDTE\IClassExtensions.cs" />
     <Compile Include="Src\EnvDTE\ImplementedInterfacesOnClass.cs" />
     <Compile Include="Src\EnvDTE\IParameterExtensions.cs" />
     <Compile Include="Src\EnvDTE\IReturnTypeExtensions.cs" />
     <Compile Include="Src\EnvDTE\NamespaceName.cs" />
-    <Compile Include="Src\EnvDTE\PartialClasses.cs" />
     <Compile Include="Src\EnvDTE\ProjectKind.cs" />
     <Compile Include="Src\EnvDTE\Projects.cs" />
     <Compile Include="Src\EnvDTE\Reference3.cs" />
@@ -153,6 +153,7 @@
     <Compile Include="Src\EnvDTE\SolutionGlobals.cs" />
     <Compile Include="Src\EnvDTE\SolutionProperty.cs" />
     <Compile Include="Src\EnvDTE\SolutionPropertyFactory.cs" />
+    <Compile Include="Src\EnvDTE\SolutionSectionItem.cs" />
     <Compile Include="Src\EnvDTE\SourceControl.cs" />
     <Compile Include="Src\EnvDTE\TextDocument.cs" />
     <Compile Include="Src\EnvDTE\TextPoint.cs" />
@@ -163,24 +164,22 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Src\FileConflictViewModel.cs" />
-    <Compile Include="Src\IClassKindUpdater.cs" />
-    <Compile Include="Src\IDocumentNamespaceCreator.cs" />
+    <Compile Include="Src\ICodeGenerator.cs" />
+    <Compile Include="Src\IDocumentView.cs" />
+    <Compile Include="Src\InstalledPackagesViewModel.cs" />
+    <Compile Include="Src\IOpenPackageReadMeMonitor.cs" />
     <Compile Include="Src\IPackageRepositoryFactoryEvents.cs" />
     <Compile Include="Src\IPackageViewModelParent.cs" />
+    <Compile Include="Src\ISettingsProvider.cs" />
     <Compile Include="Src\IUpdatePackagesAction.cs" />
     <Compile Include="Src\IPackageExtensions.cs" />
     <Compile Include="Src\IPackageAction.cs" />
     <Compile Include="Src\IProjectBuilder.cs" />
     <Compile Include="Src\IProjectContentExtensions.cs" />
     <Compile Include="Src\IUpdatePackageSettings.cs" />
-    <Compile Include="Src\IVirtualMethodUpdater.cs" />
     <Compile Include="Src\IProjectBrowserUpdater.cs" />
-    <Compile Include="Src\IRefactoringDocumentView.cs" />
     <Compile Include="Src\IFieldExtensions.cs" />
     <Compile Include="Src\IDocumentLoader.cs" />
-    <Compile Include="Src\IMethodOrPropertyExtensions.cs" />
-    <Compile Include="Src\InstalledPackageViewModel.cs" />
-    <Compile Include="Src\InstalledPackageViewModelFactory.cs" />
     <Compile Include="Src\IPackageManagementSelectedProject.cs" />
     <Compile Include="Src\ISelectProjectsService.cs" />
     <Compile Include="Src\ISolutionPackageRepository.cs" />
@@ -237,42 +236,52 @@
     <Compile Include="Src\IPackageReferenceInstaller.cs" />
     <Compile Include="Src\IPackageReferencesForProject.cs" />
     <Compile Include="Src\IPropertyService.cs" />
-    <Compile Include="Src\ISettingsFactory.cs" />
     <Compile Include="Src\IThreadSafePackageManagementEvents.cs" />
     <Compile Include="Src\ManagePackagesUserPrompts.cs" />
     <Compile Include="Src\ManagePackagesViewTitle.cs" />
+    <Compile Include="Src\MessageServiceExtensions.cs" />
     <Compile Include="Src\MSBuildBasedProjectExtensions.cs" />
     <Compile Include="Src\IPackageFromRepositoryExtensions.cs" />
+    <Compile Include="Src\NoPackageSourcesConfiguredException.cs" />
     <Compile Include="Src\NuGetExePath.cs" />
     <Compile Include="Src\NuGetPackageRestoreCommandLine.cs" />
+    <Compile Include="Src\NullOpenPackageReadmeMonitor.cs" />
+    <Compile Include="Src\OpenPackageReadMeMonitor.cs" />
     <Compile Include="Src\PackageLicenseViewModel.cs" />
     <Compile Include="Src\PackageManagementServiceProvider.cs" />
     <Compile Include="Src\IPackageRepositoryExtensions.cs" />
     <Compile Include="Src\PackageRepositoryFactoryEventArgs.cs" />
+    <Compile Include="Src\PackagesForSelectedPageQuery.cs" />
     <Compile Include="Src\ParentPackagesOperationEventArgs.cs" />
     <Compile Include="Src\ProjectBuilder.cs" />
     <Compile Include="Src\ProjectRootElementExtensions.cs" />
     <Compile Include="Src\ReducedPackageOperations.cs" />
+    <Compile Include="Src\ReinstallPackageAction.cs" />
+    <Compile Include="Src\RemovedPackageReferenceMonitor.cs" />
     <Compile Include="Src\ResolveFileConflictEventArgs.cs" />
     <Compile Include="Src\RestorePackagesCommand.cs" />
     <Compile Include="Src\Scripting\ConsoleHostFileConflictResolver.cs" />
     <Compile Include="Src\Scripting\FileConflictAction.cs" />
     <Compile Include="Src\Scripting\GlobalMSBuildProjectCollection.cs" />
+    <Compile Include="Src\Scripting\ICmdletLogger.cs" />
     <Compile Include="Src\Scripting\IConsoleHostFileConflictResolver.cs" />
     <Compile Include="Src\Scripting\IGlobalMSBuildProjectCollection.cs" />
     <Compile Include="Src\Scripting\MSBuildProjectImportsMerger.cs" />
     <Compile Include="Src\Scripting\MSBuildProjectImportsMergeResult.cs" />
+    <Compile Include="Src\Scripting\MSBuildProjectPropertiesMerger.cs" />
+    <Compile Include="Src\Scripting\MSBuildProjectPropertiesMergeResult.cs" />
     <Compile Include="Src\Scripting\NullGlobalMSBuildProjectCollection.cs" />
+    <Compile Include="Src\Scripting\PackageManagementConsoleHostLogger.cs" />
     <Compile Include="Src\Scripting\RunAllProjectPackageScriptsAction.cs" />
     <Compile Include="Src\ServiceWithWorkbenchOwner.cs" />
+    <Compile Include="Src\SettingsProvider.cs" />
     <Compile Include="Src\SharpDevelopCredentialProvider.cs" />
     <Compile Include="Src\SharpDevelopHttpUserAgent.cs" />
+    <Compile Include="Src\ThreadSafeCodeGenerator.cs" />
     <Compile Include="Src\UpdatePackagesAction.cs" />
     <Compile Include="Src\UpdatePackagesActionFactory.cs" />
     <Compile Include="Src\UpdateSolutionPackagesAction.cs" />
     <Compile Include="Src\UserAgentGeneratorForRepositoryRequests.cs" />
-    <Compile Include="Src\VirtualMethodUpdater.cs" />
-    <Compile Include="Src\NewProjectsCreated.cs" />
     <Compile Include="Src\OpenMSBuildProjects.cs" />
     <Compile Include="Src\PackageActionRunner.cs" />
     <Compile Include="Src\PackageActionsToRun.cs" />
@@ -302,9 +311,7 @@
     <Compile Include="Src\ProcessPackageOperationsAction.cs" />
     <Compile Include="Src\ProjectBrowserRefresher.cs" />
     <Compile Include="Src\ProjectBrowserUpdater.cs" />
-    <Compile Include="Src\ProjectTemplatePackageRepositoryCache.cs" />
     <Compile Include="Src\ProjectTemplatePackagesSettingsFileName.cs" />
-    <Compile Include="Src\RefactoringDocumentView.cs" />
     <Compile Include="Src\RegisteredPackageRepositories.cs" />
     <Compile Include="Src\ManagePackagesView.cs">
       <DependentUpon>ManagePackagesView.xaml</DependentUpon>
@@ -358,7 +365,6 @@
     <Compile Include="Src\PackageRepositoryCache.cs" />
     <Compile Include="Src\PackagesForSelectedPageResult.cs" />
     <Compile Include="Src\ILicenseAcceptanceService.cs" />
-    <Compile Include="Src\InstalledPackagesViewModel.cs" />
     <Compile Include="Src\IPackageManagementFileService.cs" />
     <Compile Include="Src\IPackageManagementProjectService.cs" />
     <Compile Include="Src\IPackageManagementSolution.cs" />
@@ -396,11 +402,6 @@
     <Compile Include="Src\PackageManagementSolution.cs" />
     <Compile Include="Src\PackageManagementTask.cs" />
     <Compile Include="Src\PackageManagementTaskFactory.cs" />
-    <Compile Include="Src\RegisteredProjectTemplatePackageSources.cs" />
-    <Compile Include="Src\RegisteredProjectTemplatePackageSourcesView.xaml.cs">
-      <DependentUpon>RegisteredProjectTemplatePackageSourcesView.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Src\Scripting\ConsoleInitializer.cs" />
     <Compile Include="Src\Scripting\IPackageManagementConsoleHost.cs" />
     <Compile Include="Src\Scripting\IPackageScriptRunner.cs" />
@@ -422,7 +423,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Src\SelectProjectsViewModel.cs" />
-    <Compile Include="Src\SettingsFactory.cs" />
     <Compile Include="Src\SolutionPackageRepositoryFactory.cs" />
     <Compile Include="Src\SolutionPackageRepositoryPath.cs" />
     <Compile Include="Src\PackageSourceConverter.cs" />
@@ -533,7 +533,6 @@
     <Page Include="Src\RegisteredPackageSourcesView.xaml" />
     <Page Include="Src\PackagesView.xaml" />
     <Page Include="Src\PagedResultsView.xaml" />
-    <Page Include="Src\RegisteredProjectTemplatePackageSourcesView.xaml" />
     <Page Include="Src\Scripting\PackageManagementConsoleView.xaml" />
     <Page Include="Src\SelectProjectsView.xaml" />
   </ItemGroup>
@@ -543,9 +542,14 @@
       <Name>ICSharpCode.AvalonEdit</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Libraries\NRefactory\Project\NRefactory.csproj">
-      <Project>{3A9AE6AA-BC07-4A2F-972C-581E3AE2F195}</Project>
-      <Name>NRefactory</Name>
+    <ProjectReference Include="..\..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj">
+      <Project>{53DCA265-3C3C-42F9-B647-F72BA678122B}</Project>
+      <Name>ICSharpCode.NRefactory.CSharp</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\Main\Base\Project\ICSharpCode.SharpDevelop.csproj">
@@ -563,10 +567,6 @@
       <Name>ICSharpCode.Core.Presentation</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Main\ICSharpCode.SharpDevelop.Dom\Project\ICSharpCode.SharpDevelop.Dom.csproj">
-      <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
-      <Name>ICSharpCode.SharpDevelop.Dom</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\BackendBindings\Scripting\Project\ICSharpCode.Scripting.csproj">
       <Project>{7048AE18-EB93-4A84-82D0-DD60EB58ADBD}</Project>
       <Name>ICSharpCode.Scripting</Name>
@@ -582,7 +582,7 @@
       <Name>PackageManagement.PowerShell</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpDevelop.EnvDTE\SharpDevelop.EnvDTE.vbproj">
-      <Project>{6FB1260D-68A2-41A0-BB09-F5F710842E99}</Project>
+      <Project>{1b753d7f-7c77-4d5e-b928-02982690879c}</Project>
       <Name>SharpDevelop.EnvDTE</Name>
       <Private>False</Private>
     </ProjectReference>

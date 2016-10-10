@@ -1,57 +1,79 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Linq;
+using ICSharpCode.NRefactory.Editor;
+using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.EnvDTE;
-using ICSharpCode.SharpDevelop.Dom;
-using ICSharpCode.SharpDevelop.Dom.Refactoring;
+using ICSharpCode.SharpDevelop;
 using NUnit.Framework;
-using PackageManagement.Tests.Helpers;
 using Rhino.Mocks;
 
 namespace PackageManagement.Tests.EnvDTE
 {
 	[TestFixture]
-	public class EditPointTests
+	public class EditPointTests : CodeModelTestBase
 	{
-		FieldHelper fieldHelper;
-		MethodHelper methodHelper;
+		CodeVariable codeVariable;
+		IField field;
+		CodeFunction2 codeFunction;
 		TextPoint endPoint;
 		EditPoint editPoint;
-		IRefactoringDocument document;
-		IRefactoringDocumentView documentView;
+		IDocument document;
+		IDocumentView documentView;
 		IDocumentLoader documentLoader;
 		
 		[SetUp]
 		public void Init()
 		{
-			fieldHelper = new FieldHelper();
-			methodHelper = new MethodHelper();
 			CreateDocumentLoader();
 		}
 		
 		void CreateDocumentLoader()
 		{
-			document = MockRepository.GenerateStub<IRefactoringDocument>();
-			documentView = MockRepository.GenerateStub<IRefactoringDocumentView>();
-			documentView.Stub(view => view.RefactoringDocument).Return(document);
+			document = MockRepository.GenerateStub<IDocument>();
+			documentView = MockRepository.GenerateStub<IDocumentView>();
+			documentView.Stub(view => view.Document).Return(document);
 			documentLoader = MockRepository.GenerateStub<IDocumentLoader>();
 		}
-
-		void CreateField(string fileName, DomRegion region)
+		
+		void CreateField(DomRegion region)
 		{
-			fieldHelper.CreateField("Class1.MyField");
-			fieldHelper.SetRegion(region);
-			fieldHelper.SetCompilationUnitFileName(fileName);
+			AddCodeFile("class.cs", "class c {}");
+			codeModelContext.DocumentLoader = documentLoader;
+			
+			field = MockRepository.GenerateStub<IField>();
+			field.Stub(f => f.Region).Return(region);
+			
+			codeVariable = new CodeVariable(codeModelContext, field);
 		}
 		
-		void CreateMethod(string fileName, DomRegion region, DomRegion bodyRegion)
+		void CreateMethod(DomRegion region)
 		{
-			methodHelper.CreateMethod("Class1.MyMethod");
-			methodHelper.SetRegion(region);
-			methodHelper.SetBodyRegion(bodyRegion);
-			methodHelper.SetCompilationUnitFileName(fileName);
+			AddCodeFile("class.cs", "class c {}");
+			codeModelContext.DocumentLoader = documentLoader;
+			
+			IMethod method = MockRepository.GenerateStub<IMethod>();
+			method.Stub(m => m.Region).Return(region);
+			
+			codeFunction = new CodeFunction2(codeModelContext, method);
 		}
 		
 		void DocumentOffsetToReturn(int line, int column, int offset)
@@ -61,16 +83,14 @@ namespace PackageManagement.Tests.EnvDTE
 		
 		void CreateFieldEditPoint()
 		{
-			var codeVariable = new CodeVariable(fieldHelper.Field, documentLoader);
-			TextPoint startPoint = (TextPoint)codeVariable.GetStartPoint();
+			var startPoint = (TextPoint)codeVariable.GetStartPoint();
 			endPoint = (TextPoint)codeVariable.GetEndPoint();
 			editPoint = (EditPoint)startPoint.CreateEditPoint();
 		}
 		
 		void CreateMethodEditPoint()
 		{
-			var codeFunction = new CodeFunction(methodHelper.Method, documentLoader, null);
-			TextPoint startPoint = (TextPoint)codeFunction.GetStartPoint();
+			var startPoint = (TextPoint)codeFunction.GetStartPoint();
 			endPoint = (TextPoint)codeFunction.GetEndPoint();
 			editPoint = (EditPoint)startPoint.CreateEditPoint();
 		}
@@ -82,7 +102,7 @@ namespace PackageManagement.Tests.EnvDTE
 		
 		void DocumentFileName(string fileName)
 		{
-			documentLoader.Stub(loader => loader.LoadRefactoringDocumentView(fileName)).Return(documentView);
+			documentLoader.Stub(loader => loader.LoadDocumentView(fileName)).Return(documentView);
 		}
 		
 		void AssertDocumentViewIndentLinesWasNotCalled()
@@ -94,8 +114,8 @@ namespace PackageManagement.Tests.EnvDTE
 		public void ReplaceText_EditPointCreatedFromFieldStartPoint_ReplacesTextBetweenStartAndEndPoint()
 		{
 			string fileName = @"d:\projects\test.cs";
-			var fieldRegion = new DomRegion(1, 5, 3, 12);
-			CreateField(fileName, fieldRegion);
+			var fieldRegion = new DomRegion(fileName, 1, 5, 3, 12);
+			CreateField(fieldRegion);
 			DocumentOffsetToReturn(line: 1, column: 5, offset: 5);
 			DocumentOffsetToReturn(line: 3, column: 12, offset: 20);
 			DocumentFileName(fileName);
@@ -110,10 +130,8 @@ namespace PackageManagement.Tests.EnvDTE
 		public void ReplaceText_EditPointCreatedFromMethodStartPoint_ReplacesTextBetweenStartAndEndPoint()
 		{
 			string fileName = @"d:\projects\test.cs";
-			var methodRegion = new DomRegion(1, 5, 1, 10);
-			var methodBodyRegion = new DomRegion(1, 10, 3, 12);
-			CreateMethod(fileName, methodRegion, methodBodyRegion);
-			methodHelper.AddDeclaringType("MyClass");
+			var methodRegion = new DomRegion(fileName, 1, 5, 3, 12);
+			CreateMethod(methodRegion);
 			DocumentOffsetToReturn(line: 1, column: 5, offset: 5);
 			DocumentOffsetToReturn(line: 3, column: 12, offset: 20);
 			DocumentFileName(fileName);
@@ -128,8 +146,8 @@ namespace PackageManagement.Tests.EnvDTE
 		public void ReplaceText_EditPointCreatedFromFieldStartPointAndTextIsFourLines_IndentsLinesTwoThreeFourFiveAndSix()
 		{
 			string fileName = @"d:\projects\test.cs";
-			var fieldRegion = new DomRegion(1, 5, 1, 10);
-			CreateField(fileName, fieldRegion);
+			var fieldRegion = new DomRegion(fileName, 1, 5, 1, 10);
+			CreateField(fieldRegion);
 			DocumentOffsetToReturn(line: 1, column: 5, offset: 5);
 			DocumentOffsetToReturn(line: 1, column: 12, offset: 10);
 			DocumentFileName(fileName);
@@ -151,8 +169,8 @@ namespace PackageManagement.Tests.EnvDTE
 		public void ReplaceText_EditPointCreatedFromFieldStartPointAndTextIsSingleLine_TextIsNotIndented()
 		{
 			string fileName = @"d:\projects\test.cs";
-			var fieldRegion = new DomRegion(1, 5, 1, 10);
-			CreateField(fileName, fieldRegion);
+			var fieldRegion = new DomRegion(fileName, 1, 5, 1, 10);
+			CreateField(fieldRegion);
 			DocumentOffsetToReturn(line: 1, column: 5, offset: 5);
 			DocumentOffsetToReturn(line: 1, column: 12, offset: 10);
 			DocumentFileName(fileName);

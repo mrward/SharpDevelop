@@ -7,7 +7,9 @@
 	xmlns:widgets="http://icsharpcode.net/sharpdevelop/widgets"
 	xmlns:project="clr-namespace:ICSharpCode.SharpDevelop.Project"
 	xmlns:gui="clr-namespace:ICSharpCode.SharpDevelop.Gui"
-	xmlns:optionpanels="clr-namespace:ICSharpCode.SharpDevelop.Gui.OptionPanels">
+	xmlns:optionpanels="clr-namespace:ICSharpCode.SharpDevelop.Gui.OptionPanels"
+
+>
 	<ScrollViewer VerticalScrollBarVisibility="Auto">
 		<Grid>
 			<Grid.ColumnDefinitions>
@@ -19,7 +21,7 @@
 			<optionpanels:StorageLocationPicker Margin="5,40,0,0"
 				x:Name="location" Location="{Binding ReferencePath.Location}" />
 			
-			<gui:StringListEditorXaml x:Name="editor" Grid.Column="1" Grid.RowSpan="2"></gui:StringListEditorXaml>
+			<gui:StringListEditor x:Name="editor" Grid.Column="1" Grid.RowSpan="2"></gui:StringListEditor>
 		
 		</Grid>
 	</ScrollViewer>

@@ -1,58 +1,60 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Linq;
+using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.PackageManagement.EnvDTE;
-using ICSharpCode.SharpDevelop.Dom;
 using NUnit.Framework;
-using PackageManagement.Tests.Helpers;
 
 namespace PackageManagement.Tests.EnvDTE
 {
 	[TestFixture]
-	public class CodeStructTests
+	public class CodeStructTests : CodeModelTestBase
 	{
 		CodeStruct codeStruct;
-		ProjectContentHelper helper;
-		IClass fakeStruct;
 		
-		[SetUp]
-		public void Init()
+		void CreateStruct(string code)
 		{
-			helper = new ProjectContentHelper();
+			AddCodeFile("class.cs", code);
+			ITypeDefinition typeDefinition = assemblyModel
+				.TopLevelTypeDefinitions
+				.First()
+				.Resolve();
+			
+			codeStruct = new CodeStruct(codeModelContext, typeDefinition);
 		}
 		
-		void CreatePublicStruct(string name)
-		{
-			fakeStruct = helper.AddPublicStructToProjectContent(name);
-			CreateStruct();
-		}
-		
-		void CreatePrivateStruct(string name)
-		{
-			fakeStruct = helper.AddPrivateStructToProjectContent(name);
-			CreateStruct();
-		}
-		
-		void CreateStruct()
-		{
-			codeStruct = new CodeStruct(helper.ProjectContent, fakeStruct);
-		}
-
 		[Test]
 		public void Access_PublicStruct_ReturnsPublic()
 		{
-			CreatePublicStruct("MyStruct");
+			CreateStruct("public struct MyStruct {}");
 			
 			global::EnvDTE.vsCMAccess access = codeStruct.Access;
 			
 			Assert.AreEqual(global::EnvDTE.vsCMAccess.vsCMAccessPublic, access);
 		}
 		
+		
 		[Test]
 		public void Access_PrivateStruct_ReturnsPrivate()
 		{
-			CreatePrivateStruct("MyStruct");
+			CreateStruct("struct MyStruct {}");
 			
 			global::EnvDTE.vsCMAccess access = codeStruct.Access;
 			
@@ -62,7 +64,7 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Kind_PublicStruct_ReturnsStruct()
 		{
-			CreatePublicStruct("MyStruct");
+			CreateStruct("public struct MyStruct {}");
 			
 			global::EnvDTE.vsCMElement kind = codeStruct.Kind;
 			

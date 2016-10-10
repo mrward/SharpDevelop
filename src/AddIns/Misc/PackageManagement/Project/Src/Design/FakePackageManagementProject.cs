@@ -1,10 +1,25 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Runtime.Versioning;
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.EnvDTE;
 using NuGet;
@@ -20,13 +35,29 @@ namespace ICSharpCode.PackageManagement.Design
 		
 		public FakePackageManagementProject(string name)
 		{
-			FakeInstallPackageAction = new FakeInstallPackageAction(this);
 			FakeUninstallPackageAction = new FakeUninstallPackageAction(this);
 			
 			this.Name = name;
+			
+			ConstraintProvider = NullConstraintProvider.Instance;
+			TargetFramework = new FrameworkName(".NETFramework", new Version("4.0"));
+			
+			InstallPackageAction = (package, installAction) => {
+				PackagePassedToInstallPackage = package;
+				PackageOperationsPassedToInstallPackage = installAction.Operations;
+				IgnoreDependenciesPassedToInstallPackage = installAction.IgnoreDependencies;
+				AllowPrereleaseVersionsPassedToInstallPackage = installAction.AllowPrereleaseVersions;
+			};
+			
+			UpdatePackageAction = (package, updateAction) => {
+				PackagePassedToUpdatePackage = package;
+				PackageOperationsPassedToUpdatePackage = updateAction.Operations;
+				UpdateDependenciesPassedToUpdatePackage = updateAction.UpdateDependencies;
+				AllowPrereleaseVersionsPassedToUpdatePackage = updateAction.AllowPrereleaseVersions;
+				IsUpdatePackageCalled = true;
+			};
 		}
 		
-		private FakeInstallPackageAction FakeInstallPackageAction;
 		public FakeUninstallPackageAction FakeUninstallPackageAction;
 		
 		public FakeUpdatePackageAction FirstFakeUpdatePackageActionCreated {
@@ -39,6 +70,9 @@ namespace ICSharpCode.PackageManagement.Design
 		
 		public List<FakeUpdatePackageAction> FakeUpdatePackageActionsCreated = 
 			new List<FakeUpdatePackageAction>();
+		
+		public List<FakeReinstallPackageAction> FakeReinstallPackageActionsCreated = 
+			new List<FakeReinstallPackageAction>();
 		
 		public string Name { get; set; }
 		
@@ -80,12 +114,11 @@ namespace ICSharpCode.PackageManagement.Design
 		public bool IgnoreDependenciesPassedToInstallPackage;
 		public bool AllowPrereleaseVersionsPassedToInstallPackage;
 		
+		public Action<IPackage, InstallPackageAction> InstallPackageAction;
+		
 		public void InstallPackage(IPackage package, InstallPackageAction installAction)
 		{
-			PackagePassedToInstallPackage = package;
-			PackageOperationsPassedToInstallPackage = installAction.Operations;
-			IgnoreDependenciesPassedToInstallPackage = installAction.IgnoreDependencies;
-			AllowPrereleaseVersionsPassedToInstallPackage = installAction.AllowPrereleaseVersions;
+			InstallPackageAction(package, installAction);
 		}
 		
 		public FakePackageOperation AddFakeInstallOperation()
@@ -129,12 +162,10 @@ namespace ICSharpCode.PackageManagement.Design
 		
 		public void UpdatePackage(IPackage package, UpdatePackageAction updateAction)
 		{
-			PackagePassedToUpdatePackage = package;
-			PackageOperationsPassedToUpdatePackage = updateAction.Operations;
-			UpdateDependenciesPassedToUpdatePackage = updateAction.UpdateDependencies;
-			AllowPrereleaseVersionsPassedToUpdatePackage = updateAction.AllowPrereleaseVersions;
-			IsUpdatePackageCalled = true;
+			UpdatePackageAction(package, updateAction);
 		}
+		
+		public Action<IPackage, UpdatePackageAction> UpdatePackageAction;
 		
 		public FakeInstallPackageAction LastInstallPackageCreated;
 		
@@ -153,6 +184,13 @@ namespace ICSharpCode.PackageManagement.Design
 		{
 			var action = new FakeUpdatePackageAction(this);
 			FakeUpdatePackageActionsCreated.Add(action);
+			return action;
+		}
+		
+		public ReinstallPackageAction CreateReinstallPackageAction()
+		{
+			var action = new FakeReinstallPackageAction(this);
+			FakeReinstallPackageActionsCreated.Add(action);
 			return action;
 		}
 		
@@ -217,6 +255,11 @@ namespace ICSharpCode.PackageManagement.Design
 			FakeSourceRepository.AddFakePackage(packageId);
 		}
 		
+		public FakePackage AddFakePackageToSourceRepository(string packageId, string version)
+		{
+			return FakeSourceRepository.AddFakePackageWithVersion(packageId, version);
+		}
+		
 		public void UpdatePackages(UpdatePackagesAction action)
 		{
 		}
@@ -258,6 +301,27 @@ namespace ICSharpCode.PackageManagement.Design
 		public void UpdatePackageReference(IPackage package, IUpdatePackageSettings settings)
 		{
 			throw new NotImplementedException();
+		}
+		
+		public IPackageConstraintProvider ConstraintProvider { get; set; }
+		
+		public FrameworkName TargetFramework { get; set; }
+		
+		public FakePackageRepository FakeLocalRepository = new FakePackageRepository();
+		
+		public IPackage FindPackage(string packageId, SemanticVersion version)
+		{
+			return FakeLocalRepository.FindPackage(packageId, version);
+		}
+		
+		public void AddFakePackageToLocalRepository(string packageId)
+		{
+			FakeLocalRepository.AddFakePackage(packageId);
+		}
+		
+		public FakePackage AddFakePackageToLocalRepository(string packageId, string version)
+		{
+			return FakeLocalRepository.AddFakePackageWithVersion(packageId, version);
 		}
 	}
 }

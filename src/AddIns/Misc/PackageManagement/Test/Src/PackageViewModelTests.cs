@@ -1,5 +1,20 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +30,7 @@ using Rhino.Mocks;
 namespace PackageManagement.Tests
 {
 	[TestFixture]
-	public class PackageViewModelTests
+	   public class PackageViewModelTests
 	{
 		TestablePackageViewModel viewModel;
 		FakePackage fakePackage;
@@ -205,20 +220,21 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
-		public void AddPackage_PackageAddedSuccessfully_PropertyNotifyChangedFiredForIsAddedProperty()
+		public void PackageChanged_PackageAddedSuccessfully_PropertyNotifyChangedFiredForIsAddedProperty()
 		{
 			CreateViewModel();
 			viewModel.AddOneFakeInstallPackageOperationForViewModelPackage();
-
 			string propertyChangedName = null;
 			viewModel.PropertyChanged += (sender, e) => propertyChangedName = e.PropertyName;
 			viewModel.AddPackage();
+		
+			viewModel.PackageChanged();
 			
 			Assert.AreEqual("IsAdded", propertyChangedName);
 		}
 
 		[Test]
-		public void AddPackage_PackageAddedSuccessfully_PropertyNotifyChangedFiredAfterPackageInstalled()
+		public void PackageChanged_PackageAddedSuccessfully_PropertyNotifyChangedFiredAfterPackageInstalled()
 		{
 			CreateViewModel();
 			IPackage packagePassedToInstallPackageWhenPropertyNameChanged = null;
@@ -227,6 +243,8 @@ namespace PackageManagement.Tests
 					fakeSolution.FakeProjectToReturnFromGetProject.LastInstallPackageCreated.Package;
 			};
 			viewModel.AddPackage();
+			
+			viewModel.PackageChanged();
 			
 			Assert.AreEqual(fakePackage, packagePassedToInstallPackageWhenPropertyNameChanged);
 		}
@@ -322,18 +340,20 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
-		public void RemovePackage_PackageRemovedSuccessfully_PropertyNotifyChangedFiredForIsAddedProperty()
+		public void PackageChanged_PackageRemovedSuccessfully_PropertyNotifyChangedFiredForIsAddedProperty()
 		{
 			CreateViewModel();
 			string propertyChangedName = null;
 			viewModel.PropertyChanged += (sender, e) => propertyChangedName = e.PropertyName;
 			viewModel.RemovePackage();
 			
+			viewModel.PackageChanged();
+			
 			Assert.AreEqual("IsAdded", propertyChangedName);
 		}
 		
 		[Test]
-		public void RemovePackage_PackageRemovedSuccessfully_PropertyNotifyChangedFiredAfterPackageUninstalled()
+		public void PackageChanged_PackageRemovedSuccessfully_PropertyNotifyChangedFiredAfterPackageUninstalled()
 		{
 			CreateViewModel();
 			IPackage packagePassedToUninstallPackageWhenPropertyNameChanged = null;
@@ -341,6 +361,8 @@ namespace PackageManagement.Tests
 				packagePassedToUninstallPackageWhenPropertyNameChanged = fakeUninstallPackageAction.Package;
 			};
 			viewModel.RemovePackage();
+			
+			viewModel.PackageChanged();
 			
 			Assert.AreEqual(fakePackage, packagePassedToUninstallPackageWhenPropertyNameChanged);
 		}
@@ -796,7 +818,7 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
-		public void IsManaged_SolutionSelectedContainingTwoProjects_ReturnsTrue()
+		public void IsManaged_SolutionSelectedContainingTwoProjects_ReturnsFalsew()
 		{
 			CreateFakeSolution();
 			AddProjectToSolution();
@@ -806,11 +828,12 @@ namespace PackageManagement.Tests
 			
 			bool managed = viewModel.IsManaged;
 			
-			Assert.IsTrue(managed);
+			// Only installed project-level package "IsManaged"
+			Assert.IsFalse(managed);
 		}
 		
 		[Test]
-		public void IsManaged_SolutionSelectedContainingOneProject_ReturnsTrue()
+		public void IsManaged_SolutionSelectedContainingOneProject_ReturnsFalse()
 		{
 			CreateFakeSolution();
 			AddProjectToSolution();
@@ -819,7 +842,7 @@ namespace PackageManagement.Tests
 			
 			bool managed = viewModel.IsManaged;
 			
-			Assert.IsTrue(managed);
+			Assert.IsFalse(managed);
 		}
 		
 		[Test]
@@ -875,15 +898,17 @@ namespace PackageManagement.Tests
 		}
 		
 		[Test]
-		public void ManagePackage_TwoProjectsSelectedAndUserAcceptsSelectedProjects_IsAddedPropertyChanged()
+		public void PackageChanged_TwoProjectsSelectedAndUserAcceptsSelectedProjects_IsAddedPropertyChanged()
 		{
 			CreateViewModelWithTwoProjectsSelected("Project A", "Project B");
+			viewModel.FakePackageManagementEvents.ProjectsToSelect.Add("Project A");
+			viewModel.FakePackageManagementEvents.ProjectsToSelect.Add("Project B");
 			UserAcceptsProjectSelection();
-			
 			string propertyChangedName = null;
 			viewModel.PropertyChanged += (sender, e) => propertyChangedName = e.PropertyName;
-			
 			viewModel.ManagePackage();
+			
+			viewModel.PackageChanged();
 			
 			Assert.AreEqual("IsAdded", propertyChangedName);
 		}
@@ -1256,7 +1281,7 @@ namespace PackageManagement.Tests
 			CreateTwoFakeSelectedProjects();
 			FirstFakeSelectedProject.IsSelected = true;
 			AddFakeInstallPackageOperationWithPackageThatRequiresLicenseAcceptance(FirstFakeSelectedProject);
-			fakePackageManagementEvents.OnAcceptLicensesReturnValue = false;
+			fakePackageManagementEvents.OnAcceptLicensesReturnValue = true;
 			
 			viewModel.ManagePackagesForSelectedProjects(fakeSelectedProjects);
 			
@@ -1505,6 +1530,102 @@ namespace PackageManagement.Tests
 			viewModel.ManagePackage();
 			
 			operationAwareRepository.AssertOperationWasStartedAndDisposed(RepositoryOperationNames.Install, "MyPackage");
+		}
+		
+		[Test]
+		public void AddOrManagePackage_SolutionSelectedAndContainsOnlyOneProject_UserPromptedToSelectOneProject()
+		{
+			CreateFakeSolution();
+			AddProjectToSolution();
+			fakeSolution.FakeMSBuildProjects[0].Name = "MyProject";
+			fakeSolution.NoProjectsSelected();
+			fakeSolution.AddFakeProjectToReturnFromGetProject("MyProject");
+			CreateViewModel(fakeSolution);
+			UserCancelsProjectSelection();
+			
+			viewModel.AddOrManagePackage();
+			
+			IEnumerable<IPackageManagementSelectedProject> selectedProjects = 
+				fakePackageManagementEvents.SelectedProjectsPassedToOnSelectProjects;
+			
+			var expectedSelectedProjects = new List<IPackageManagementSelectedProject>();
+			expectedSelectedProjects.Add(new FakeSelectedProject("MyProject"));
+			
+			var nullReferenceException = new NullReferenceException();
+			Assert.IsFalse(fakeLogger.FormattedMessagesLoggedContainsText(nullReferenceException.Message));
+			Assert.IsNotNull(selectedProjects);
+			SelectedProjectCollectionAssert.AreEqual(expectedSelectedProjects, selectedProjects);
+		}
+		
+		[Test]
+		public void AddPackage_ExceptionWhenCheckIfPackageIsForProject_ExceptionErrorMessageReported()
+		{
+			CreateViewModel();
+			viewModel.AddOneFakeInstallPackageOperationForViewModelPackage();
+			var ex = new Exception("Test");
+			viewModel.IsProjectPackageAction = package => {
+				throw ex;
+			};
+			viewModel.AddPackage();
+			
+			Assert.AreEqual(ex, fakePackageManagementEvents.ExceptionPassedToOnPackageOperationError);
+			Assert.IsTrue(fakeLogger.FormattedMessagesLoggedContainsText("Test"));
+		}
+		
+		[Test]
+		public void AddOrManagePackage_ExceptionThrownWhenCheckingIfPackageIsForProject_ExceptionIsLogged()
+		{
+			CreateFakeSolution();
+			AddProjectToSolution();
+			fakeSolution.FakeMSBuildProjects[0].Name = "MyProject";
+			fakeSolution.NoProjectsSelected();
+			fakeSolution.AddFakeProjectToReturnFromGetProject("MyProject");
+			CreateViewModel(fakeSolution);
+			var ex = new Exception("Test");
+			viewModel.IsProjectPackageAction = package => {
+				throw ex;
+			};
+			
+			viewModel.AddOrManagePackage();
+			
+			Assert.AreEqual(ex, fakePackageManagementEvents.ExceptionPassedToOnPackageOperationError);
+			Assert.IsTrue(fakeLogger.FormattedMessagesLoggedContainsText("Test"));
+		}
+		
+		[Test]
+		public void RemovePackage_ExceptionWhenCheckingIfPackageIsForProject_ExceptionErrorMessageReported()
+		{
+			CreateViewModel();
+			var ex = new Exception("Test");
+			viewModel.IsProjectPackageAction = package => {
+				throw ex;
+			};
+			
+			viewModel.RemovePackage();
+			
+			Assert.AreEqual(ex, fakePackageManagementEvents.ExceptionPassedToOnPackageOperationError);
+			Assert.IsTrue(fakeLogger.FormattedMessagesLoggedContainsText("Test"));
+		}
+		
+		[Test]
+		public void RemoveOrManagePackage_ExceptionThrownWhenCheckingIfPackageIsForProject_ExceptionIsLogged()
+		{
+			CreateFakeSolution();
+			AddProjectToSolution();
+			AddProjectToSolution();
+			fakeSolution.FakeMSBuildProjects[0].Name = "MyProject";
+			fakeSolution.NoProjectsSelected();
+			fakeSolution.AddFakeProjectToReturnFromGetProject("MyProject");
+			CreateViewModel(fakeSolution);
+			var ex = new Exception("Test");
+			viewModel.IsProjectPackageAction = package => {
+				throw ex;
+			};
+			
+			viewModel.RemoveOrManagePackage();
+			
+			Assert.AreEqual(ex, fakePackageManagementEvents.ExceptionPassedToOnPackageOperationError);
+			Assert.IsTrue(fakeLogger.FormattedMessagesLoggedContainsText("Test"));
 		}
 	}
 }

@@ -1,14 +1,29 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.ComponentModel;
 using System.IO;
 
 using ICSharpCode.Core;
-using ICSharpCode.SharpDevelop.Dom;
-using ICSharpCode.SharpDevelop.Gui;
+using ICSharpCode.NRefactory.TypeSystem;
+using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Project;
+using ICSharpCode.SharpDevelop.Workbench;
 using SD = ICSharpCode.SharpDevelop.Project;
 
 namespace ICSharpCode.PackageManagement.EnvDTE
@@ -21,6 +36,7 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		public const string CopyToOutputDirectoryPropertyName = "CopyToOutputDirectory";
 		public const string CustomToolPropertyName = "CustomTool";
 		public const string FullPathPropertyName = "FullPath";
+		public const string LocalPathPropertyName = "LocalPath";
 		
 		public ProjectItem(Project project, FileProjectItem projectItem)
 		{
@@ -39,14 +55,21 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 			return new FileProjectItems(this);
 		}
 		
-		internal ProjectItem(MSBuildBasedProject project, IClass c)
-			: this(new Project(project), project.FindFile(c.CompilationUnit.FileName))
+		internal static ProjectItem FindByEntity(IProject project, IEntity entity)
 		{
+			if (entity.Region.FileName != null) {
+				return FindByFileName(project, entity.Region.FileName);
+			}
+			return null;
 		}
 		
-		internal ProjectItem(IProjectContent projectContent, IClass c)
-			: this((MSBuildBasedProject)projectContent.Project, c)
+		internal static ProjectItem FindByFileName(IProject project, string fileName)
 		{
+			SD.FileProjectItem item = project.FindFile(new FileName(fileName));
+			if (item != null) {
+				return new ProjectItem(new Project(project as MSBuildBasedProject), item);
+			}
+			return null;
 		}
 		
 		string GetKindFromFileProjectItemType()
@@ -93,8 +116,8 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 				return GetCopyToOutputDirectory();
 			} else if (name == CustomToolPropertyName) {
 				return projectItem.CustomTool;
-			} else if (name == FullPathPropertyName) {
-				return projectItem.FileName;
+			} else if ((name == FullPathPropertyName) || (name == LocalPathPropertyName)) {
+				return projectItem.FileName.ToString();
 			}
 			return String.Empty;
 		}
@@ -150,10 +173,18 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		public global::EnvDTE.FileCodeModel2 FileCodeModel {
 			get {
 				if (!IsDirectory) {
-					return new FileCodeModel2(containingProject, projectItem);
+					return new FileCodeModel2(CreateModelContext(), containingProject);
 				}
 				return null;
 			}
+		}
+		
+		CodeModelContext CreateModelContext()
+		{
+			return new CodeModelContext {
+				CurrentProject = containingProject.MSBuildProject,
+				FilteredFileName = projectItem.FileName
+			};
 		}
 		
 		internal string GetIncludePath(string fileName)
@@ -228,6 +259,14 @@ namespace ICSharpCode.PackageManagement.EnvDTE
 		string GetProjectItemRelativeDirectoryToProject()
 		{
 			return Path.GetDirectoryName(GetProjectItemRelativePathToProject());
+		}
+		
+		public void Save(string fileName = null)
+		{
+			IViewContent view = containingProject.GetOpenFile(FileName);
+			if (view != null) {
+				containingProject.SaveFile(view);
+			}
 		}
 	}
 }

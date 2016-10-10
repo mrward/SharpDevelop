@@ -5,7 +5,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:local="clr-namespace:ICSharpCode.SharpDevelop.Gui.Dialogs.ReferenceDialog.ServiceReference"
 	xmlns:core="http://icsharpcode.net/sharpdevelop/core"
-	xmlns:gui="clr-namespace:ICSharpCode.SharpDevelop.Gui"
+	xmlns:sd="clr-namespace:ICSharpCode.SharpDevelop"
 	xmlns:widgets="http://icsharpcode.net/sharpdevelop/widgets"
 	Width="700" Height="500"
 	Title="{Binding Title}">
@@ -25,7 +25,7 @@
 		</Grid.ColumnDefinitions>
 		
 		<GroupBox
-			Header="Client"
+			Header="{core:Localize Dialog.AdvancedService.ClientHeader}"
 			Grid.ColumnSpan="2">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -43,14 +43,14 @@
 					Text="{Binding AccessLevel}"></TextBlock>
 				<ComboBox
 					Grid.Column="1 " Margin="4"
-					gui:EnumBinding.EnumType="{x:Type local:Modifiers}"  SelectedValue="{Binding SelectedModifier}">
+					sd:EnumBinding.EnumType="{x:Type local:Modifiers}"  SelectedValue="{Binding SelectedModifier}">
 				</ComboBox>
 				
 				<CheckBox
 					Grid.Row="1" Margin="25,0,0,0"
 					VerticalAlignment="Center"
 					IsChecked="{Binding GenerateAsyncOperations}"
-					Content="Generate asynchronous operations"></CheckBox>
+					Content="{core:Localize Dialog.AdvancedService.Client.GenerateAsyncOperations}"></CheckBox>
 			</Grid>
 		</GroupBox>
 		
@@ -91,7 +91,7 @@
 					Text="Collection type:"></TextBlock>
 				<ComboBox
 					Grid.Row="1" Grid.Column="2" Margin="4"
-					gui:EnumBinding.EnumType="{x:Type local:CollectionTypes}"
+					sd:EnumBinding.EnumType="{x:Type local:CollectionTypes}"
 					SelectedValue="{Binding CollectionType}">
 					</ComboBox>
 				<TextBlock
@@ -102,7 +102,7 @@
 				<ComboBox
 					Grid.Row="2"
 					Grid.Column="1" Margin="4"
-					gui:EnumBinding.EnumType="{x:Type local:DictionaryCollectionTypes}"
+					sd:EnumBinding.EnumType="{x:Type local:DictionaryCollectionTypes}"
 					SelectedValue="{Binding DictionaryCollectionType}">
 				</ComboBox>
 				

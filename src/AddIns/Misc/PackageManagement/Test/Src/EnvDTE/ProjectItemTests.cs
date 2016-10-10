@@ -1,32 +1,53 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
+using ICSharpCode.Core;
+using ICSharpCode.NRefactory.TypeSystem;
+using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using ICSharpCode.PackageManagement.EnvDTE;
-using ICSharpCode.SharpDevelop.Gui;
-using DTE = ICSharpCode.PackageManagement.EnvDTE;
-using Rhino.Mocks;
+using ICSharpCode.SharpDevelop;
+using ICSharpCode.SharpDevelop.Dom;
+using ICSharpCode.SharpDevelop.Workbench;
 using NUnit.Framework;
 using PackageManagement.Tests.Helpers;
+using Rhino.Mocks;
+using DTE = ICSharpCode.PackageManagement.EnvDTE;
 
 namespace PackageManagement.Tests.EnvDTE
 {
 	[TestFixture]
-	public class ProjectItemTests
+	public class ProjectItemTests : CodeModelTestBase
 	{
-		TestableDTEProject project;
+		TestableDTEProject testableDteProject;
 		ProjectItems projectItems;
-		TestableProject msbuildProject;
 		FakeFileService fakeFileService;
 		
-		void CreateProjectItems()
+		void CreateProjectItems(string fileName = @"d:\projects\MyProject\MyProject.csproj")
 		{
-			project = new TestableDTEProject();
-			msbuildProject = project.TestableProject;
-			projectItems = (ProjectItems)project.ProjectItems;
-			fakeFileService = project.FakeFileService;
+			testableDteProject = new TestableDTEProject();
+			msbuildProject = testableDteProject.TestableProject;
+			msbuildProject.FileName = new FileName(fileName);
+			projectItems = (ProjectItems)testableDteProject.ProjectItems;
+			fakeFileService = testableDteProject.FakeFileService;
 		}
 		
 		void OpenSavedFileInSharpDevelop(string fileName)
@@ -39,11 +60,17 @@ namespace PackageManagement.Tests.EnvDTE
 			OpenFileInSharpDevelop(fileName, dirty: true);
 		}
 		
-		void OpenFileInSharpDevelop(string fileName, bool dirty)
+		IViewContent OpenFileInSharpDevelop(string fileName, bool dirty)
 		{
 			IViewContent view = MockRepository.GenerateStub<IViewContent>();
 			view.Stub(v => v.IsDirty).Return(dirty);
 			fakeFileService.AddOpenView(view, fileName);
+			return view;
+		}
+		
+		void AddCompilationUnit()
+		{
+			fakeFileService.CompilationUnitToReturnFromGetCompilationUnit = projectContent.CreateCompilation();
 		}
 		
 		[Test]
@@ -145,22 +172,20 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Delete_ProjectItemIsFile_FileIsDeleted()
 		{
-			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\myproject\myproject.csproj";
+			CreateProjectItems(@"d:\projects\myproject\myproject.csproj");
 			msbuildProject.AddFile(@"src\program.cs");
 			global::EnvDTE.ProjectItem directoryItem = projectItems.Item("src");
 			global::EnvDTE.ProjectItem fileItem = directoryItem.ProjectItems.Item("program.cs");
 			
 			fileItem.Delete();
 			
-			Assert.AreEqual(@"d:\projects\myproject\src\program.cs", project.FakeFileService.PathPassedToRemoveFile);
+			Assert.AreEqual(@"d:\projects\myproject\src\program.cs", testableDteProject.FakeFileService.PathPassedToRemoveFile);
 		}
 		
 		[Test]
 		public void Delete_ProjectItemIsFile_ProjectIsSaved()
 		{
-			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\myproject\myproject.csproj";
+			CreateProjectItems(@"d:\projects\myproject\myproject.csproj");
 			msbuildProject.AddFile(@"src\program.cs");
 			global::EnvDTE.ProjectItem directoryItem = projectItems.Item("src");
 			global::EnvDTE.ProjectItem fileItem = directoryItem.ProjectItems.Item("program.cs");
@@ -187,6 +212,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void FileCodeModel_ProjectFile_ReturnsFileCodeModel()
 		{
 			CreateProjectItems();
+			AddCompilationUnit();
 			msbuildProject.AddFile(@"src\program.cs");
 		
 			global::EnvDTE.ProjectItem directoryItem = projectItems.Item("src");
@@ -200,16 +226,16 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void FileCodeModel_GetCodeElementsFromFileCodeModelForProjectFile_FileServicePassedToFileCodeModel()
 		{
-			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			CreateProjectItems(@"d:\projects\MyProject\MyProject.csproj");
+			AddCompilationUnit();
 			msbuildProject.AddFile(@"src\program.cs");
-			
 			global::EnvDTE.ProjectItem directoryItem = projectItems.Item("src");
 			global::EnvDTE.ProjectItem fileItem = directoryItem.ProjectItems.Item("program.cs");
 			
 			global::EnvDTE.CodeElements codeElements = fileItem.FileCodeModel.CodeElements;
 			
-			Assert.AreEqual(@"d:\projects\MyProject\src\program.cs", fakeFileService.FileNamePassedToGetCompilationUnit);
+			CodeNamespace codeNamespace = codeElements.FirstCodeNamespaceOrDefault();
+			Assert.AreEqual(testableDteProject.TestableProject, fakeFileService.ProjectPassedToGetCompilationUnit);
 			Assert.AreEqual(0, codeElements.Count);
 		}
 		
@@ -240,8 +266,7 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void FileNames_IndexOneRequested_ReturnsFullPathToProjectItem()
 		{
-			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			CreateProjectItems(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"src\program.cs");
 			global::EnvDTE.ProjectItem directoryItem = projectItems.Item("src");
 			
@@ -254,7 +279,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Document_ProjectItemNotOpenInSharpDevelop_ReturnsNull()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
 			
@@ -267,7 +292,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Document_ProjectItemOpenInSharpDevelop_ReturnsOpenDocumentForFile()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
 			string projectItemFileName = @"d:\projects\MyProject\program.cs";
@@ -282,7 +307,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Document_ProjectItemOpenInSharpDevelopAndIsSaved_ReturnsOpenDocumentThatIsSaved()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
 			OpenSavedFileInSharpDevelop(@"d:\projects\MyProject\program.cs");
@@ -296,7 +321,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Document_ProjectItemOpenInSharpDevelopAndIsUnsaved_ReturnsOpenDocumentThatIsNotSaved()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
 			OpenUnsavedFileInSharpDevelop(@"d:\projects\MyProject\program.cs");
@@ -310,7 +335,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Open_ViewKindIsCode_OpensFile()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
 			
@@ -326,7 +351,7 @@ namespace PackageManagement.Tests.EnvDTE
 			msbuildProject.AddFile("MainForm.cs");
 			msbuildProject.AddDependentFile("MainForm.Designer.cs", "MainForm.cs");
 			
-			global::EnvDTE.ProjectItems projectItems = project.ProjectItems;
+			global::EnvDTE.ProjectItems projectItems = testableDteProject.ProjectItems;
 			
 			string[] expectedFiles = new string[] {
 				"MainForm.cs"
@@ -341,7 +366,7 @@ namespace PackageManagement.Tests.EnvDTE
 			msbuildProject.AddFile("MainForm.cs");
 			msbuildProject.AddDependentFile("MainForm.Designer.cs", "MainForm.cs");
 			
-			Assert.Throws<ArgumentException>(() => project.ProjectItems.Item("MainForm.Designer.cs"));
+			Assert.Throws<ArgumentException>(() => testableDteProject.ProjectItems.Item("MainForm.Designer.cs"));
 		}
 		
 		[Test]
@@ -350,7 +375,7 @@ namespace PackageManagement.Tests.EnvDTE
 			CreateProjectItems();
 			msbuildProject.AddFile("MainForm.cs");
 			msbuildProject.AddDependentFile("MainForm.Designer.cs", "MainForm.cs");
-			global::EnvDTE.ProjectItem mainFormItem = project.ProjectItems.Item("MainForm.cs");
+			global::EnvDTE.ProjectItem mainFormItem = testableDteProject.ProjectItems.Item("MainForm.cs");
 			
 			global::EnvDTE.ProjectItems mainFormProjectItems = mainFormItem.ProjectItems;
 			
@@ -364,7 +389,7 @@ namespace PackageManagement.Tests.EnvDTE
 		public void FileCount_FileProjectItem_ReturnsOne()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem projectItem = projectItems.Item("program.cs");
 			
@@ -377,28 +402,73 @@ namespace PackageManagement.Tests.EnvDTE
 		public void Collection_ProjectItemIsFileInProjectRootFolder_ReturnsProjectItemsCollectionForProject()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"program.cs");
 			global::EnvDTE.ProjectItem projectItem = projectItems.Item("program.cs");
 			
 			global::EnvDTE.ProjectItems collection = projectItem.Collection;
 			
-			Assert.AreEqual(project.ProjectItems, collection);
+			Assert.AreEqual(testableDteProject.ProjectItems, collection);
 		}
 		
 		[Test]
 		public void Collection_ProjectItemIsFileInSubFolderOfProject_ReturnsProjectItemsCollectionForSubFolder()
 		{
 			CreateProjectItems();
-			msbuildProject.FileName = @"d:\projects\MyProject\MyProject.csproj";
+			msbuildProject.FileName = new FileName(@"d:\projects\MyProject\MyProject.csproj");
 			msbuildProject.AddFile(@"src\program.cs");
-			global::EnvDTE.ProjectItem srcDirectoryItem = project.ProjectItems.Item("src");
+			global::EnvDTE.ProjectItem srcDirectoryItem = testableDteProject.ProjectItems.Item("src");
 			global::EnvDTE.ProjectItem fileProjectItem = srcDirectoryItem.ProjectItems.Item("program.cs");
 			
 			global::EnvDTE.ProjectItems collection = fileProjectItem.Collection;
 			
 			global::EnvDTE.ProjectItem item = collection.Item("program.cs");
 			Assert.AreEqual("program.cs", item.Name);
+		}
+		
+		[Test]
+		public void Save_FileNameNotPassed_SavesFile()
+		{
+			CreateProjectItems();
+			msbuildProject.FileName = FileName.Create(@"d:\projects\MyProject\MyProject.csproj");
+			msbuildProject.AddFile(@"program.cs");
+			IViewContent view = OpenFileInSharpDevelop(@"d:\projects\MyProject\program.cs", false);
+			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
+			
+			item.Save();
+			
+			Assert.AreEqual(view, fakeFileService.ViewContentPassedToSaveFile);
+		}
+		
+		[Test]
+		public void Save_FileNameNotPassedAndFileNotOpen_FileNotSaved()
+		{
+			CreateProjectItems();
+			msbuildProject.FileName = FileName.Create(@"d:\projects\MyProject\MyProject.csproj");
+			msbuildProject.AddFile(@"program.cs");
+			global::EnvDTE.ProjectItem item = projectItems.Item("program.cs");
+			
+			item.Save();
+			
+			Assert.IsFalse(fakeFileService.IsSaveFileCalled);
+		}
+		
+		[Test]
+		public void FileCodeModel_AddImportToProjectFile_UsesCodeGenerator()
+		{
+			CreateProjectItems(@"d:\projects\Test\Tests.csproj");
+			AddCompilationUnit();
+			msbuildProject.AddFile(@"src\program.cs");
+			msbuildProject.SetLanguageBinding(languageBinding);
+			global::EnvDTE.ProjectItem directoryItem = projectItems.Item("src");
+			global::EnvDTE.ProjectItem fileItem = directoryItem.ProjectItems.Item("program.cs");
+			
+			global::EnvDTE.FileCodeModel2 fileCodeModel = fileItem.FileCodeModel;
+			fileCodeModel.AddImport("System.Xml");
+			
+			codeGenerator.AssertWasCalled(generator => generator.AddImport(
+				new FileName(@"d:\projects\Test\src\program.cs"),
+				"System.Xml"));
 		}
 	}
 }

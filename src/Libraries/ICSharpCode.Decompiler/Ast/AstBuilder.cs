@@ -52,7 +52,7 @@ namespace ICSharpCode.Decompiler.Ast
 	public class AstBuilder
 	{
 		DecompilerContext context;
-		CompilationUnit astCompileUnit = new CompilationUnit();
+		SyntaxTree syntaxTree = new SyntaxTree();
 		Dictionary<string, NamespaceDeclaration> astNamespaces = new Dictionary<string, NamespaceDeclaration>();
 		bool transformationsHaveRun;
 		
@@ -139,15 +139,15 @@ namespace ICSharpCode.Decompiler.Ast
 		
 		public void RunTransformations(Predicate<IAstTransform> transformAbortCondition)
 		{
-			TransformationPipeline.RunTransformationsUntil(astCompileUnit, transformAbortCondition, context);
+			TransformationPipeline.RunTransformationsUntil(syntaxTree, transformAbortCondition, context);
 			transformationsHaveRun = true;
 		}
 		
 		/// <summary>
 		/// Gets the abstract source tree.
 		/// </summary>
-		public CompilationUnit CompilationUnit {
-			get { return astCompileUnit; }
+		public SyntaxTree SyntaxTree {
+			get { return syntaxTree; }
 		}
 		
 		/// <summary>
@@ -159,16 +159,21 @@ namespace ICSharpCode.Decompiler.Ast
 			if (!transformationsHaveRun)
 				RunTransformations();
 			
-			astCompileUnit.AcceptVisitor(new InsertParenthesesVisitor { InsertParenthesesForReadability = true });
-			var outputFormatter = new TextOutputFormatter(output);
+			syntaxTree.AcceptVisitor(new InsertParenthesesVisitor { InsertParenthesesForReadability = true });
+			var outputFormatter = new TextTokenWriter(output) { FoldBraces = context.Settings.FoldBraces };
 			var formattingPolicy = context.Settings.CSharpFormattingOptions;
-			astCompileUnit.AcceptVisitor(new CSharpOutputVisitor(outputFormatter, formattingPolicy));
+			syntaxTree.AcceptVisitor(new CSharpOutputVisitor(outputFormatter, formattingPolicy));
 		}
 		
 		public void AddAssembly(AssemblyDefinition assemblyDefinition, bool onlyAssemblyLevel = false)
 		{
-			if (assemblyDefinition.Name.Version != null) {
-				astCompileUnit.AddChild(
+			AddAssembly(assemblyDefinition.MainModule, onlyAssemblyLevel);
+		}
+		
+		public void AddAssembly(ModuleDefinition moduleDefinition, bool onlyAssemblyLevel = false)
+		{
+			if (moduleDefinition.Assembly != null && moduleDefinition.Assembly.Name.Version != null) {
+				syntaxTree.AddChild(
 					new AttributeSection {
 						AttributeTarget = "assembly",
 						Attributes = {
@@ -176,22 +181,24 @@ namespace ICSharpCode.Decompiler.Ast
 								Type = new SimpleType("AssemblyVersion")
 									.WithAnnotation(new TypeReference(
 										"System.Reflection", "AssemblyVersionAttribute",
-										assemblyDefinition.MainModule, assemblyDefinition.MainModule.TypeSystem.Corlib)),
+										moduleDefinition, moduleDefinition.TypeSystem.Corlib)),
 								Arguments = {
-									new PrimitiveExpression(assemblyDefinition.Name.Version.ToString())
+									new PrimitiveExpression(moduleDefinition.Assembly.Name.Version.ToString())
 								}
 							}
 						}
 					}, EntityDeclaration.AttributeRole);
 			}
 			
-			ConvertCustomAttributes(astCompileUnit, assemblyDefinition, "assembly");
-			ConvertSecurityAttributes(astCompileUnit, assemblyDefinition, "assembly");
-			ConvertCustomAttributes(astCompileUnit, assemblyDefinition.MainModule, "module");
-			AddTypeForwarderAttributes(astCompileUnit, assemblyDefinition.MainModule, "assembly");
+			if (moduleDefinition.Assembly != null) {
+				ConvertCustomAttributes(syntaxTree, moduleDefinition.Assembly, "assembly");
+				ConvertSecurityAttributes(syntaxTree, moduleDefinition.Assembly, "assembly");
+			}
+			ConvertCustomAttributes(syntaxTree, moduleDefinition, "module");
+			AddTypeForwarderAttributes(syntaxTree, moduleDefinition, "assembly");
 			
 			if (!onlyAssemblyLevel) {
-				foreach (TypeDefinition typeDef in assemblyDefinition.MainModule.Types) {
+				foreach (TypeDefinition typeDef in moduleDefinition.Types) {
 					// Skip the <Module> class
 					if (typeDef.Name == "<Module>") continue;
 					// Skip any hidden types
@@ -203,7 +210,7 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 		}
 		
-		void AddTypeForwarderAttributes(CompilationUnit astCompileUnit, ModuleDefinition module, string target)
+		void AddTypeForwarderAttributes(SyntaxTree astCompileUnit, ModuleDefinition module, string target)
 		{
 			if (!module.HasExportedTypes)
 				return;
@@ -237,7 +244,7 @@ namespace ICSharpCode.Decompiler.Ast
 			} else {
 				// Create the namespace
 				NamespaceDeclaration astNamespace = new NamespaceDeclaration { Name = name };
-				astCompileUnit.AddChild(astNamespace, CompilationUnit.MemberRole);
+				syntaxTree.Members.Add(astNamespace);
 				astNamespaces[name] = astNamespace;
 				return astNamespace;
 			}
@@ -248,31 +255,31 @@ namespace ICSharpCode.Decompiler.Ast
 			var astType = CreateType(typeDef);
 			NamespaceDeclaration astNS = GetCodeNamespace(typeDef.Namespace);
 			if (astNS != null) {
-				astNS.AddChild(astType, NamespaceDeclaration.MemberRole);
+				astNS.Members.Add(astType);
 			} else {
-				astCompileUnit.AddChild(astType, CompilationUnit.MemberRole);
+				syntaxTree.Members.Add(astType);
 			}
 		}
 		
 		public void AddMethod(MethodDefinition method)
 		{
 			AstNode node = method.IsConstructor ? (AstNode)CreateConstructor(method) : CreateMethod(method);
-			astCompileUnit.AddChild(node, CompilationUnit.MemberRole);
+			syntaxTree.Members.Add(node);
 		}
 
 		public void AddProperty(PropertyDefinition property)
 		{
-			astCompileUnit.AddChild(CreateProperty(property), CompilationUnit.MemberRole);
+			syntaxTree.Members.Add(CreateProperty(property));
 		}
 		
 		public void AddField(FieldDefinition field)
 		{
-			astCompileUnit.AddChild(CreateField(field), CompilationUnit.MemberRole);
+			syntaxTree.Members.Add(CreateField(field));
 		}
 		
 		public void AddEvent(EventDefinition ev)
 		{
-			astCompileUnit.AddChild(CreateEvent(ev), CompilationUnit.MemberRole);
+			syntaxTree.Members.Add(CreateEvent(ev));
 		}
 		
 		/// <summary>

@@ -1,17 +1,37 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
 using ICSharpCode.Core;
 using ICSharpCode.PackageManagement;
+using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Gui;
 using ICSharpCode.SharpDevelop.Project;
+using ICSharpCode.SharpDevelop.WinForms;
+using ICSharpCode.SharpDevelop.Workbench;
 using NUnit.Framework;
+using Rhino.Mocks;
 using PackageManagement.Tests.Helpers;
 
 namespace PackageManagement.Tests
@@ -23,17 +43,41 @@ namespace PackageManagement.Tests
 		ProjectBrowserUpdater projectBrowserUpdater;
 		TestableProject project;
 		ProjectNode projectNode;
+		Bitmap bitmap;
 
-		[TestFixtureSetUp]
-		public void InitFixture()
+		[SetUp]
+		public void Init()
 		{
-			PropertyService.InitializeServiceForUnitTests();
+			project = ProjectHelper.CreateTestProject();
 			
-			Assembly assembly = Assembly.Load("SharpDevelop");
-			ResourceService.RegisterNeutralImages(new ResourceManager("Resources.BitmapResources", assembly));
-			ResourceService.RegisterNeutralStrings(new ResourceManager("Resources.StringResources", assembly));
+			AddService<IWorkbench>();
+			AddService<IFileService>();
+			
+			IProjectService projectService = MockRepository.GenerateMock<IProjectService, IProjectServiceRaiseEvents>();
+			IProjectServiceRaiseEvents projectServiceRaiseEvents = (IProjectServiceRaiseEvents)projectService;
+			SD.Services.AddService(typeof(IProjectService), projectService);
+			SD.Services.AddService(typeof(IProjectServiceRaiseEvents), projectServiceRaiseEvents);
+			
+			projectServiceRaiseEvents
+				.Stub(service => service.RaiseProjectItemAdded(Arg<ProjectItemEventArgs>.Is.Anything))
+				.WhenCalled(methodInvocation => projectService.Raise(p => p.ProjectItemAdded += null, null, methodInvocation.Arguments[0]));
+			
+			IWinFormsService winFormsService = AddService<IWinFormsService>();
+			
+			bitmap = new Bitmap(32, 32);
+			winFormsService
+				.Stub(service => service.GetResourceServiceBitmap(Arg<string>.Is.Anything))
+				.Return(bitmap);
 			
 			AddDefaultDotNetNodeBuilderToAddinTree();
+		}
+		
+		T AddService<T>()
+			where T : class
+		{
+			T service = MockRepository.GenerateStub<T>();
+			SD.Services.AddService(typeof(T), service);
+			return service;
 		}
 		
 		void AddDefaultDotNetNodeBuilderToAddinTree()
@@ -49,15 +93,17 @@ namespace PackageManagement.Tests
 				"	</Path>\r\n" +
 				"</AddIn>";
 			
-			var addin = AddIn.Load(new StringReader(xml), String.Empty, null);
+			var addinTree = (AddInTreeImpl)SD.AddInTree;
+			AddIn addin = AddIn.Load(addinTree, new StringReader(xml), String.Empty, null);
 			addin.Enabled = true;
-			AddInTree.InsertAddIn(addin);
+			addinTree.InsertAddIn(addin);
 		}
 		
 		[TearDown]
 		public void TearDown()
 		{
 			projectBrowser.Dispose();
+			bitmap.Dispose();
 		}
 		
 		void CreateExpandedProjectNodeWithNoFiles(string projectfileName)
@@ -86,14 +132,14 @@ namespace PackageManagement.Tests
 		{
 			TestableProject unknownProject = ProjectHelper.CreateTestProject();
 			var fileProjectItem = new FileProjectItem(unknownProject, ItemType.Compile);
-			fileProjectItem.FileName = fileName;
+			fileProjectItem.FileName = new  FileName(fileName);
 			ProjectService.AddProjectItem(unknownProject, fileProjectItem);
 		}
 		
 		void AddDirectoryToProject(string directory)
 		{
 			var fileProjectItem = new FileProjectItem(project, ItemType.Folder);
-			fileProjectItem.FileName = directory;
+			fileProjectItem.FileName = new FileName(directory);
 			AddProjectItemToProject(fileProjectItem);
 		}
 		
@@ -115,18 +161,17 @@ namespace PackageManagement.Tests
 		
 		ProjectNode AddProjectToProjectBrowser(string projectFileName)
 		{
-			project = ProjectHelper.CreateTestProject();
-			project.FileName = projectFileName;
+			project.FileName = new FileName(projectFileName);
 			
 			projectBrowser.ViewSolution(project.ParentSolution);
-			var solutionNode = projectBrowser.RootNode as SolutionNode;
-			return solutionNode.FirstNode as ProjectNode;
+			var solutionNode = (SolutionNode)projectBrowser.RootNode;
+			return (ProjectNode)solutionNode.FirstNode;
 		}
 		
 		void AddFileToProject(string fileName)
 		{
 			var fileProjectItem = new FileProjectItem(project, ItemType.Compile) {
-				FileName = fileName
+				FileName = new FileName(fileName)
 			};
 			AddProjectItemToProject(fileProjectItem);
 		}
@@ -134,7 +179,7 @@ namespace PackageManagement.Tests
 		void AddDependentFileToProject(string fileName, string dependentUpon)
 		{
 			var fileProjectItem = new FileProjectItem(project, ItemType.Compile) {
-				FileName = fileName,
+				FileName = new FileName(fileName),
 				DependentUpon = dependentUpon
 			};
 			AddProjectItemToProject(fileProjectItem);
@@ -284,7 +329,7 @@ namespace PackageManagement.Tests
 			AddFileToProject(@"d:\projects\MyProject\Subfolder\test.cs");
 			
 			DirectoryNode directoryNode = GetFirstDirectoryChildNode(projectNode);
-			Assert.AreEqual(@"d:\projects\MyProject\Subfolder", directoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\Subfolder", directoryNode.Directory.ToString());
 			Assert.AreEqual("Subfolder", directoryNode.Text);
 			Assert.AreEqual(FileNodeStatus.InProject, directoryNode.FileNodeStatus);
 		}
@@ -297,7 +342,7 @@ namespace PackageManagement.Tests
 			AddFileToProject(@"d:\projects\MyProject\Subfolder1\Subfolder2\test.cs");
 			
 			DirectoryNode directoryNode = GetFirstDirectoryChildNode(projectNode);
-			Assert.AreEqual(@"d:\projects\MyProject\Subfolder1", directoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\Subfolder1", directoryNode.Directory.ToString());
 			Assert.AreEqual(FileNodeStatus.InProject, directoryNode.FileNodeStatus);
 		}
 		
@@ -361,7 +406,7 @@ namespace PackageManagement.Tests
 			AddFileToProject(@"d:\projects\MyProject\b\test.cs");
 			
 			DirectoryNode directoryNode = GetDirectoryChildNodeAtIndex(projectNode, 1);
-			Assert.AreEqual(@"d:\projects\MyProject\b", directoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\b", directoryNode.Directory.ToString());
 		}
 		
 		[Test]
@@ -421,7 +466,7 @@ namespace PackageManagement.Tests
 			AddFileToProject(@"d:\projects\MyProject\a\b\test.cs");
 			
 			DirectoryNode childDirectoryNode = GetFirstDirectoryChildNode(directoryNode);
-			Assert.AreEqual(@"d:\projects\MyProject\a\b", childDirectoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\a\b", childDirectoryNode.Directory.ToString());
 			Assert.AreEqual(FileNodeStatus.InProject, childDirectoryNode.FileNodeStatus);
 		}
 		
@@ -436,7 +481,7 @@ namespace PackageManagement.Tests
 			AddFileToProject(@"d:\projects\MyProject\a\b\c\test.cs");
 			
 			DirectoryNode childDirectoryNode = GetFirstDirectoryChildNode(directoryNode);
-			Assert.AreEqual(@"d:\projects\MyProject\a\b", childDirectoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\a\b", childDirectoryNode.Directory.ToString());
 		}
 		
 		[Test]
@@ -453,7 +498,7 @@ namespace PackageManagement.Tests
 			int directoryNodeCount = GetChildNodesOfType<DirectoryNode>(directoryNode).Count();
 			DirectoryNode childDirectoryNode = GetFirstDirectoryChildNode(directoryNode);
 			Assert.AreEqual(1, directoryNodeCount);
-			Assert.AreEqual(@"d:\projects\MyProject\a\b", childDirectoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\a\b", childDirectoryNode.Directory.ToString());
 		}
 		
 		[Test]
@@ -497,7 +542,7 @@ namespace PackageManagement.Tests
 			AddDirectoryToProject(@"d:\projects\MyProject\Subfolder");
 			
 			DirectoryNode directoryNode = GetFirstDirectoryChildNode(projectNode);
-			Assert.AreEqual(@"d:\projects\MyProject\Subfolder", directoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\Subfolder", directoryNode.Directory.ToString());
 			Assert.AreEqual("Subfolder", directoryNode.Text);
 			Assert.AreEqual(FileNodeStatus.InProject, directoryNode.FileNodeStatus);
 		}
@@ -513,7 +558,7 @@ namespace PackageManagement.Tests
 			AddDirectoryToProject(@"d:\projects\MyProject\Subfolder1\Subfolder2");
 			
 			DirectoryNode childDirectoryNode = GetFirstDirectoryChildNode(directoryNode);
-			Assert.AreEqual(@"d:\projects\MyProject\Subfolder1\Subfolder2", childDirectoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\Subfolder1\Subfolder2", childDirectoryNode.Directory.ToString());
 			Assert.AreEqual(FileNodeStatus.InProject, childDirectoryNode.FileNodeStatus);
 		}
 		
@@ -523,12 +568,12 @@ namespace PackageManagement.Tests
 			CreateExpandedProjectNodeWithDirectories(
 				@"d:\projects\MyProject\MyProject.csproj",
 				@"d:\projects\MyProject\a",
-				@"d:\projects\MyProject\c");			
+				@"d:\projects\MyProject\c");
 			
 			AddDirectoryToProject(@"d:\projects\MyProject\b");
 			
 			DirectoryNode childDirectoryNode = GetDirectoryChildNodeAtIndex(projectNode, 1);
-			Assert.AreEqual(@"d:\projects\MyProject\b", childDirectoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\b", childDirectoryNode.Directory.ToString());
 		}
 		
 		[Test]
@@ -544,7 +589,7 @@ namespace PackageManagement.Tests
 			AddDirectoryToProject(@"d:\projects\MyProject\Subfolder1\b");
 			
 			DirectoryNode childDirectoryNode = GetDirectoryChildNodeAtIndex(directoryNode, 1);
-			Assert.AreEqual(@"d:\projects\MyProject\Subfolder1\b", childDirectoryNode.Directory);
+			Assert.AreEqual(@"d:\projects\MyProject\Subfolder1\b", childDirectoryNode.Directory.ToString());
 		}
 		
 		[Test]

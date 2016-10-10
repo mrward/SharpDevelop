@@ -1,107 +1,58 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Linq;
+using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.EnvDTE;
-using ICSharpCode.SharpDevelop.Dom;
 using NUnit.Framework;
-using PackageManagement.Tests.Helpers;
 using Rhino.Mocks;
+using PackageManagement.Tests.Helpers;
 
 namespace PackageManagement.Tests.EnvDTE
 {
 	[TestFixture]
-	public class CodeFunctionTests
+	public class CodeFunctionTests : CodeModelTestBase
 	{
 		CodeFunction codeFunction;
-		MethodHelper helper;
-		IVirtualMethodUpdater methodUpdater;
 		
-		[SetUp]
-		public void Init()
+		void CreateFunction(string code)
 		{
-			helper = new MethodHelper();
-		}
-		
-		void CreatePublicFunction(string name)
-		{
-			helper.CreatePublicMethod(name);
-			CreateFunction();
-		}
-		
-		void CreatePrivateFunction(string name)
-		{
-			helper.CreatePrivateMethod(name);
-			CreateFunction();
-		}
-		
-		void CreateFunction()
-		{
-			methodUpdater = MockRepository.GenerateStub<IVirtualMethodUpdater>();
-			codeFunction = new CodeFunction(helper.Method, null, methodUpdater);
-		}
-		
-		void CreatePublicConstructor(string name)
-		{
-			helper.CreatePublicConstructor(name);
-			CreateFunction();
-		}
-		
-		void SetDeclaringTypeAsInterface(string name)
-		{
-			helper.AddDeclaringTypeAsInterface(name);
-		}
-		
-		void SetDeclaringType(string name)
-		{
-			helper.AddDeclaringType(name);
-		}
-		
-		void AddParameterToMethod(string name)
-		{
-			helper.AddParameter(name);
-		}
-		
-		void AddParameterToMethod(string type, string name)
-		{
-			helper.AddParameter(type, name);
-		}
-		
-		void AddReturnTypeToMethod(string type)
-		{
-			helper.AddReturnTypeToMethod(type);
-		}
-		
-		void MakeMethodStatic()
-		{
-			helper.MakeMethodStatic();
-		}
-		
-		void MakeMethodAbstract()
-		{
-			helper.MakeMethodAbstract();
-		}
-		
-		void MakeMethodVirtual()
-		{
-			helper.MakeMethodVirtual();
-		}
-		
-		void AddMethodAttribute(string attributeTypeName)
-		{
-			helper.AddAttributeToMethod(attributeTypeName);
-		}
-		
-		void MakeMethodOverridable()
-		{
-			helper.MakeMethodOverridable();
+			AddCodeFile("class.cs", code);
+			
+			IMethod method = assemblyModel
+				.TopLevelTypeDefinitions
+				.First()
+				.Members
+				.First()
+				.Resolve() as IMethod;
+			
+			codeFunction = new CodeFunction(codeModelContext, method);
 		}
 		
 		[Test]
 		public void Access_PublicFunction_ReturnsPublic()
 		{
-			CreatePublicFunction("Class1.MyFunction");
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.vsCMAccess access = codeFunction.Access;
 			
@@ -111,7 +62,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Access_PrivateFunction_ReturnsPrivate()
 		{
-			CreatePrivateFunction("Class1.MyFunction");
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    private void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.vsCMAccess access = codeFunction.Access;
 			
@@ -119,24 +73,26 @@ namespace PackageManagement.Tests.EnvDTE
 		}
 		
 		[Test]
-		public void GetStartPoint_FunctionStartsAtColumn3_ReturnsPointWithOffset3()
+		public void GetStartPoint_FunctionStartsAtColumnOne_ReturnsPointWithOffsetOne()
 		{
-			CreatePublicFunction("Class1.MyFunction");
-			SetDeclaringType("Class1");
-			helper.FunctionStartsAtColumn(3);
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"public void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.TextPoint point = codeFunction.GetStartPoint();
-			int offset = point.LineCharOffset;
 			
-			Assert.AreEqual(3, offset);
+			int offset = point.LineCharOffset;
+			Assert.AreEqual(1, offset);
 		}
 		
 		[Test]
 		public void GetStartPoint_FunctionStartsAtLine2_ReturnsPointWithLine2()
 		{
-			CreatePublicFunction("Class1.MyFunction");
-			SetDeclaringType("Class1");
-			helper.FunctionStartsAtLine(2);
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.TextPoint point = codeFunction.GetStartPoint();
 			int line = point.Line;
@@ -145,24 +101,29 @@ namespace PackageManagement.Tests.EnvDTE
 		}
 		
 		[Test]
-		public void GetEndPoint_FunctionBodyEndsAtColumn4_ReturnsPointWithOffset4()
+		public void GetEndPoint_FunctionBodyEndsAtColumnTwo_ReturnsPointWithOffsetTwo()
 		{
-			CreatePublicFunction("Class1.MyFunction");
-			SetDeclaringType("Class1");
-			helper.FunctionBodyEndsAtColumn(4);
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    public void MyFunction() {\r\n" +
+			    "}\r\n" +
+				"}");
 			
 			global::EnvDTE.TextPoint point = codeFunction.GetEndPoint();
 			int offset = point.LineCharOffset;
 			
-			Assert.AreEqual(4, offset);
+			Assert.AreEqual(2, offset);
 		}
 		
 		[Test]
 		public void GetEndPoint_FunctionBodyEndsAtLine4_ReturnsPointWithLine4()
 		{
-			CreatePublicFunction("Class1.MyFunction");
-			SetDeclaringType("Class1");
-			helper.FunctionBodyEndsAtLine(4);
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    public void MyFunction()\r\n" +
+				"    {\r\n" +
+			    "    }\r\n" +
+				"}");
 			
 			global::EnvDTE.TextPoint point = codeFunction.GetEndPoint();
 			int line = point.Line;
@@ -173,7 +134,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Kind_PublicFunction_ReturnsFunction()
 		{
-			CreatePublicFunction("MyFunction");
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.vsCMElement kind = codeFunction.Kind;
 			
@@ -183,21 +147,24 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void GetEndPoint_InterfaceMethod_ReturnsMethodsDeclarationRegionEndNotBodyRegionEnd()
 		{
-			CreatePublicFunction("MyInterface.MyMethod");
-			SetDeclaringTypeAsInterface("MyInterface");
-			helper.SetRegion(new DomRegion(1, 1, 1, 10));
-			helper.SetBodyRegion(new DomRegion(1, 10, 0, 0));
+			CreateFunction(
+				"public interface Foo {\r\n" +
+				"    void Bar();\r\n" +
+				"}");
 			
 			global::EnvDTE.TextPoint point = codeFunction.GetEndPoint();
 			
-			Assert.AreEqual(1, point.Line);
-			Assert.AreEqual(10, point.LineCharOffset);
+			Assert.AreEqual(2, point.Line);
+			Assert.AreEqual(16, point.LineCharOffset);
 		}
 		
 		[Test]
 		public void Parameters_MethodHasNoParameters_ReturnsEmptyListOfItems()
 		{
-			CreatePublicFunction("MyClass.MyMethod");
+			CreateFunction(
+				"public class Class1 {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.CodeElements parameters = codeFunction.Parameters;
 			
@@ -207,8 +174,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Parameters_MethodHasOneParameter_ReturnsOneCodeParameter2()
 		{
-			AddParameterToMethod("test");
-			CreatePublicFunction("MyClass.MyMethod");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyMethod(int test) {}\r\n" +
+				"}");
 			
 			CodeParameter2 parameter = codeFunction.Parameters.FirstCodeParameter2OrDefault();
 			
@@ -218,30 +187,40 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Parameters_MethodHasOneStringParameter_ReturnsOneCodeParameterWithStringType()
 		{
-			AddParameterToMethod("System.String", "test");
-			CreatePublicFunction("MyClass.MyMethod");
+			CreateFunction(
+				"using System;\r\n" +
+				"public class MyClass {\r\n" +
+				"    public void MyMethod(string test) {}\r\n" +
+				"}");
 			
 			CodeParameter parameter = codeFunction.Parameters.FirstCodeParameterOrDefault();
 			
 			Assert.AreEqual("System.String", parameter.Type.AsFullName);
+			Assert.AreEqual("string", parameter.Type.AsString);
 		}
 		
 		[Test]
-		public void Parameters_MethodHasOneStringParameter_CreatesCodeParameterWithProjectContent()
+		public void Parameters_MethodHasOneStringParameter_CreatesCodeParameterWithContext()
 		{
-			AddParameterToMethod("System.String", "test");
-			CreatePublicFunction("MyClass.MyMethod");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyMethod(System.String test) {}\r\n" +
+				"}");
 			
 			CodeParameter parameter = codeFunction.Parameters.FirstCodeParameterOrDefault();
+			global::EnvDTE.TextPoint textPoint = parameter.Type.CodeType.GetStartPoint();
 			
-			Assert.AreEqual("string", parameter.Type.AsString);
+			Assert.IsNotNull(textPoint);
 		}
 		
 		[Test]
 		public void Parameters_MethodHasOneStringParameter_CreatesCodeParameterWithCodeTypeRefThatHasParameterAsParent()
 		{
-			AddParameterToMethod("System.String", "test");
-			CreatePublicFunction("MyClass.MyMethod");
+			CreateFunction(
+				"using System;\r\n" +
+				"public class MyClass {\r\n" +
+				"    public void MyMethod(string test) {}\r\n" +
+				"}");
 			
 			CodeParameter parameter = codeFunction.Parameters.FirstCodeParameterOrDefault();
 			
@@ -251,30 +230,41 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Type_MethodReturnsString_TypeRefHasSystemStringAsFullName()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			AddReturnTypeToMethod("System.String");
+			CreateFunction(
+				"using System;\r\n" +
+				"public class MyClass {\r\n" +
+				"    public string MyMethod() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.CodeTypeRef2 typeRef = codeFunction.Type;
 			
 			Assert.AreEqual("System.String", typeRef.AsFullName);
+			Assert.AreEqual("string", typeRef.AsString);
 		}
 		
 		[Test]
 		public void Type_MethodReturnsString_TypeRefUsesProjectContentFromMethod()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			AddReturnTypeToMethod("System.String");
+			CreateFunction(
+				"using System;\r\n" +
+				"public class MyClass {\r\n" +
+				"    public string MyMethod() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.CodeTypeRef2 typeRef = codeFunction.Type;
+			global::EnvDTE.TextPoint textPoint = typeRef.CodeType.GetStartPoint();
 			
-			Assert.AreEqual("string", typeRef.AsString);
+			Assert.IsNotNull(textPoint);
 		}
 		
 		[Test]
 		public void Type_MethodReturnsString_TypeRefParentIsCodeFunction()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			AddReturnTypeToMethod("System.String");
+			CreateFunction(
+				"using System;\r\n" +
+				"public class MyClass {\r\n" +
+				"    public string MyMethod() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.CodeTypeRef2 typeRef = codeFunction.Type;
 			
@@ -284,7 +274,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void FunctionKind_ClassMethod_ReturnsFunctionKind()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyMethod() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.vsCMFunction kind = codeFunction.FunctionKind;
 			
@@ -294,7 +287,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void FunctionKind_ClassConstructor_ReturnsConstructorKind()
 		{
-			CreatePublicConstructor("MyClass.MyClass");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public MyClass() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.vsCMFunction kind = codeFunction.FunctionKind;
 			
@@ -304,8 +300,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void IsShared_StaticMethod_ReturnsTrue()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			MakeMethodStatic();
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public static void MyFunction() {}\r\n" +
+				"}");
 			
 			bool shared = codeFunction.IsShared;
 			
@@ -315,7 +313,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void IsShared_MethodIsNotStatic_ReturnsFalse()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			bool shared = codeFunction.IsShared;
 			
@@ -325,8 +326,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void MustImplement_AbstractMethod_ReturnsTrue()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			MakeMethodAbstract();
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public abstract void MyFunction();\r\n" +
+				"}");
 			
 			bool mustImplement = codeFunction.MustImplement;
 			
@@ -336,7 +339,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void MustImplement_MethodIsNotAbstract_ReturnsFalse()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			bool mustImplement = codeFunction.MustImplement;
 			
@@ -346,8 +352,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void CanOverride_MethodIsOverridable_ReturnsTrue()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			MakeMethodOverridable();
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public virtual void MyFunction() {}\r\n" +
+				"}");
 			
 			bool canOverride = codeFunction.CanOverride;
 			
@@ -357,7 +365,10 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void CanOverride_MethodIsNotAbstractOrVirtual_ReturnsFalse()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			bool canOverride = codeFunction.CanOverride;
 			
@@ -367,8 +378,12 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Attributes_MethodHasOneAttribute_ReturnsOneAttribute()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
-			AddMethodAttribute("System.ObsoleteAttribute");
+			CreateFunction(
+				"using System;\r\n" +
+				"public class MyClass {\r\n" +
+				"    [Obsolete]\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			global::EnvDTE.CodeElements attributes = codeFunction.Attributes;
 			
@@ -380,21 +395,43 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void CanOverride_SetToTrueForFunction_VirtualKeywordAddedToFunction()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			codeFunction.CanOverride = true;
 			
-			methodUpdater.AssertWasCalled(updater => updater.MakeMethodVirtual());
+			codeGenerator.AssertWasCalled(generator => generator.MakeVirtual(
+				Arg<IMember>.Matches(member => member.Name == "MyFunction")));
 		}
 		
 		[Test]
 		public void CanOverride_SetToFalseForFunction_VirtualKeywordNotAddedToFunction()
 		{
-			CreatePublicFunction("MyClass.MyFunction");
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public void MyFunction() {}\r\n" +
+				"}");
 			
 			codeFunction.CanOverride = false;
 			
-			methodUpdater.AssertWasNotCalled(updater => updater.MakeMethodVirtual());
+			codeGenerator.AssertWasNotCalled(generator => generator.MakeVirtual(
+				Arg<IMember>.Is.Anything));
+		}
+		
+		[Test]
+		public void CanOverride_SetToTrueForFunctionThatIsAlreadyVirtual_VirtualKeywordNotAddedToFunction()
+		{
+			CreateFunction(
+				"public class MyClass {\r\n" +
+				"    public virtual void MyFunction() {}\r\n" +
+				"}");
+			
+			codeFunction.CanOverride = true;
+			
+			codeGenerator.AssertWasNotCalled(generator => generator.MakeVirtual(
+				Arg<IMember>.Is.Anything));
 		}
 	}
 }

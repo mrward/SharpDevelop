@@ -1,8 +1,24 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using ICSharpCode.PackageManagement;
 using ICSharpCode.PackageManagement.Design;
 using NuGet;
@@ -16,14 +32,15 @@ namespace PackageManagement.Tests
 	{
 		FakePackageManagementEvents fakePackageManagementEvents;
 		FakePackageManagementProject fakeProject;
-		InstallPackageAction action;
+		TestableInstallPackageAction action;
 		InstallPackageHelper installPackageHelper;
+		FakeFileService fileService;
 
 		void CreateAction()
 		{
 			fakePackageManagementEvents = new FakePackageManagementEvents();
 			fakeProject = new FakePackageManagementProject();
-			action = new InstallPackageAction(fakeProject, fakePackageManagementEvents);
+			action = new TestableInstallPackageAction(fakeProject, fakePackageManagementEvents);
 			installPackageHelper = new InstallPackageHelper(action);
 		}
 		
@@ -36,6 +53,12 @@ namespace PackageManagement.Tests
 		{
 			action.Operations =
 				PackageOperationHelper.CreateListWithOneInstallOperationWithFile(fileName);
+		}
+		
+		IOpenPackageReadMeMonitor CreateReadMeMonitor(string packageId)
+		{
+			fileService = new FakeFileService(null);
+			return new OpenPackageReadMeMonitor(packageId, fakeProject, fileService);
 		}
 		
 		[Test]
@@ -370,11 +393,25 @@ namespace PackageManagement.Tests
 			FakePackage expectedPackage = fakeProject.FakeSourceRepository.AddFakePackageWithVersion("test", "1.0");
 			expectedPackage.Listed = false;
 			action.PackageId = "test";
+			action.PackageVersion = new SemanticVersion("1.0");
 			
 			action.Execute();
 			
 			IPackage actualPackage = fakeProject.PackagePassedToInstallPackage;
 			Assert.AreEqual(expectedPackage, actualPackage);
+		}
+		
+		[Test]
+		public void Execute_InstallUnlistedPackageWithoutVersion_DoesNotInstallPackageIntoProject()
+		{
+			CreateAction();
+			FakePackage expectedPackage = fakeProject.FakeSourceRepository.AddFakePackageWithVersion("test", "1.0");
+			expectedPackage.Listed = false;
+			action.PackageId = "test";
+			
+			Exception ex = Assert.Throws(typeof(ApplicationException), () => action.Execute());
+			
+			Assert.AreEqual("Unable to find package 'test'.", ex.Message);
 		}
 		
 		[Test]
@@ -386,6 +423,91 @@ namespace PackageManagement.Tests
 			Exception ex = Assert.Throws(typeof(ApplicationException), () => action.Execute());
 			
 			Assert.AreEqual("Unable to find package 'UnknownId'.", ex.Message);
+		}
+		
+		[Test]
+		public void Execute_PackageInstalledSuccessfully_OpenPackageReadmeMonitorCreated()
+		{
+			CreateAction();
+			installPackageHelper.TestPackage.Id = "Test";
+			installPackageHelper.InstallTestPackage();
+			
+			Assert.AreEqual("Test", action.OpenPackageReadMeMonitor.PackageId);
+			Assert.IsTrue(action.OpenPackageReadMeMonitor.IsDisposed);
+		}
+		
+		[Test]
+		public void Execute_PackageInstalledSuccessfullyWithReadmeTxt_ReadmeTxtFileIsOpened()
+		{
+			CreateAction();
+			installPackageHelper.TestPackage.Id = "Test";
+			installPackageHelper.TestPackage.AddFile("readme.txt");
+			action.CreateOpenPackageReadMeMonitorAction = packageId => {
+				return CreateReadMeMonitor(packageId);
+			};
+			string installPath = @"d:\projects\myproject\packages\Test.1.0";
+			string readmeFileName = Path.Combine(installPath, "readme.txt");
+			fakeProject.InstallPackageAction = (package, installAction) => {
+				var eventArgs = new PackageOperationEventArgs(package, null, installPath);
+				fakeProject.FirePackageInstalledEvent(eventArgs);
+				fileService.ExistingFileNames.Add(readmeFileName);
+			};
+			installPackageHelper.InstallTestPackage ();
+
+			Assert.IsTrue(fileService.IsOpenFileCalled);
+			Assert.AreEqual(readmeFileName, fileService.FileNamePassedToOpenFile);
+		}
+
+		[Test]
+		public void Execute_PackageWithReadmeTxtIsInstalledButExceptionThrownWhenAddingPackageToProject_ReadmeFileIsNotOpened()
+		{
+			CreateAction();
+			installPackageHelper.TestPackage.Id = "Test";
+			installPackageHelper.TestPackage.AddFile("readme.txt");
+			OpenPackageReadMeMonitor monitor = null;
+			action.CreateOpenPackageReadMeMonitorAction = packageId => {
+				monitor = CreateReadMeMonitor(packageId) as OpenPackageReadMeMonitor;
+				return monitor;
+			};
+			string installPath = @"d:\projects\myproject\packages\Test.1.0";
+			string readmeFileName = Path.Combine(installPath, "readme.txt");
+			fakeProject.InstallPackageAction = (package, installAction) => {
+				var eventArgs = new PackageOperationEventArgs(package, null, installPath);
+				fakeProject.FirePackageInstalledEvent(eventArgs);
+				fileService.ExistingFileNames.Add(readmeFileName);
+				throw new ApplicationException();
+			};
+			Assert.Throws<ApplicationException> (() => {
+				installPackageHelper.InstallTestPackage ();
+			});
+
+			Assert.IsFalse(fileService.IsOpenFileCalled);
+			Assert.IsTrue(monitor.IsDisposed);
+		}
+		
+		[Test]
+		public void DependencyVersion_DefaultValue_IsLowest()
+		{
+			CreateAction();
+			Assert.AreEqual(DependencyVersion.Lowest, action.DependencyVersion);
+		}
+		
+		[Test]
+		public void OpenReadMeText_DefaultValue_IsTrue()
+		{
+			CreateAction();
+			Assert.IsTrue(action.OpenReadMeText);
+		}
+
+		[Test]
+		public void Execute_OpenReadMeTextSetToFalse_NullOpenPackageReadmeMonitorCreated()
+		{
+			CreateAction();
+			action.OpenReadMeText = false;
+			installPackageHelper.TestPackage.Id = "Test";
+			installPackageHelper.InstallTestPackage();
+
+			Assert.IsTrue(action.NullOpenPackageReadMeMonitorIsCreated);
 		}
 	}
 }

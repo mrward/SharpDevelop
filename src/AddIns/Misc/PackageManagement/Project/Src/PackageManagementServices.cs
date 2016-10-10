@@ -1,5 +1,20 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.IO;
@@ -7,6 +22,7 @@ using System.Resources;
 
 using ICSharpCode.Core;
 using ICSharpCode.PackageManagement.Scripting;
+using ICSharpCode.SharpDevelop;
 using NuGet;
 
 namespace ICSharpCode.PackageManagement
@@ -25,8 +41,6 @@ namespace ICSharpCode.PackageManagement
 		static readonly ResetPowerShellWorkingDirectoryOnSolutionClosed resetPowerShellWorkingDirectory;
 		static readonly PackageActionsToRun packageActionsToRun = new PackageActionsToRun();
 		static readonly PackageActionRunner packageActionRunner;
-		static readonly IPackageRepositoryCache projectTemplatePackageRepositoryCache;
-		static readonly RegisteredProjectTemplatePackageSources projectTemplatePackageSources;
 		static readonly PackageRepositoryCache packageRepositoryCache;
 		static readonly UserAgentGeneratorForRepositoryRequests userAgentGenerator;
 		
@@ -34,11 +48,9 @@ namespace ICSharpCode.PackageManagement
 		{
 			InitializeCoreServices();
 			options = new PackageManagementOptions(new Properties());
-			packageRepositoryCache = new PackageRepositoryCache(options.PackageSources, options.RecentPackages);
+			packageRepositoryCache = new PackageRepositoryCache(options);
 			userAgentGenerator = new UserAgentGeneratorForRepositoryRequests(packageRepositoryCache);
 			registeredPackageRepositories = new RegisteredPackageRepositories(packageRepositoryCache, options);
-			projectTemplatePackageSources = new RegisteredProjectTemplatePackageSources();
-			projectTemplatePackageRepositoryCache = new ProjectTemplatePackageRepositoryCache(packageRepositoryCache, projectTemplatePackageSources);
 			
 			outputMessagesView = new PackageManagementOutputMessagesView(packageManagementEvents);
 			projectBrowserRefresher = new ProjectBrowserRefresher(projectService, packageManagementEvents);
@@ -55,11 +67,21 @@ namespace ICSharpCode.PackageManagement
 		
 		static void InitializeCredentialProvider()
 		{
-			ISettings settings = Settings.LoadDefaultSettings(null, null, null);
+			ISettings settings = LoadSettings();
 			var packageSourceProvider = new PackageSourceProvider(settings);
 			var credentialProvider = new SettingsCredentialProvider(new SharpDevelopCredentialProvider(), packageSourceProvider);
 			
 			HttpClient.DefaultCredentialProvider = credentialProvider;
+		}
+		
+		static ISettings LoadSettings ()
+		{
+			try {
+				return Settings.LoadDefaultSettings(null, null, null);
+			} catch (Exception ex) {
+				LoggingService.Error("Unable to load NuGet.Config.", ex);
+			}
+			return NullSettings.Instance;
 		}
 		
 		static void InitializeCoreServices()
@@ -71,21 +93,24 @@ namespace ICSharpCode.PackageManagement
 			string dataDirectory = Path.Combine(assemblyFolder, @"..\data");
 			string addinDirectory = Path.Combine(assemblyFolder, @"..\AddIns");
 			
+			var propertyService = new ICSharpCode.SharpDevelop.PropertyService(
+				DirectoryName.Create(configDirectory),
+				DirectoryName.Create(dataDirectory),
+				applicationName + ".Properties");
+			
 			var startup = new CoreStartup(applicationName);
-			startup.ConfigDirectory = configDirectory;
-			startup.DataDirectory = dataDirectory;
-			startup.StartCoreServices();
+
+			startup.StartCoreServices(propertyService);
 			InitializeStringResources();
 			startup.AddAddInsFromDirectory(addinDirectory);
 			startup.RunInitialization();
 			
-			ICSharpCode.SharpDevelop.Project.ProjectService.InitializeService();
+			SD.FileService.DeleteToRecycleBin = false;
 		}
 
 		static void InitializeStringResources()
 		{
-			var resourceManager = new ResourceManager("ICSharpCode.PackageManagement.Resources.StringResources", typeof(PackageManagementServices).Assembly);
-			ResourceService.RegisterNeutralStrings(resourceManager);
+			SD.ResourceService.RegisterNeutralStrings(new ResourceManager("ICSharpCode.SharpDevelop.Resources.StringResources", typeof(PackageManagementServices).Assembly));
 		}
 		
 		public static PackageManagementOptions Options {
@@ -126,14 +151,6 @@ namespace ICSharpCode.PackageManagement
 		
 		public static IPackageActionRunner PackageActionRunner {
 			get { return packageActionRunner; }
-		}
-		
-		public static IPackageRepositoryCache ProjectTemplatePackageRepositoryCache {
-			get { return projectTemplatePackageRepositoryCache; }
-		}
-		
-		public static RegisteredPackageSources ProjectTemplatePackageSources {
-			get { return projectTemplatePackageSources.PackageSources; }
 		}
 	}
 }

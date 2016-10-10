@@ -3,7 +3,7 @@
 	
 	<Config
 		  name        = "${res:Templates.File.Exception.Name}"
-		  icon        = "VBNet.File.NewClass"
+		  icon        = "VB.File.NewClass"
 		  category    = "VB"
 		  defaultname = "Exception.vb"
 		  language    = "VBNet"/>
@@ -27,7 +27,7 @@ Imports System.Runtime.Serialization
 
 Namespace ${StandardNamespace}
 	''' <summary>
-	''' Desctiption of ${ClassName}.
+	''' Description of ${ClassName}.
 	''' </summary>
 	Public Class ${ClassName}
 		Inherits Exception

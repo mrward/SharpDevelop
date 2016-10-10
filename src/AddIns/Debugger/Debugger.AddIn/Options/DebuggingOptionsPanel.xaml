@@ -8,29 +8,41 @@
 	<StackPanel>
 		<GroupBox Margin="5" Header="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping}">
 			<widgets:StackPanelWithSpacing SpaceBetweenItems="5">
-				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.DecompileCodeWithoutSymbols}"
-				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.DecompileCodeWithoutSymbols}" />
-				<CheckBox x:Name="chbStepOverDebuggerAttributes"
-				          Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverDebuggerAttributes}"
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverDebuggerAttributes}"
 				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.StepOverDebuggerAttributes}" />
-				<CheckBox x:Name="chbStepOverAllProperties"
-				          Checked="ChbStepOverAllProperties_CheckedChanged"
-				          Unchecked="ChbStepOverAllProperties_CheckedChanged"
-				          Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverAllProperties}"
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverAllProperties}"
 				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.StepOverAllProperties}" />
-				<CheckBox x:Name="chbStepOverSingleLineProperties"
-				          Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverSingleLineProperties}"
-				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.StepOverSingleLineProperties}" />
-				<CheckBox x:Name="chbStepOverFieldAccessProperties"
-				          Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverFieldAccessProperties}"
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.StepOverFieldAccessProperties}"
 				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.StepOverFieldAccessProperties}" />
 			</widgets:StackPanelWithSpacing>
 		</GroupBox>
 		<GroupBox Margin="5" Header="{sd:Localize Dialog.Options.IDEOptions.Debugging.Exceptions}">
 			<widgets:StackPanelWithSpacing SpaceBetweenItems="5">
-				<CheckBox x:Name="chbPauseOnHandledExceptions"
-				          Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.PauseOnHandledExceptions}"
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.PauseOnHandledExceptions}"
+				          x:Name="checkPauseOnHandled"
 				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.PauseOnHandledExceptions}" />
+				<Button Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.ChooseExceptions}"
+				        Click="ChooseExceptionsClick"
+				        HorizontalAlignment="Left"
+				        IsEnabled="{Binding IsChecked, ElementName=checkPauseOnHandled}" />
+			</widgets:StackPanelWithSpacing>
+		</GroupBox>
+		<GroupBox Margin="5" Header="{sd:Localize Global.Advanced}">
+			<widgets:StackPanelWithSpacing SpaceBetweenItems="5">
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.SuppressJITOptimization}"
+				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.SuppressJITOptimization}" />
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.SuppressNGENOptimization}"
+				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.SuppressNGENOptimization}" />
+			</widgets:StackPanelWithSpacing>
+		</GroupBox>
+		<GroupBox Margin="5" Header="{sd:Localize Dialog.Options.IDEOptions.Debugging.WithoutSource}">
+			<widgets:StackPanelWithSpacing SpaceBetweenItems="5">
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.Stepping.EnableJustMyCode}"
+				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.EnableJustMyCode}" />
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.AskForArguments}"
+				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.AskForArguments}" />
+				<CheckBox Content="{sd:Localize Dialog.Options.IDEOptions.Debugging.BreakAtBeginning}"
+				          IsChecked="{sd:OptionBinding debugger:DebuggingOptions.BreakAtBeginning}" />
 			</widgets:StackPanelWithSpacing>
 		</GroupBox>
 	</StackPanel>

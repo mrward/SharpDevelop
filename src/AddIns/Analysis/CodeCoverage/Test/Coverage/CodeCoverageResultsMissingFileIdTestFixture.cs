@@ -1,5 +1,20 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.IO;
@@ -9,7 +24,7 @@ using NUnit.Framework;
 namespace ICSharpCode.CodeCoverage.Tests.Coverage
 {
 	/// <summary>
-	/// PartCover does not always put a file id in the code
+	/// OpenCover does not always put a file id in the code
 	/// coverage report. This is typically for code that 
 	/// has no source code. It can also be for code that
 	/// is in a method that is not covered at all.
@@ -33,9 +48,9 @@ namespace ICSharpCode.CodeCoverage.Tests.Coverage
 				"\t\t\t\t\t\t\t<MetadataToken>100663297</MetadataToken>\r\n" +
 				"\t\t\t\t\t\t\t<Name>System.Boolean NUnit.Framework.NotEqualAsserter::Fail()</Name>\r\n" +
 				"\t\t\t\t\t\t\t<SequencePoints>\r\n" +
-				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"1\" sl=\"21\" sc=\"3\" el=\"21\" ec=\"4\" />\r\n" +
-				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"20\" sc=\"3\" el=\"20\" ec=\"4\" />\r\n" +
-				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"19\" sc=\"3\" el=\"19\" ec=\"18\" />\r\n" +
+				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"1\" sl=\"21\" sc=\"3\" el=\"21\" ec=\"4\" fileid=\"1\" />\r\n" +
+				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"20\" sc=\"3\" el=\"20\" ec=\"4\" fileid=\"1\" />\r\n" +
+				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"19\" sc=\"3\" el=\"19\" ec=\"18\" fileid=\"1\" />\r\n" +
 				"\t\t\t\t\t\t\t</SequencePoints>\r\n" +
 				"\t\t\t\t\t\t</Method>\r\n" +
 				"\t\t\t\t\t</Methods>\r\n" +
@@ -57,10 +72,10 @@ namespace ICSharpCode.CodeCoverage.Tests.Coverage
 				"\t\t\t\t\t\t\t<Name>System.Void MyTests.Tests.MyClass::.ctor()</Name>\r\n" +
 				"\t\t\t\t\t\t\t<FileRef uid=\"1\" />\r\n" +
 				"\t\t\t\t\t\t\t<SequencePoints>\r\n" +
-				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"21\" sc=\"3\" el=\"21\" ec=\"4\" />\r\n" +
+				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"21\" sc=\"3\" el=\"21\" ec=\"4\" fileid=\"1\" />\r\n" +
 				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"20\" sc=\"3\" el=\"20\" ec=\"4\" />\r\n" +
-				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"19\" sc=\"3\" el=\"19\" ec=\"18\" />\r\n" +
-				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"19\" sc=\"3\" el=\"19\" ec=\"18\" />\r\n" +
+				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"19\" sc=\"3\" el=\"19\" ec=\"18\" fileid=\"1\" />\r\n" +
+				"\t\t\t\t\t\t\t\t<SequencePoint vc=\"0\" sl=\"19\" sc=\"3\" el=\"19\" ec=\"18\" fileid=\"1\" />\r\n" +
 				"\t\t\t\t\t\t\t</SequencePoints>\r\n" +
 				"\t\t\t\t\t\t</Method>\r\n" +
 				"\t\t\t\t\t</Methods>\r\n" +
@@ -96,11 +111,16 @@ namespace ICSharpCode.CodeCoverage.Tests.Coverage
 			Assert.AreEqual(expectedName, name);
 		}
 		
+		/// <summary> No method.FileID => No sequence points!
+		/// SD.CodeCoverage DOES NOT RETURN SequencePoints
+		/// for assemblies without debug info,
+		/// =&gt; methods without FileID
+		/// </summary>
 		[Test]
-		public void SequencePointsCount_NUnitNotEqualAssertFailMethod_ReturnsAllSequencePoints()
+		public void SequencePointsCount_NUnitNotEqualAssertFailMethod_ReturnsNoSequencePoints()
 		{
 			int sequencePointCount = FirstModuleFirstMethod.SequencePoints.Count;
-			int expectedSequencePointCount = 3;
+			int expectedSequencePointCount = 0;
 			Assert.AreEqual(expectedSequencePointCount, sequencePointCount);
 		}
 		

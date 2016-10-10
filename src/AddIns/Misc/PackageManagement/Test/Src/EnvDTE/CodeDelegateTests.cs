@@ -1,48 +1,46 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Linq;
+using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.PackageManagement.EnvDTE;
-using ICSharpCode.SharpDevelop.Dom;
 using NUnit.Framework;
-using PackageManagement.Tests.Helpers;
 
 namespace PackageManagement.Tests.EnvDTE
 {
 	[TestFixture]
-	public class CodeDelegateTests
+	public class CodeDelegateTests : CodeModelTestBase
 	{
 		CodeDelegate codeDelegate;
-		ProjectContentHelper helper;
-		IClass fakeDelegate;
 		
-		[SetUp]
-		public void Init()
+		void CreateDelegate(string code)
 		{
-			helper = new ProjectContentHelper();
-		}
-		
-		void CreatePublicDelegate(string name)
-		{
-			fakeDelegate = helper.AddPublicDelegateToProjectContent(name);
-			CreateDelegate();
-		}
-		
-		void CreatePrivateDelegate(string name)
-		{
-			fakeDelegate = helper.AddPrivateDelegateToProjectContent(name);
-			CreateDelegate();
-		}
-		
-		void CreateDelegate()
-		{
-			codeDelegate = new CodeDelegate(helper.ProjectContent, fakeDelegate);
+			AddCodeFile("delegate.cs", code);
+			codeDelegate = new CodeDelegate(
+				codeModelContext,
+				assemblyModel.TopLevelTypeDefinitions.First().Resolve());
 		}
 
 		[Test]
 		public void Access_PublicDelegate_ReturnsPublic()
 		{
-			CreatePublicDelegate("MyDelegate");
+			CreateDelegate("public delegate void MyDelegate(string param1);");
 			
 			global::EnvDTE.vsCMAccess access = codeDelegate.Access;
 			
@@ -52,7 +50,7 @@ namespace PackageManagement.Tests.EnvDTE
 		[Test]
 		public void Access_PrivateDelegate_ReturnsPrivate()
 		{
-			CreatePrivateDelegate("MyDelegate");
+			CreateDelegate("delegate void MyDelegate(string param1);");
 			
 			global::EnvDTE.vsCMAccess access = codeDelegate.Access;
 			
@@ -60,9 +58,9 @@ namespace PackageManagement.Tests.EnvDTE
 		}
 		
 		[Test]
-		public void Kind_PublicDelegate_ReturnsClass()
+		public void Kind_PublicDelegate_ReturnsDelegate()
 		{
-			CreatePublicDelegate("MyDelegate");
+			CreateDelegate("public delegate void MyDelegate(string param1);");
 			
 			global::EnvDTE.vsCMElement kind = codeDelegate.Kind;
 			

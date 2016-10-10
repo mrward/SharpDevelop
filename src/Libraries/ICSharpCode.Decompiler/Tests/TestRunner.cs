@@ -89,6 +89,12 @@ namespace ICSharpCode.Decompiler.Tests
 		}
 		
 		[Test]
+		public void DoubleConstants()
+		{
+			TestFile(@"..\..\Tests\DoubleConstants.cs");
+		}
+		
+		[Test]
 		public void IncrementDecrement()
 		{
 			TestFile(@"..\..\Tests\IncrementDecrement.cs");
@@ -184,7 +190,7 @@ namespace ICSharpCode.Decompiler.Tests
 			AssemblyDefinition assembly = Compile(code, optimize, useDebug);
 			AstBuilder decompiler = new AstBuilder(new DecompilerContext(assembly.MainModule));
 			decompiler.AddAssembly(assembly);
-			new Helpers.RemoveCompilerAttribute().Run(decompiler.CompilationUnit);
+			new Helpers.RemoveCompilerAttribute().Run(decompiler.SyntaxTree);
 			StringWriter output = new StringWriter();
 			decompiler.GenerateCode(new PlainTextOutput(output));
 			CodeAssert.AreEqual(code, output.ToString());

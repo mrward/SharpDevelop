@@ -1,11 +1,29 @@
-﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
-// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
+﻿// Copyright (c) 2014 AlphaSierraPapa for the SharpDevelop Team
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+// FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
 using ICSharpCode.Core;
+using ICSharpCode.SharpDevelop;
 using ICSharpCode.SharpDevelop.Gui;
-using ICSharpCode.SharpDevelop.Util;
 
 namespace ICSharpCode.PackageManagement
 {
@@ -54,25 +72,35 @@ namespace ICSharpCode.PackageManagement
 			var commandLine = new NuGetPackageRestoreCommandLine(solution);
 			commandLine.Command = NuGetExePath.GetPath();
 			
-			outputMessagesView.AppendLine(commandLine.ToString());
-			
-			ProcessRunner runner = CreateProcessRunner();
+			var runner = new ProcessRunner();
 			runner.WorkingDirectory = Path.GetDirectoryName(solution.FileName);
-			runner.Start(commandLine.Command, commandLine.Arguments);
+			runner.RunInOutputPadAsync(outputMessagesView.OutputCategory, commandLine.Command, commandLine.Arguments)
+				.ContinueWith(task => OnNuGetPackageRestoreComplete(task));
 		}
 		
-		ProcessRunner CreateProcessRunner()
+		void OnNuGetPackageRestoreComplete(Task<int> task)
 		{
-			var runner = new ProcessRunner();
-			runner.LogStandardOutputAndError = false;
-			runner.OutputLineReceived += (sender, e) => outputMessagesView.AppendLine(e.Line);
-			runner.ErrorLineReceived  += (sender, e) => outputMessagesView.AppendLine(e.Line);
-			runner.ProcessExited += (sender, e) => {
-				if (runner.ExitCode != 0) {
-					outputMessagesView.AppendLine("Exit code " + runner.ExitCode);
-				}
-			};
-			return runner;
+			if (task.Exception != null) {
+				LoggingService.Debug(task.Exception.ToString());
+				outputMessagesView.AppendLine(task.Exception.Message);
+			} else {
+				ForceGenerationOfRepositoriesConfigFile();
+			}
+		}
+		
+		/// <summary>
+		/// Create a Package Manager for each project to force a new repositories.config file
+		/// to be generated with references to all projects that have NuGet packages.
+		/// </summary>
+		void ForceGenerationOfRepositoriesConfigFile()
+		{
+			try {
+				var repository = PackageManagementServices.RegisteredPackageRepositories.CreateAggregateRepository();
+				var projects = solution.GetProjects(repository).ToList();
+			} catch (Exception ex) {
+				LoggingService.Debug(ex.ToString());
+				outputMessagesView.AppendLine(ex.Message);
+			}
 		}
 	}
 }

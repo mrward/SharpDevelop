@@ -3,19 +3,20 @@
   <PropertyGroup>
     <ProjectGuid>{56E98A01-8398-4A08-9578-C7337711A52B}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
     <RootNamespace>PackageManagement.Tests</RootNamespace>
     <AssemblyName>PackageManagement.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <NoStdLib>False</NoStdLib>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <OutputPath>..\..\..\..\..\bin\UnitTests\</OutputPath>
+    <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
@@ -68,6 +69,9 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="WindowsBase">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -76,23 +80,17 @@
     <Compile Include="..\..\..\..\Main\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Src\ClassCodeGeneratorTests.cs" />
-    <Compile Include="Src\ClassKindUpdaterTests.cs" />
-    <Compile Include="Src\CodeGeneratorTests.cs" />
     <Compile Include="Src\DependentFileNameTests.cs" />
     <Compile Include="Src\EnvDTE\CodeAttribute2Tests.cs" />
-    <Compile Include="Src\EnvDTE\CodeAttributesTests.cs" />
     <Compile Include="Src\EnvDTE\CodeClass2Tests.cs" />
     <Compile Include="Src\EnvDTE\CodeDelegateTests.cs" />
-    <Compile Include="Src\EnvDTE\CodeElementsInNamespaceTests.cs" />
     <Compile Include="Src\EnvDTE\CodeFunction2Tests.cs" />
     <Compile Include="Src\EnvDTE\CodeFunctionTests.cs" />
-    <Compile Include="Src\EnvDTE\CodeImportTests.cs" />
     <Compile Include="Src\EnvDTE\CodeInterfaceTests.cs" />
+    <Compile Include="Src\EnvDTE\CodeModelTestBase.cs" />
     <Compile Include="Src\EnvDTE\CodeModelTests.cs" />
     <Compile Include="Src\EnvDTE\CodeNamespaceTests.cs" />
     <Compile Include="Src\EnvDTE\CodeParameter2Tests.cs" />
-    <Compile Include="Src\EnvDTE\CodeParameterTests.cs" />
     <Compile Include="Src\EnvDTE\CodeProperty2Tests.cs" />
     <Compile Include="Src\EnvDTE\CodeStructTests.cs" />
     <Compile Include="Src\EnvDTE\CodeTypeRef2Tests.cs" />
@@ -102,45 +100,40 @@
     <Compile Include="Src\EnvDTE\EditPointTests.cs" />
     <Compile Include="Src\EnvDTE\FileCodeModel2Tests.cs" />
     <Compile Include="Src\EnvDTE\FileProjectItemsTests.cs" />
-    <Compile Include="Src\EnvDTE\NamespaceNameTests.cs" />
     <Compile Include="Src\EnvDTE\ProjectsTests.cs" />
     <Compile Include="Src\EnvDTE\SolutionBuildTests.cs" />
     <Compile Include="Src\EnvDTE\SolutionGlobalsTests.cs" />
     <Compile Include="Src\EnvDTE\SolutionPropertyTests.cs" />
     <Compile Include="Src\EnvDTE\SolutionTests.cs" />
-    <Compile Include="Src\Helpers\AttributeHelper.cs" />
-    <Compile Include="Src\Helpers\ClassHelper.cs" />
     <Compile Include="Src\Helpers\CodeElementsExtensions.cs" />
-    <Compile Include="Src\Helpers\CompilationUnitHelper.cs" />
     <Compile Include="Src\Helpers\ExceptionThrowingPackageActionRunner.cs" />
     <Compile Include="Src\Helpers\ExceptionThrowingProcessPackageAction.cs" />
+    <Compile Include="Src\Helpers\FakeCmdletLogger.cs" />
     <Compile Include="Src\Helpers\FakeCodeGenerator.cs" />
     <Compile Include="Src\Helpers\FakeOperationAwarePackageRepository.cs" />
-    <Compile Include="Src\Helpers\FieldHelper.cs" />
+    <Compile Include="Src\Helpers\FakePackageRepositoryWithConstraintProvider.cs" />
+    <Compile Include="Src\Helpers\FakeReadOnlySettings.cs" />
     <Compile Include="Src\Helpers\FakeSelectProjectsService.cs" />
+    <Compile Include="Src\Helpers\FakeServiceBasedRepository.cs" />
     <Compile Include="Src\Helpers\FakeSolutionPackageRepositoryFactory.cs" />
     <Compile Include="Src\Helpers\FakeUpdatePackageActions.cs" />
     <Compile Include="Src\Helpers\FakeUpdatePackageActionsFactory.cs" />
-    <Compile Include="Src\Helpers\MethodHelper.cs" />
-    <Compile Include="Src\Helpers\MethodOrPropertyHelper.cs" />
     <Compile Include="Src\Helpers\PackageOperationHelper.cs" />
-    <Compile Include="Src\Helpers\ParameterHelper.cs" />
-    <Compile Include="Src\Helpers\ProjectContentHelper.cs" />
+    <Compile Include="Src\Helpers\PackageRepositoryOperationInfo.cs" />
     <Compile Include="Src\Helpers\PropertiesHelper.cs" />
-    <Compile Include="Src\Helpers\PropertyHelper.cs" />
-    <Compile Include="Src\Helpers\ReturnTypeHelper.cs" />
     <Compile Include="Src\Helpers\SelectedProjectCollectionAssert.cs" />
     <Compile Include="Src\Helpers\SolutionHelper.cs" />
     <Compile Include="Src\Helpers\TestableInstalledPackageViewModel.cs" />
+    <Compile Include="Src\Helpers\TestableInstallPackageAction.cs" />
     <Compile Include="Src\Helpers\TestablePackageFromRepository.cs" />
+    <Compile Include="Src\Helpers\TestablePackagesViewModels.cs" />
     <Compile Include="Src\Helpers\TestableProjectBehaviour.cs" />
     <Compile Include="Src\Helpers\TestableSelectedProjectsForUpdatedPackages.cs" />
+    <Compile Include="Src\Helpers\TestableSolutionSnapshot.cs" />
+    <Compile Include="Src\Helpers\TestableUpdatePackageAction.cs" />
     <Compile Include="Src\Helpers\TestableUpdatePackagesAction.cs" />
     <Compile Include="Src\Helpers\TestableUpdateSolutionPackagesAction.cs" />
     <Compile Include="Src\Helpers\TestPackageHelper.cs" />
-    <Compile Include="Src\Helpers\TypeParameterHelper.cs" />
-    <Compile Include="Src\Helpers\UsingHelper.cs" />
-    <Compile Include="Src\Helpers\UsingScopeHelper.cs" />
     <Compile Include="Src\InstalledPackageViewModelTests.cs" />
     <Compile Include="Src\IPackageExtensionsTests.cs" />
     <Compile Include="Src\ManagePackagesCommandTests.cs" />
@@ -189,7 +182,6 @@
     <Compile Include="Src\Helpers\FakePowerShellDetection.cs" />
     <Compile Include="Src\Helpers\FakePowerShellSession.cs" />
     <Compile Include="Src\Helpers\FakePropertyService.cs" />
-    <Compile Include="Src\Helpers\FakeSettingsFactory.cs" />
     <Compile Include="Src\Helpers\FakeSolutionPackageRepository.cs" />
     <Compile Include="Src\Helpers\FakeTextEditorOptions.cs" />
     <Compile Include="Src\Helpers\ProjectItemCollectionAssert.cs" />
@@ -201,18 +193,22 @@
     <Compile Include="Src\ManagePackagesUserPromptsTests.cs" />
     <Compile Include="Src\NuGetPackageRestoreCommandLineTests.cs" />
     <Compile Include="Src\OpenMSBuildProjectsTests.cs" />
+    <Compile Include="Src\OpenPackageReadMeMonitorTests.cs" />
     <Compile Include="Src\PackageManagementServiceProviderTests.cs" />
     <Compile Include="Src\PackageViewModelOperationLoggerTests.cs" />
     <Compile Include="Src\ReducedPackageOperationsTests.cs" />
+    <Compile Include="Src\ReinstallPackageActionTests.cs" />
     <Compile Include="Src\RunAllProjectPackageScriptsActionTests.cs" />
     <Compile Include="Src\Scripting\ConsoleHostFileConflictResolverTests.cs" />
     <Compile Include="Src\Scripting\MSBuildProjectImportsMergerTests.cs" />
+    <Compile Include="Src\Scripting\MSBuildProjectPropertiesMergerTests.cs" />
+    <Compile Include="Src\Scripting\PackageManagementConsoleHostLoggerTests.cs" />
+    <Compile Include="Src\Scripting\PackageUninstallScriptTests.cs" />
+    <Compile Include="Src\SettingsProviderTests.cs" />
     <Compile Include="Src\UpdatedPackagesTests.cs" />
     <Compile Include="Src\UpdatePackagesActionTests.cs" />
     <Compile Include="Src\UpdateSolutionPackagesActionTests.cs" />
     <Compile Include="Src\UserAgentGeneratorForRepositoryRequestsTests.cs" />
-    <Compile Include="Src\VirtualMethodUpdaterTests.cs" />
-    <Compile Include="Src\NewProjectsCreatedTests.cs" />
     <Compile Include="Src\PackageActionRunnerTests.cs" />
     <Compile Include="Src\PackageActionsToRunTests.cs" />
     <Compile Include="Src\PackageFilesTests.cs" />
@@ -227,7 +223,6 @@
     <Compile Include="Src\PackageReferencesForProjectTests.cs" />
     <Compile Include="Src\ProjectBrowserRefresherTests.cs" />
     <Compile Include="Src\ProjectBrowserUpdaterTests.cs" />
-    <Compile Include="Src\ProjectTemplatePackageRepositoryCacheTests.cs" />
     <Compile Include="Src\RegisteredPackageRepositoriesTests.cs" />
     <Compile Include="Src\Helpers\ExceptionThrowingPackageManagementService.cs" />
     <Compile Include="Src\Helpers\ExceptionThrowingPackageOperationResolver.cs" />
@@ -299,7 +294,6 @@
     <Compile Include="Src\PackageManagementOutputMessagesViewTests.cs" />
     <Compile Include="Src\PackageManagementSolutionTests.cs" />
     <Compile Include="Src\PackageRepositoryCacheTests.cs" />
-    <Compile Include="Src\RegisteredProjectTemplatePackageSourcesTests.cs" />
     <Compile Include="Src\Scripting\ConsoleInitializerTests.cs" />
     <Compile Include="Src\Scripting\PackageInitializationScriptsConsoleTests.cs" />
     <Compile Include="Src\Scripting\PackageInitializationScriptsTests.cs" />
@@ -358,21 +352,25 @@
       <Project>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</Project>
       <Name>ICSharpCode.AvalonEdit</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Libraries\NRefactory\Project\NRefactory.csproj">
-      <Project>{3A9AE6AA-BC07-4A2F-972C-581E3AE2F195}</Project>
-      <Name>NRefactory</Name>
+    <ProjectReference Include="..\..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj">
+      <Project>{53DCA265-3C3C-42F9-B647-F72BA678122B}</Project>
+      <Name>ICSharpCode.NRefactory.CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\Main\Base\Project\ICSharpCode.SharpDevelop.csproj">
       <Project>{2748AD25-9C63-4E12-877B-4DCE96FBED54}</Project>
       <Name>ICSharpCode.SharpDevelop</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Main\Base\Test\ICSharpCode.SharpDevelop.Tests.csproj">
+      <Project>{4980B743-B32F-4ABA-AABD-45E2CAD3568D}</Project>
+      <Name>ICSharpCode.SharpDevelop.Tests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Main\Core\Project\ICSharpCode.Core.csproj">
       <Project>{35CEF10F-2D4C-45F2-9DD1-161E0FEC583C}</Project>
       <Name>ICSharpCode.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Main\ICSharpCode.SharpDevelop.Dom\Project\ICSharpCode.SharpDevelop.Dom.csproj">
-      <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
-      <Name>ICSharpCode.SharpDevelop.Dom</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\BackendBindings\Scripting\Project\ICSharpCode.Scripting.csproj">
       <Project>{7048AE18-EB93-4A84-82D0-DD60EB58ADBD}</Project>
@@ -395,7 +393,7 @@
       <Name>PackageManagement</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpDevelop.EnvDTE\SharpDevelop.EnvDTE.vbproj">
-      <Project>{6FB1260D-68A2-41A0-BB09-F5F710842E99}</Project>
+      <Project>{1b753d7f-7c77-4d5e-b928-02982690879c}</Project>
       <Name>SharpDevelop.EnvDTE</Name>
     </ProjectReference>
   </ItemGroup>
@@ -406,12 +404,6 @@
     <Folder Include="Src\EnvDTE" />
     <Folder Include="Src\VisualStudio" />
     <Folder Include="Src\Scripting" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\..\..\bin\SharpDevelop.exe">
-      <Link>SharpDevelop.exe</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

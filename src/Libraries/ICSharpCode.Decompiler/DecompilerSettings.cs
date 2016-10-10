@@ -254,6 +254,18 @@ namespace ICSharpCode.Decompiler
 				}
 			}
 		}
+
+		bool foldBraces = false;
+		
+		public bool FoldBraces {
+			get { return foldBraces; }
+			set {
+				if (foldBraces != value) {
+					foldBraces = value;
+					OnPropertyChanged("FoldBraces");
+				}
+			}
+		}
 		
 		#region Options to aid VB decompilation
 		bool introduceIncrementAndDecrement = true;
@@ -267,6 +279,21 @@ namespace ICSharpCode.Decompiler
 				if (introduceIncrementAndDecrement != value) {
 					introduceIncrementAndDecrement = value;
 					OnPropertyChanged("IntroduceIncrementAndDecrement");
+				}
+			}
+		}
+		
+		bool makeAssignmentExpressions = true;
+		
+		/// <summary>
+		/// Gets/Sets whether to use assignment expressions such as in while ((count = Do()) != 0) ;
+		/// </summary>
+		public bool MakeAssignmentExpressions {
+			get { return makeAssignmentExpressions; }
+			set {
+				if (makeAssignmentExpressions != value) {
+					makeAssignmentExpressions = value;
+					OnPropertyChanged("MakeAssignmentExpressions");
 				}
 			}
 		}
